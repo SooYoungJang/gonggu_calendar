@@ -140,9 +140,9 @@ export const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
     const [timeValue, setTimeValue] = useState<string>("00:00");
     const [inputValue, setInputValue] = useState<string>("");
 
-    const parsedValue = parseDate(value as string);
-    const min = parseDate(minDate as string);
-    const max = parseDate(maxDate as string);
+    const parsedValue = parseDate(value ?? null);
+    const min = parseDate(minDate ?? null) ?? undefined;
+    const max = parseDate(maxDate ?? null) ?? undefined;
 
     // Sync internal state with props
     useEffect(() => {

@@ -244,7 +244,9 @@ export function DataTable<T>({
                 <input
                   type="checkbox"
                   checked={allSelected}
-                  indeterminate={someSelected && !allSelected}
+                  ref={(input) => {
+                    if (input) input.indeterminate = !!someSelected && !allSelected;
+                  }}
                   onChange={handleSelectAll}
                   className="h-4 w-4 rounded border-border-primary text-primary-600 focus:ring-primary-500"
                   aria-label="전체 선택"

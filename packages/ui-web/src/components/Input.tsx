@@ -274,11 +274,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     const hasHintOrError = hint || error;
     const describedBy = hasHintOrError ? [hint && hintId, error && errorId].filter(Boolean).join(" ") : undefined;
 
-    useImperativeHandle(ref, () => ({
-      focus: () => textareaRef.current?.focus(),
-      blur: () => textareaRef.current?.blur(),
-      select: () => textareaRef.current?.select(),
-    }), []);
+    useImperativeHandle(ref, () => textareaRef.current!, []);
 
     const baseTextareaStyles =
       "w-full bg-background-primary border border-border-primary text-text-primary placeholder-text-tertiary resize-none transition-all duration-150 ease-out";
