@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.lg, paddingBottom: spacing['3xl'] },
   notice: { backgroundColor: colors.warningBg, borderRadius: borderRadius.sm, marginBottom: spacing.lg, padding: spacing.md },
-  noticeText: { color: '#92400e', fontSize: 13, textAlign: 'center' },
+  noticeText: { color: colors.noticeText, fontSize: 13, textAlign: 'center' },
   actionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.sm },
   flexButton: { flex: 1, marginTop: 0 },
   cancelButton: { marginTop: 0 },

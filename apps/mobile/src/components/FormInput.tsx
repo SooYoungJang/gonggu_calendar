@@ -32,10 +32,10 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: colors.surface,
-    borderColor: '#d1d5db',
+    borderColor: colors.border,
     borderRadius: borderRadius.lg,
     borderWidth: 1,
-    color: '#111827',
+    color: colors.textPrimary,
     fontSize: 14,
     paddingHorizontal: spacing.md,
     paddingVertical: 10,

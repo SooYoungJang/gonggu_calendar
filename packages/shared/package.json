@@ -49,6 +49,26 @@
       "types": "./dist/src/constants/*.d.ts",
       "import": "./dist/src/constants/*.js",
       "require": "./dist/src/constants/*.js"
+    },
+    "./components": {
+      "types": "./dist/src/components/index.d.ts",
+      "import": "./dist/src/components/index.js",
+      "require": "./dist/src/components/index.js"
+    },
+    "./components/*": {
+      "types": "./dist/src/components/*.d.ts",
+      "import": "./dist/src/components/*.js",
+      "require": "./dist/src/components/*.js"
+    },
+    "./tokens": {
+      "types": "./dist/src/tokens/index.d.ts",
+      "import": "./dist/src/tokens/index.js",
+      "require": "./dist/src/tokens/index.js"
+    },
+    "./tokens/*": {
+      "types": "./dist/src/tokens/*.d.ts",
+      "import": "./dist/src/tokens/*.js",
+      "require": "./dist/src/tokens/*.js"
     }
   },
   "scripts": {

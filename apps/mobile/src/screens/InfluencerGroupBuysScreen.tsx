@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   backButton: { alignSelf: 'flex-start', marginTop: 0, paddingHorizontal: spacing.lg, paddingVertical: 10 },
   notice: { backgroundColor: colors.warningBg, borderRadius: borderRadius.sm, marginBottom: spacing.lg, padding: spacing.md },
-  noticeText: { color: '#92400e', fontSize: 13, textAlign: 'center' },
+  noticeText: { color: colors.noticeText, fontSize: 13, textAlign: 'center' },
   listContent: { flexGrow: 1, paddingBottom: spacing['2xl'] },
   emptyState: {
     alignItems: 'center',

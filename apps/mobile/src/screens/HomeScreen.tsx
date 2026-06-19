@@ -72,7 +72,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
         </ScreenHeader>
 
         {isError ? (
-          <View className="p-3 bg-amber-100 rounded-lg mb-4" style={styles.notice}>
+          <View style={styles.notice}>
             <Text style={styles.noticeText}>로컬 API가 꺼져 있어 샘플 데이터를 표시 중입니다.</Text>
           </View>
         ) : null}
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   actionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.md },
   headerActionButton: { alignSelf: 'flex-start', marginTop: 0, paddingHorizontal: spacing.lg, paddingVertical: 10 },
   notice: { backgroundColor: colors.warningBg, borderRadius: borderRadius.sm, marginBottom: spacing.lg, padding: spacing.md },
-  noticeText: { color: '#92400e', fontSize: 13, textAlign: 'center' },
+  noticeText: { color: colors.noticeText, fontSize: 13, textAlign: 'center' },
   searchPanel: { marginBottom: spacing.md },
   searchPanelTitle: {
     ...typography.label,

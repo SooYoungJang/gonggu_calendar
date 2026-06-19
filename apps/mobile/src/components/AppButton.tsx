@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
   },
   secondary: {
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.borderLight,
   },
   text: {
     color: colors.textInverse,
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   secondaryText: {
-    color: '#374151',
+    color: colors.textSecondary,
     fontSize: 14,
   },
   disabled: {

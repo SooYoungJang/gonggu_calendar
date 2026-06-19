@@ -1,90 +1,132 @@
 /**
- * @gonggu/mobile — Instagram-style Design Tokens
+ * @gonggu/mobile — Design Tokens
  *
- * Color palette, spacing, shadows, border-radius, and typography
- * inspired by Instagram's clean, card-based UI language.
+ * ★ Source of truth: @gonggu/shared/tokens ★
+ *
+ * This file exposes React Native-friendly values while delegating all
+ * color, spacing, radius, elevation, typography, and motion decisions to
+ * the shared cross-platform token package.
+ *
+ * Primary (v2 unified): oklch(0.58 0.22 260)
+ * Accent (Instagram pink): oklch(0.6 0.21 7) / #e1306c
  */
 
-// ─── Instagram-Inspired Color Palette ──────────────────────────────
-export const colors = {
-  // Primary brand
-  primary: '#4f63d7' as const,
-  primaryLight: '#6b7fe8' as const,
-  primaryDark: '#3d4fc0' as const,
-  primaryBg: '#eff0ff' as const,
+import {
+  accent,
+  animation as sharedAnimation,
+  colors as sharedColors,
+  mobileFontSize,
+  mobileRadius,
+  mobileSpacing,
+  neutral,
+  oklchToCssRgba,
+  oklchToHex,
+  primary,
+  rnShadows,
+  status,
+} from '@gonggu/shared/tokens';
 
-  // Instagram accent (pink/red)
-  accent: '#e1306c' as const,
-  accentLight: '#ff5a8a' as const,
-  accentBg: '#fff0f5' as const,
+// ─── Shared Color Palette (React Native hex values) ──────────────────────────
+export const colors = {
+  // Primary brand — unified with web via @gonggu/shared/tokens
+  primary: oklchToHex(primary[500]),
+  primaryLight: oklchToHex(primary[400]),
+  primaryDark: oklchToHex(primary[600]),
+  primaryBg: oklchToHex(primary[50]),
+
+  // Instagram accent (pink/red) — unified with web
+  accent: oklchToHex(accent[500]),
+  accentLight: oklchToHex(accent[400]),
+  accentBg: oklchToHex(accent[50]),
 
   // Backgrounds
-  bg: '#fafafa' as const,
-  surface: '#ffffff' as const,
-  surfaceHover: '#f8f8f8' as const,
+  bg: oklchToHex(sharedColors.surface.secondary),
+  surface: oklchToHex(sharedColors.surface.primary),
+  surfaceHover: oklchToHex(sharedColors.surface.tertiary),
 
   // Text
-  textPrimary: '#1a1a2e' as const,
-  textSecondary: '#6b7280' as const,
-  textTertiary: '#9ca3af' as const,
-  textInverse: '#ffffff' as const,
-  textLink: '#4f63d7' as const,
+  textPrimary: oklchToHex(sharedColors.text.primary),
+  textSecondary: oklchToHex(sharedColors.text.secondary),
+  textTertiary: oklchToHex(sharedColors.text.tertiary),
+  textInverse: oklchToHex(sharedColors.text.inverse),
+  textLink: oklchToHex(primary[500]),
 
   // Borders & dividers
-  border: '#f0f0f0' as const,
-  borderLight: '#f5f5f5' as const,
-  divider: '#f3f4f6' as const,
+  border: oklchToHex(sharedColors.border.primary),
+  borderLight: oklchToHex(neutral[100]),
+  divider: oklchToHex(neutral[100]),
 
   // Feedback
-  success: '#22c55e' as const,
-  successBg: '#f0fdf4' as const,
-  warning: '#f59e0b' as const,
-  warningBg: '#fef3c7' as const,
-  error: '#ef4444' as const,
-  errorBg: '#fef2f2' as const,
+  success: oklchToHex(sharedColors.success[500]),
+  successBg: oklchToHex(sharedColors.success[50]),
+  warning: oklchToHex(sharedColors.warning[500]),
+  warningBg: oklchToHex(sharedColors.warning[50]),
+  error: oklchToHex(sharedColors.error[500]),
+  errorBg: oklchToHex(sharedColors.error[50]),
+
+  // Status-specific colors
+  statusPendingBg: oklchToHex(status.pending.bg),
+  statusPendingText: oklchToHex(status.pending.text),
+  statusPendingBorder: oklchToHex(status.pending.border),
+  statusApprovedBg: oklchToHex(status.approved.bg),
+  statusApprovedText: oklchToHex(status.approved.text),
+  statusApprovedBorder: oklchToHex(status.approved.border),
+  statusRejectedBg: oklchToHex(status.rejected.bg),
+  statusRejectedText: oklchToHex(status.rejected.text),
+  statusRejectedBorder: oklchToHex(status.rejected.border),
+  statusReviewBg: oklchToHex(status.review.bg),
+  statusReviewText: oklchToHex(status.review.text),
+  statusReviewBorder: oklchToHex(status.review.border),
+  statusDuplicateBg: oklchToHex(status.duplicate.bg),
+  statusDuplicateText: oklchToHex(status.duplicate.text),
+  statusDuplicateBorder: oklchToHex(status.duplicate.border),
 
   // Misc
-  skeleton: '#e5e7eb' as const,
-  overlay: 'rgba(0, 0, 0, 0.5)' as const,
-  badgeBg: '#eff6ff' as const,
-  badgeText: '#4f63d7' as const,
+  skeleton: oklchToHex(neutral[200]),
+  shadow: '#000000',
+  overlay: oklchToCssRgba(sharedColors.overlay.backdrop),
+  badgeBg: oklchToHex(status.review.bg),
+  badgeText: oklchToHex(primary[600]),
+  noticeText: oklchToHex('oklch(0.47 0.12 48)'),  // deep amber for notice boxes
 } as const;
 
-// ─── Spacing Scale (4px base) ────────────────────────────────────
+// ─── Spacing Scale (8px grid, with 4px micro step) ──────────────────────────
 export const spacing = {
-  /** 2px */
+  /** 2px — legacy micro step */
   xxs: 2,
   /** 4px */
-  xs: 4,
+  xs: mobileSpacing('1'),
   /** 8px */
-  sm: 8,
+  sm: mobileSpacing('2'),
   /** 12px */
-  md: 12,
+  md: mobileSpacing('3'),
   /** 16px — standard card padding */
-  lg: 16,
+  lg: mobileSpacing('4'),
   /** 20px */
-  xl: 20,
+  xl: mobileSpacing('5'),
   /** 24px — section spacing */
-  '2xl': 24,
+  '2xl': mobileSpacing('6'),
   /** 32px */
-  '3xl': 32,
+  '3xl': mobileSpacing('8'),
+  /** 48px */
+  '4xl': mobileSpacing('12'),
 } as const;
 
 // ─── Border Radius ──────────────────────────────────────────────
 export const borderRadius = {
   /** 8px — inputs, small elements */
-  sm: 8,
+  sm: mobileRadius('sm'),
   /** 10px — buttons */
-  md: 10,
+  md: mobileRadius('md'),
   /** 12px — primary buttons */
-  lg: 12,
+  lg: mobileRadius('lg'),
   /** 16px — cards */
-  xl: 16,
+  xl: mobileRadius('xl'),
   /** 999px — pills, badges */
-  full: 999,
+  full: mobileRadius('full'),
 } as const;
 
-// ─── Shadows (iOS style) ───────────────────────────────────────
+// ─── Shadows (React Native style) ───────────────────────────────────────
 export interface ShadowStyle {
   shadowColor: string;
   shadowOffset: { width: number; height: number };
@@ -95,42 +137,24 @@ export interface ShadowStyle {
 
 export const shadows: Record<'sm' | 'md' | 'lg', ShadowStyle> = {
   /** Subtle card shadow */
-  sm: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
-  },
+  sm: rnShadows.sm,
   /** Standard card shadow */
-  md: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
+  md: rnShadows.card,
   /** Modal / overlay shadow */
-  lg: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    elevation: 4,
-  },
+  lg: rnShadows.lg,
 };
 
 // ─── Typography ─────────────────────────────────────────────────
 export const typography = {
   eyebrow: {
-    fontSize: 12,
+    fontSize: mobileFontSize('xs'),
     fontWeight: '600' as const,
     color: colors.primary,
     letterSpacing: 0.5,
     marginBottom: 4,
   },
   title: {
-    fontSize: 28,
+    fontSize: mobileFontSize('3xl'),
     fontWeight: '700' as const,
     color: colors.textPrimary,
     marginBottom: 4,
@@ -142,55 +166,62 @@ export const typography = {
     marginBottom: 16,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: mobileFontSize('lg'),
     fontWeight: '700' as const,
     color: colors.textPrimary,
     marginBottom: 2,
   },
   cardBrand: {
-    fontSize: 14,
+    fontSize: mobileFontSize('sm'),
     color: colors.textSecondary,
     marginBottom: 8,
   },
   cardSummary: {
-    fontSize: 14,
-    color: '#4b5563',
+    fontSize: mobileFontSize('sm'),
+    color: oklchToHex(neutral[600]),
     lineHeight: 20,
   },
   body: {
-    fontSize: 14,
+    fontSize: mobileFontSize('sm'),
     color: colors.textSecondary,
     lineHeight: 20,
   },
   label: {
-    fontSize: 14,
+    fontSize: mobileFontSize('sm'),
     fontWeight: '600' as const,
     color: colors.textSecondary,
   },
   caption: {
-    fontSize: 12,
+    fontSize: mobileFontSize('xs'),
     color: colors.textTertiary,
   },
   badge: {
-    fontSize: 12,
+    fontSize: mobileFontSize('xs'),
     fontWeight: '600' as const,
     color: colors.badgeText,
   },
 };
 
+// ─── Animation / Motion ─────────────────────────────────────────
+export const animation = {
+  duration: sharedAnimation.durations,
+  easing: sharedAnimation.easings,
+} as const;
+
 // ─── NativeWind-Compatible ClassName Fragments ─────────────────
-// These strings can be composed into className for hybrid NativeWind usage.
+// These strings remain for compatibility with existing NativeWind usage.
+// Color values are resolved from shared tokens at module load time.
 export const tw = {
   card: 'bg-white rounded-2xl p-4 mb-3 border border-gray-100 shadow-sm',
-  primaryButton: 'mt-6 py-3.5 bg-[#4f63d7] rounded-xl items-center',
+  primaryButton: `mt-6 py-3.5 bg-[${colors.primary}] rounded-xl items-center`,
   secondaryButton: 'py-2.5 px-4 bg-gray-100 rounded-xl self-start',
   primaryButtonText: 'text-base font-semibold text-white',
   secondaryButtonText: 'text-sm font-semibold text-gray-700',
   input: 'border border-gray-300 rounded-xl px-3 py-2.5 text-sm text-gray-900 bg-white',
   notice: 'p-3 bg-amber-100 rounded-lg mb-4',
   noticeText: 'text-xs text-amber-800 text-center',
-  badge: 'text-xs font-semibold text-[#4f63d7] bg-blue-50 px-2 py-1 rounded-full',
-  headerTitle: 'text-3xl font-bold text-[#1a1a2e] mb-1',
+  badge: `text-xs font-semibold text-[${colors.badgeText}] bg-blue-50 px-2 py-1 rounded-full`,
+  headerTitle: `text-3xl font-bold text-[${colors.textPrimary}] mb-1`,
   headerSubtitle: 'text-sm text-gray-500 leading-5 mb-4',
-  eyebrow: 'text-xs font-semibold text-[#4f63d7] tracking-wide mb-1',
-};
+  eyebrow: `text-xs font-semibold text-[${colors.primary}] tracking-wide mb-1`,
+} as const;
