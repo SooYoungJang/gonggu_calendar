@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ParsingStatus {
+  NEW
+  PENDING
+  EXPORTED
+  PARSED
+  NOT_GROUP_BUY
+  FAILED
+}
+
+enum GroupBuyStatus {
+  APPROVED
+  REVIEW_REQUIRED
+  REJECTED
+  EXPIRED
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DUPLICATE
+  CANCELLED
+}
+
+model Influencer {
+  id                String    @id @default(uuid())
+  instagramUsername String    @unique @map("instagram_username")
+  displayName       String?   @map("display_name")
+  profileImageUrl   String?   @map("profile_image_url")
+  isActive          Boolean   @default(true) @map("is_active")
+  rawPosts          RawPost[]
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@map("influencers")
+}
+
+model RawPost {
+  id              String        @id @default(uuid())
+  instagramPostId String        @unique @map("instagram_post_id")
+  influencerId    String        @map("influencer_id")
+  influencer      Influencer    @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  caption         String
+  postUrl         String        @map("post_url")
+  imageUrl        String?       @map("image_url")
+  takenAt         DateTime      @map("taken_at")
+  contentHash     String        @unique @map("content_hash")
+  isCandidate     Boolean       @default(false) @map("is_candidate")
+  parsingStatus   ParsingStatus @default(NEW) @map("parsing_status")
+  exportedAt      DateTime?     @map("exported_at")
+  parsedAt        DateTime?     @map("parsed_at")
+  parseError      String?       @map("parse_error")
+  collectedAt     DateTime      @map("collected_at")
+  groupBuy        GroupBuy?
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@index([influencerId])
+  @@index([isCandidate, parsingStatus])
+  @@map("raw_posts")
+}
+
+model GroupBuy {
+  id           String         @id @default(uuid())
+  rawPostId    String?        @unique @map("raw_post_id")
+  rawPost      RawPost?       @relation(fields: [rawPostId], references: [id], onDelete: Cascade)
+  productName  String?        @map("product_name")
+  brandName    String?        @map("brand_name")
+  startDate    DateTime?      @map("start_date")
+  endDate      DateTime?      @map("end_date")
+  purchaseUrl  String?        @map("purchase_url")
+  discountInfo String?        @map("discount_info")
+  summary      String?
+  confidence   Float
+  status       GroupBuyStatus @default(REVIEW_REQUIRED)
+  rejectionReason String?     @map("rejection_reason")
+  reviewedAt   DateTime?      @map("reviewed_at")
+  favorites    Favorite[]
+  // 제보 출처 추적
+  sourceType   String?        @default("CRAWLED") @map("source_type")
+  submissionId String?        @unique @map("submission_id")
+  submission   GongguSubmission? @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+  // 캘린더용 필드
+  isAllDay     Boolean        @default(false) @map("is_all_day")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([endDate])
+  @@index([sourceType])
+  @@map("group_buys")
+}
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  nickname  String?
+  fcmToken  String?    @map("fcm_token")
+  favorites Favorite[]
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Favorite {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupBuyId String   @map("group_buy_id")
+  groupBuy   GroupBuy @relation(fields: [groupBuyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, groupBuyId])
+  @@map("favorites")
+}
+
+model GongguSubmission {
+  id              String            @id @default(uuid())
+  // 제보 내용 (필수)
+  productName     String            @map("product_name")
+  brandName       String?           @map("brand_name")
+  startDate       DateTime?         @map("start_date")
+  endDate         DateTime?         @map("end_date")
+  purchaseUrl     String?           @map("purchase_url")
+  discountInfo    String?           @map("discount_info")
+  summary         String?           @map("summary")
+  instagramUrl    String?           @map("instagram_url")
+  imageUrls       String[]          @default([]) @map("image_urls")
+
+  // 제보자 정보
+  reporterName    String?           @map("reporter_name")
+  reporterContact String?           @map("reporter_contact")
+  isAnonymous     Boolean           @default(true) @map("is_anonymous")
+
+  // 중복 검출용
+  contentHash     String            @unique @map("content_hash")
+
+  // 상태 관리
+  status          SubmissionStatus  @default(PENDING)
+  adminMemo       String?           @map("admin_memo")
+  reviewedAt      DateTime?         @map("reviewed_at")
+  reviewedBy      String?           @map("reviewed_by")
+
+  // 승인 시 생성된 GroupBuy 참조
+  groupBuyId      String?           @unique @map("group_buy_id")
+  groupBuy        GroupBuy?
+
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([productName])
+  @@map("gonggu_submissions")
+}

@@ -1,0 +1,43 @@
+{
+  "name": "gonggu-calendar",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "build:mobile": "turbo run build --filter=@gonggu/mobile",
+    "build:web": "turbo run build --filter=@gonggu/web",
+    "build:api": "turbo run build --filter=@gonggu/api",
+    "build:shared": "turbo run build --filter=@gonggu/shared",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "test:coverage": "turbo run test:coverage",
+    "db:generate": "turbo run db:generate --filter=@gonggu/api",
+    "db:migrate": "turbo run db:migrate --filter=@gonggu/api",
+    "api:dev": "turbo run dev --filter=@gonggu/api",
+    "mobile:start": "turbo run start --filter=@gonggu/mobile",
+    "web:dev": "turbo run dev --filter=@gonggu/web",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "eslint": "^9.17.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.4.2",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "npm@10.9.0",
+  "dependencies": {
+    "react-native-worklets": "^0.7.1"
+  }
+}

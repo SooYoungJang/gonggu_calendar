@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>제보 검수 - Admin (Clean Editorial)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8f9fa;
+      --surface: #ffffff;
+      --sidebar-bg: #ffffff;
+      --text-primary: #11181c;
+      --text-secondary: #52595d;
+      --text-muted: #8a8d93;
+      --accent: #0066ff;
+      --accent-hover: #0052cc;
+      --accent-light: #e8f0fe;
+      --border: #e1e3e5;
+      --border-hover: #d0d3d6;
+      --border-focus: #0066ff;
+      --error: #d93025;
+      --error-light: #fce8e6;
+      --success: #1e8e3e;
+      --success-light: #e6f4ea;
+      --warning: #f59e0b;
+      --warning-light: #fffbeb;
+      --info: #0066ff;
+      --info-light: #e8f0fe;
+      --shadow-sm: 0 1px 1px rgba(0,0,0,0.04);
+      --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-full: 9999px;
+      --sidebar-w: 280px;
+      --header-h: 72px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text-primary); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    .layout { display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100vh; }
+    .sidebar { background: var(--sidebar-bg); border-right: 1px solid var(--border); position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 24px 20px; display: flex; flex-direction: column; }
+    .sidebar-brand { padding: 0 4px 24px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+    .sidebar-logo { font-size: 20px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+    .sidebar-tagline { font-size: 12px; color: var(--text-muted); }
+    .nav-section { margin-bottom: 28px; }
+    .nav-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 12px; padding: 0 4px; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--radius-md); color: var(--text-secondary); font-size: 14px; font-weight: 500; text-decoration: none; transition: background 0.15s, color 0.15s; margin-bottom: 4px; }
+    .nav-item:hover { background: var(--bg); color: var(--text-primary); }
+    .nav-item.active { background: var(--accent-light); color: var(--accent); }
+    .nav-item .badge { margin-left: auto; background: var(--accent-light); color: var(--accent); padding: 3px 8px; border-radius: var(--radius-full); font-size: 11px; font-weight: 600; }
+    .main { padding: 32px 40px; max-width: 1100px; }
+    .page-header { margin-bottom: 32px; }
+    .page-title { font-size: 32px; font-weight: 700; color: var(--text-primary); line-height: 1.2; margin-bottom: 8px; }
+    .page-subtitle { font-size: 16px; color: var(--text-secondary); max-width: 600px; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 24px; padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+    .filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-btn { padding: 10px 16px; border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-full); font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; }
+    .filter-btn:hover { border-color: var(--border-hover); background: var(--bg); }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+    .search-box { position: relative; flex: 1; min-width: 240px; max-width: 400px; }
+    .search-box input { width: 100%; padding: 10px 16px 10px 40px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; color: var(--text-primary); background: var(--surface); transition: border-color 0.15s, box-shadow 0.15s; }
+    .search-box input:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--accent-light); }
+    .search-box svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted); pointer-events: none; }
+    .table-container { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    thead { background: var(--bg); }
+    th { padding: 16px 20px; text-align: left; font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: 16px 20px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tbody tr { transition: background 0.15s; }
+    tbody tr:hover { background: var(--bg); }
+    tbody tr.selected { background: var(--accent-light); }
+    .status-badge { display: inline-flex; align-items: center; padding: 5px 12px; border-radius: var(--radius-full); font-size: 12px; font-weight: 600; }
+    .status-pending { background: var(--warning-light); color: #b45309; }
+    .status-approved { background: var(--success-light); color: #166534; }
+    .status-rejected { background: var(--error-light); color: #991b1b; }
+    .status-review { background: var(--info-light); color: #1e40af; }
+    .status-duplicate { background: #f3f4f6; color: #374151; }
+    .product-cell { display: flex; flex-direction: column; gap: 4px; min-width: 240px; }
+    .product-name { font-weight: 600; color: var(--text-primary); }
+    .product-meta { font-size: 12px; color: var(--text-muted); }
+    .text-muted { color: var(--text-muted); font-size: 13px; }
+    .action-cell { white-space: nowrap; }
+    .btn { padding: 9px 16px; border: none; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-success:hover:not(:disabled) { background: #16a34a; }
+    .btn-danger { background: var(--error); color: white; }
+    .btn-danger:hover:not(:disabled) { background: #c5221f; }
+    .btn-secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+    .btn-secondary:hover { background: var(--accent-light); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-icon { padding: 9px; }
+    .empty-state { padding: 64px 32px; text-align: center; color: var(--text-muted); }
+    .empty-state-icon { font-size: 56px; margin-bottom: 20px; opacity: 0.3; }
+    .empty-state-title { font-size: 18px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 24px; animation: fadeIn 0.2s ease; }
+    .modal-overlay.visible { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); max-width: 560px; width: 100%; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .modal-title { font-size: 20px; font-weight: 600; color: var(--text-primary); }
+    .modal-close { width: 40px; height: 40px; border: none; background: transparent; border-radius: var(--radius-md); color: var(--text-muted); font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s, color 0.15s; }
+    .modal-close:hover { background: var(--bg); color: var(--text-primary); }
+    .modal-body { padding: 24px; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; }
+    .form-group { margin-bottom: 20px; }
+    .form-label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 8px; }
+    .form-label.required::after { content: " *"; color: var(--error); }
+    .form-input { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; color: var(--text-primary); background: var(--surface); transition: border-color 0.15s, box-shadow 0.15s; }
+    .form-input:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--accent-light); }
+    .form-input.error { border-color: var(--error); }
+    .form-textarea { min-height: 100px; resize: vertical; }
+    .form-hint { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+    .quick-reasons { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .quick-reason { padding: 8px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-full); font-size: 12px; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; }
+    .quick-reason:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+    .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
+    .toast { padding: 14px 20px; border-radius: var(--radius-md); box-shadow: var(--shadow-lg); font-size: 14px; font-weight: 500; max-width: 360px; animation: slideInRight 0.3s ease; }
+    .toast.success { background: var(--success); color: white; }
+    .toast.error { background: var(--error); color: white; }
+    .toast.info { background: var(--text-primary); color: white; }
+    .toast.warning { background: var(--warning); color: white; }
+    @keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: fixed; left: -100%; width: var(--sidebar-w); z-index: 100; height: 100vh; box-shadow: var(--shadow-lg); transition: left 0.3s; }
+      .sidebar.open { left: 0; }
+      .main { padding: 20px; }
+      .toolbar { flex-direction: column; align-items: stretch; }
+      .search-box { max-width: none; }
+      table { display: block; overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="관리자 메뉴">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo">GongGu Admin</div>
+        <div class="sidebar-tagline">공동구매 캘린더 관리</div>
+      </div>
+      <nav>
+        <div class="nav-section">
+          <div class="nav-section-title">메인</div>
+          <a href="#" class="nav-item" data-page="dashboard"><span>📊</span> 대시보드</a>
+          <a href="#" class="nav-item active" data-page="submissions"><span>📝</span> 제보 검수 <span class="badge" id="pending-count">3</span></a>
+          <a href="#" class="nav-item" data-page="group-buys"><span>📦</span> 공구 관리</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">설정</div>
+          <a href="#" class="nav-item" data-page="influencers"><span>👤</span> 인플루언서</a>
+          <a href="#" class="nav-item" data-page="settings"><span>⚙️</span> 일반 설정</a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main -->
+    <main class="main" role="main">
+      <header class="page-header">
+        <h1 class="page-title">제보 검수</h1>
+        <p class="page-subtitle">사용자 제보를 검토하고 승인/반려 처리합니다. 필터와 검색으로 원하는 제보를 빠르게 찾으세요.</p>
+      </header>
+
+      <div class="toolbar">
+        <div class="filter-group" role="group" aria-label="상태 필터">
+          <button class="filter-btn active" data-status="ALL" type="button">전체</button>
+          <button class="filter-btn" data-status="PENDING" type="button">대기 중</button>
+          <button class="filter-btn" data-status="REVIEW_REQUIRED" type="button">검수 필요</button>
+          <button class="filter-btn" data-status="APPROVED" type="button">승인됨</button>
+          <button class="filter-btn" data-status="REJECTED" type="button">반려됨</button>
+          <button class="filter-btn" data-status="DUPLICATE" type="button">중복</button>
+        </div>
+        <div class="search-box">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" id="search-input" placeholder="제품명, 브랜드, 제보자 검색..." aria-label="제보 검색">
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table id="submissions-table" role="grid" aria-label="제보 목록">
+          <thead>
+            <tr>
+              <th style="width: 40px;"><input type="checkbox" id="select-all" aria-label="전체 선택"></th>
+              <th>제품명 / 브랜드</th>
+              <th style="min-width: 160px;">기간</th>
+              <th style="min-width: 140px;">제보자</th>
+              <th style="width: 130px;">상태</th>
+              <th style="width: 140px;">제보일</th>
+              <th style="width: 160px;">액션</th>
+            </tr>
+          </thead>
+          <tbody id="submissions-body">
+            <!-- JS 렌더링 -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="empty-state" id="empty-state" style="display: none;">
+        <div class="empty-state-icon">📭</div>
+        <div class="empty-state-title">제보가 없습니다</div>
+        <p>선택한 필터와 검색어에 해당하는 제보가 없어요.</p>
+      </div>
+
+      <!-- Pagination -->
+      <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 24px; padding: 16px;" id="pagination">
+        <button class="btn btn-secondary" id="prev-page" disabled>이전</button>
+        <div id="page-numbers" style="display: flex; gap: 4px;"></div>
+        <button class="btn btn-secondary" id="next-page">다음</button>
+        <span style="font-size: 13px; color: var(--text-muted); margin-left: 16px;" id="page-info">1 / 1 페이지 (총 6건)</span>
+      </div>
+    </main>
+
+    <!-- Modal: Detail/Edit -->
+    <div class="modal-overlay" id="detail-modal" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 class="modal-title" id="detail-modal-title">제보 상세</h2>
+          <button class="modal-close" id="detail-modal-close" aria-label="닫기">&times;</button>
+        </div>
+        <div class="modal-body" id="detail-modal-body">
+          <!-- JS 렌더링 -->
+        </div>
+        <div class="modal-footer" id="detail-modal-footer">
+          <!-- JS 렌더링 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Reject -->
+    <div class="modal-overlay" id="reject-modal" role="dialog" aria-modal="true" aria-labelledby="reject-modal-title">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 class="modal-title" id="reject-modal-title">제보 반려</h2>
+          <button class="modal-close" id="reject-modal-close" aria-label="닫기">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 20px;">반려 사유를 입력해주세요. 작성자에게 알림이 전송됩니다.</p>
+          <div class="quick-reasons" role="group" aria-label="빠른 반려 사유">
+            <button type="button" class="quick-reason" data-reason="공동구매가 아님">공동구매가 아님</button>
+            <button type="button" class="quick-reason" data-reason="정보 부족 (제품명, 링크 등)">정보 부족</button>
+            <button type="button" class="quick-reason" data-reason="중복 제보">중복 제보</button>
+            <button type="button" class="quick-reason" data-reason="허위/스팸 의심">허위/스팸</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label required" for="reject-reason-input">상세 사유</label>
+            <textarea id="reject-reason-input" class="form-input form-textarea" rows="4" placeholder="구체적인 반려 사유를 적어주세요..." required aria-required="true"></textarea>
+            <p class="form-hint">작성자에게 전달되는 메시지입니다. 정중하고 명확하게 작성해주세요.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="reject-cancel">취소</button>
+          <button type="button" class="btn btn-danger" id="reject-confirm">반려 확정</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+  </div>
+
+  <script>
+    // Mock Data (same as Instagram variant)
+    const mockSubmissions = [
+      { id: "sub-001", productName: "비건 선크림 공구", brandName: "Sample Beauty", startDate: "2026-07-01T00:00:00+09:00", endDate: "2026-07-15T23:59:59+09:00", purchaseUrl: "https://shop.example.com/sunscreen", discountInfo: "20% 할인 + 무료배송", instagramUrl: "https://www.instagram.com/p/ABC123/", imageUrls: ["https://cdn.example.com/img1.jpg", "https://cdn.example.com/img2.jpg"], summary: "여름철 필수템 비건 선크림 공구입니다. SPF50+ PA++++로 강력 차단.", reporterName: null, isAnonymous: true, status: "APPROVED", adminMemo: null, reviewedAt: "2026-06-15T10:30:00+09:00", reviewedBy: "admin", createdAt: "2026-06-14T15:22:00+09:00", groupBuyId: "gb-001" },
+      { id: "sub-002", productName: "E2E 테스트 공구 - 스프링 재킷", brandName: "Spring Fashion", startDate: "2026-06-20T00:00:00+09:00", endDate: "2026-06-30T23:59:59+09:00", purchaseUrl: "https://shop.example.com/jacket", discountInfo: "30% 할인", instagramUrl: "https://www.instagram.com/p/DEF456/", imageUrls: ["https://cdn.example.com/img3.jpg"], summary: "봄/가을 간절기용 경량 재킷 공구", reporterName: "김제보", isAnonymous: false, status: "APPROVED", adminMemo: null, reviewedAt: "2026-06-15T09:15:00+09:00", reviewedBy: "admin", createdAt: "2026-06-14T14:10:00+09:00", groupBuyId: "gb-002" },
+      { id: "sub-003", productName: "테스트 공구상품", brandName: "Test Brand", startDate: "2026-07-01T00:00:00+09:00", endDate: "2026-07-10T23:59:59+09:00", purchaseUrl: "https://test.example.com/product", discountInfo: "10% 할인", instagramUrl: "https://www.instagram.com/p/GHI789/", imageUrls: ["https://cdn.example.com/img4.jpg"], summary: "테스트용 공구 상품입니다.", reporterName: null, isAnonymous: true, status: "PENDING", adminMemo: null, reviewedAt: null, reviewedBy: null, createdAt: "2026-06-15T08:00:00+09:00", groupBuyId: null },
+      { id: "sub-004", productName: "E2E 테스트 공구 - 스프링 재킷 2", brandName: "Spring Fashion", startDate: "2026-06-25T00:00:00+09:00", endDate: "2026-07-05T23:59:59+09:00", purchaseUrl: "https://shop.example.com/jacket2", discountInfo: "25% 할인", instagramUrl: "https://www.instagram.com/p/JKL012/", imageUrls: ["https://cdn.example.com/img5.jpg"], summary: "업데이트된 스프링 재킷 공구", reporterName: "테스터", isAnonymous: false, status: "APPROVED", adminMemo: null, reviewedAt: "2026-06-15T11:00:00+09:00", reviewedBy: "admin", createdAt: "2026-06-15T10:30:00+09:00", groupBuyId: "gb-003" },
+      { id: "sub-005", productName: "테스트 반려용 $STAMP", brandName: "Stamp Co", startDate: "2026-06-01T00:00:00+09:00", endDate: "2026-06-10T23:59:59+09:00", purchaseUrl: "https://stamp.example.com", discountInfo: "50% 할인", instagramUrl: "https://www.instagram.com/p/MNO345/", imageUrls: [], summary: "스탬프 공구 테스트", reporterName: "스팸봇", isAnonymous: false, status: "REJECTED", adminMemo: "공동구매가 아님: 단순 제품 홍보 게시물", reviewedAt: "2026-06-14T16:00:00+09:00", reviewedBy: "admin", createdAt: "2026-06-14T15:00:00+09:00", groupBuyId: null },
+      { id: "sub-006", productName: "테스트 승인용 $STAMP", brandName: "Stamp Co", startDate: "2026-06-15T00:00:00+09:00", endDate: "2026-06-20T23:59:59+09:00", purchaseUrl: "https://stamp.example.com/approved", discountInfo: "30% 할인", instagramUrl: "https://www.instagram.com/p/PQR678/", imageUrls: ["https://cdn.example.com/img6.jpg"], summary: "승인 테스트용 스탬프 공구", reporterName: null, isAnonymous: true, status: "APPROVED", adminMemo: null, reviewedAt: "2026-06-15T12:00:00+09:00", reviewedBy: "admin", createdAt: "2026-06-15T11:30:00+09:00", groupBuyId: "gb-004" }
+    ];
+
+    // State
+    let currentFilter = "ALL";
+    let searchQuery = "";
+    let currentPage = 1;
+    const pageSize = 10;
+    let selectedId = null;
+    let rejectTargetId = null;
+    let reviewFormData = {};
+
+    // DOM
+    const tbody = document.getElementById('submissions-body');
+    const emptyState = document.getElementById('empty-state');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const searchInput = document.getElementById('search-input');
+    const pendingCount = document.getElementById('pending-count');
+    const pagination = document.getElementById('pagination');
+    const pageNumbers = document.getElementById('page-numbers');
+    const prevPage = document.getElementById('prev-page');
+    const nextPage = document.getElementById('next-page');
+    const pageInfo = document.getElementById('page-info');
+    const detailModal = document.getElementById('detail-modal');
+    const detailModalBody = document.getElementById('detail-modal-body');
+    const detailModalFooter = document.getElementById('detail-modal-footer');
+    const detailModalClose = document.getElementById('detail-modal-close');
+    const rejectModal = document.getElementById('reject-modal');
+    const rejectReasonInput = document.getElementById('reject-reason-input');
+    const rejectConfirm = document.getElementById('reject-confirm');
+    const rejectCancel = document.getElementById('reject-cancel');
+    const rejectModalClose = document.getElementById('reject-modal-close');
+    const toastContainer = document.getElementById('toast-container');
+    const quickReasons = document.querySelectorAll('.quick-reason');
+    const selectAll = document.getElementById('select-all');
+
+    // Utils
+    function formatDate(dateStr) {
+      if (!dateStr) return '미입력';
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+    }
+    function formatDateTime(dateStr) {
+      if (!dateStr) return '미입력';
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+    function formatRelative(dateStr) {
+      if (!dateStr) return '';
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const days = Math.floor(diff / 86400000);
+      if (days > 0) return `${days}일 전`;
+      const hours = Math.floor(diff / 3600000);
+      if (hours > 0) return `${hours}시간 전`;
+      const mins = Math.floor(diff / 60000);
+      return `${mins}분 전`;
+    }
+    function getStatusBadge(status) {
+      const map = { PENDING: { class: 'status-pending', label: '대기 중' }, APPROVED: { class: 'status-approved', label: '승인됨' }, REJECTED: { class: 'status-rejected', label: '반려됨' }, REVIEW_REQUIRED: { class: 'status-review', label: '검수 필요' }, DUPLICATE: { class: 'status-duplicate', label: '중복' } };
+      return map[status] || { class: '', label: status };
+    }
+    function getReporter(sub) {
+      if (sub.isAnonymous) return '익명 제보자';
+      return sub.reporterName || '제보자';
+    }
+
+    // Filter & Search
+    function getFilteredData() {
+      let data = mockSubmissions;
+      if (currentFilter !== "ALL") data = data.filter(s => s.status === currentFilter);
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        data = data.filter(s =>
+          s.productName.toLowerCase().includes(q) ||
+          (s.brandName || '').toLowerCase().includes(q) ||
+          getReporter(s).toLowerCase().includes(q)
+        );
+      }
+      return data;
+    }
+
+    // Render Table
+    function renderTable() {
+      const filtered = getFilteredData();
+      const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+      if (currentPage > totalPages) currentPage = totalPages;
+
+      const start = (currentPage - 1) * pageSize;
+      const pageData = filtered.slice(start, start + pageSize);
+
+      pendingCount.textContent = mockSubmissions.filter(s => s.status === 'PENDING' || s.status === 'REVIEW_REQUIRED').length;
+
+      if (pageData.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.style.display = 'block';
+        pagination.style.display = 'none';
+        return;
+      }
+      emptyState.style.display = 'none';
+      pagination.style.display = 'flex';
+
+      tbody.innerHTML = pageData.map(sub => {
+        const badge = getStatusBadge(sub.status);
+        const reporter = getReporter(sub);
+        const canModerate = sub.status === 'PENDING' || sub.status === 'REVIEW_REQUIRED';
+        const isSelected = selectedId === sub.id;
+        return `
+          <tr data-id="${sub.id}" class="${isSelected ? 'selected' : ''}" tabindex="0" role="row">
+            <td><input type="checkbox" class="row-checkbox" data-id="${sub.id}" ${isSelected ? 'checked' : ''} aria-label="${sub.productName} 선택"></td>
+            <td class="product-cell">
+              <span class="product-name">${sub.productName}</span>
+              <span class="product-meta">${sub.brandName ? '브랜드: ' + sub.brandName : '브랜드 미입력'}</span>
+            </td>
+            <td>
+              <div style="font-size: 13px;">${sub.startDate ? formatDate(sub.startDate) : '미정'} ~ ${sub.endDate ? formatDate(sub.endDate) : '미정'}</div>
+            </td>
+            <td>
+              <div style="font-size: 13px;">${reporter}</div>
+              <div style="font-size: 11px; color: var(--text-muted);">${sub.isAnonymous ? '익명' : '실명'}</div>
+            </td>
+            <td><span class="status-badge ${badge.class}">${badge.label}</span></td>
+            <td><span class="text-muted">${formatRelative(sub.createdAt)}</span></td>
+            <td class="action-cell">
+              <div style="display: flex; gap: 6px;">
+                <button type="button" class="btn btn-icon btn-secondary view-btn" data-id="${sub.id}" aria-label="상세 보기" title="상세">👁</button>
+                ${canModerate ? `
+                  <button type="button" class="btn btn-success approve-btn" data-id="${sub.id}" aria-label="승인">승인</button>
+                  <button type="button" class="btn btn-danger reject-btn" data-id="${sub.id}" aria-label="반려">반려</button>
+                ` : sub.adminMemo ? `
+                  <button type="button" class="btn btn-secondary" disabled title="${sub.adminMemo}">반려됨</button>
+                ` : ''}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      attachRowListeners();
+      renderPagination(totalPages);
+    }
+
+    function renderPagination(totalPages) {
+      pageNumbers.innerHTML = '';
+      const maxVisible = 5;
+      let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+      if (endPage - startPage + 1 < maxVisible) startPage = Math.max(1, endPage - maxVisible + 1);
+
+      if (startPage > 1) {
+        addPageBtn(1);
+        if (startPage > 2) addEllipsis();
+      }
+      for (let i = startPage; i <= endPage; i++) addPageBtn(i);
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) addEllipsis();
+        addPageBtn(totalPages);
+      }
+
+      prevPage.disabled = currentPage === 1;
+      nextPage.disabled = currentPage === totalPages;
+      pageInfo.textContent = `${currentPage} / ${totalPages} 페이지 (총 ${getFilteredData().length}건)`;
+    }
+
+    function addPageBtn(page) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `btn ${page === currentPage ? 'btn-primary' : 'btn-secondary'}`;
+      btn.style.padding = '6px 12px';
+      btn.style.fontSize = '13px';
+      btn.textContent = page;
+      btn.addEventListener('click', () => { currentPage = page; renderTable(); });
+      pageNumbers.appendChild(btn);
+    }
+
+    function addEllipsis() {
+      const span = document.createElement('span');
+      span.style.padding = '6px 8px';
+      span.style.color = 'var(--text-muted)';
+      span.textContent = '...';
+      pageNumbers.appendChild(span);
+    }
+
+    function attachRowListeners() {
+      document.querySelectorAll('.view-btn').forEach(btn => btn.addEventListener('click', e => { e.stopPropagation(); openDetailModal(btn.dataset.id); }));
+      document.querySelectorAll('.approve-btn').forEach(btn => btn.addEventListener('click', e => { e.stopPropagation(); approveSubmission(btn.dataset.id); }));
+      document.querySelectorAll('.reject-btn').forEach(btn => btn.addEventListener('click', e => { e.stopPropagation(); openRejectModal(btn.dataset.id); }));
+      document.querySelectorAll('.row-checkbox').forEach(cb => cb.addEventListener('change', e => { e.stopPropagation(); toggleSelection(cb.dataset.id, cb.checked); }));
+      document.querySelectorAll('tbody tr').forEach(tr => {
+        tr.addEventListener('click', () => { const id = tr.dataset.id; if (id) openDetailModal(id); });
+        tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const id = tr.dataset.id; if (id) openDetailModal(id); } });
+      });
+    }
+
+    function toggleSelection(id, checked) {
+      if (checked) selectedId = id; else if (selectedId === id) selectedId = null;
+      renderTable();
+    }
+
+    selectAll.addEventListener('change', () => {
+      const filtered = getFilteredData();
+      const pageData = filtered.slice((currentPage-1)*pageSize, currentPage*pageSize);
+      pageData.forEach(sub => { document.querySelector(`.row-checkbox[data-id="${sub.id}"]`)?.click(); });
+    });
+
+    // Detail Modal
+    function openDetailModal(id) {
+      const sub = mockSubmissions.find(s => s.id === id);
+      if (!sub) return;
+      selectedId = id;
+      const badge = getStatusBadge(sub.status);
+      const reporter = getReporter(sub);
+      const canModerate = sub.status === 'PENDING' || sub.status === 'REVIEW_REQUIRED';
+
+      detailModalBody.innerHTML = `
+        <div style="display: grid; gap: 16px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div class="form-group">
+              <label class="form-label">제품명</label>
+              <input type="text" class="form-input" value="${sub.productName}" readonly>
+            </div>
+            <div class="form-group">
+              <label class="form-label">브랜드</label>
+              <input type="text" class="form-input" value="${sub.brandName || ''}" readonly>
+            </div>
+            <div class="form-group">
+              <label class="form-label">시작일</label>
+              <input type="text" class="form-input" value="${sub.startDate ? formatDateTime(sub.startDate) : '미입력'}" readonly>
+            </div>
+            <div class="form-group">
+              <label class="form-label">종료일</label>
+              <input type="text" class="form-input" value="${sub.endDate ? formatDateTime(sub.endDate) : '미입력'}" readonly>
+            </div>
+            <div class="form-group">
+              <label class="form-label">구매 URL</label>
+              <input type="url" class="form-input" value="${sub.purchaseUrl || ''}" readonly>
+            </div>
+            <div class="form-group">
+              <label class="form-label">인스타그램 URL</label>
+              <input type="url" class="form-input" value="${sub.instagramUrl || ''}" readonly>
+            </div>
+            <div class="form-group">
+              <label class="form-label">이미지</label>
+              <input type="text" class="form-input" value="${sub.imageUrls?.length ? sub.imageUrls.length + '개' : '미입력'}" readonly>
+            </div>
+            <div class="form-group">
+              <label class="form-label">제보자</label>
+              <input type="text" class="form-input" value="${reporter} (${sub.isAnonymous ? '익명' : '실명'})" readonly>
+            </div>
+            <div class="form-group">
+              <label class="form-label">상태</label>
+              <input type="text" class="form-input" value="${badge.label}" readonly style="background: var(--bg);">
+            </div>
+            <div class="form-group">
+              <label class="form-label">제보일</label>
+              <input type="text" class="form-input" value="${formatDateTime(sub.createdAt)}" readonly>
+            </div>
+            ${sub.reviewedAt ? `
+            <div class="form-group">
+              <label class="form-label">검수일</label>
+              <input type="text" class="form-input" value="${formatDateTime(sub.reviewedAt)}" readonly>
+            </div>
+            ` : ''}
+            ${sub.adminMemo ? `
+            <div class="form-group">
+              <label class="form-label" style="color: var(--error);">반려 사유</label>
+              <input type="text" class="form-input" value="${sub.adminMemo}" readonly style="background: var(--error-light); color: var(--error);">
+            </div>
+            ` : ''}
+          </div>
+          <div class="form-group" style="border-top: 1px solid var(--border); padding-top: 16px;">
+            <label class="form-label">요약</label>
+            <textarea class="form-input form-textarea" readonly style="background: var(--bg);">${sub.summary || '입력된 요약이 없습니다.'}</textarea>
+          </div>
+        </div>
+      `;
+
+      detailModalFooter.innerHTML = `
+        ${canModerate ? `
+          <button type="button" class="btn btn-danger" id="detail-reject">반려</button>
+          <button type="button" class="btn btn-success" id="detail-approve">승인</button>
+        ` : ''}
+        <button type="button" class="btn btn-secondary" id="detail-close">닫기</button>
+      `;
+
+      document.getElementById('detail-close').addEventListener('click', closeDetailModal);
+      if (canModerate) {
+        document.getElementById('detail-approve').addEventListener('click', () => { closeDetailModal(); approveSubmission(id); });
+        document.getElementById('detail-reject').addEventListener('click', () => { closeDetailModal(); openRejectModal(id); });
+      }
+
+      detailModal.classList.add('visible');
+      renderTable(); // 선택 상태 반영
+    }
+
+    function closeDetailModal() {
+      detailModal.classList.remove('visible');
+      selectedId = null;
+      renderTable();
+    }
+
+    // Reject Modal
+    function openRejectModal(id) {
+      rejectTargetId = id;
+      rejectReasonInput.value = '';
+      rejectModal.classList.add('visible');
+      setTimeout(() => rejectReasonInput.focus(), 100);
+    }
+
+    function closeRejectModal() {
+      rejectModal.classList.remove('visible');
+      rejectTargetId = null;
+      rejectReasonInput.value = '';
+    }
+
+    // Actions
+    async function approveSubmission(id) {
+      const sub = mockSubmissions.find(s => s.id === id);
+      if (!sub) return;
+      showToast('승인 처리 중...', 'info');
+      await new Promise(r => setTimeout(r, 600));
+      sub.status = 'APPROVED';
+      sub.reviewedAt = new Date().toISOString();
+      sub.reviewedBy = 'admin';
+      sub.groupBuyId = 'gb-' + Date.now();
+      showToast('승인 완료: 캘린더에 반영되었습니다.', 'success');
+      renderTable();
+    }
+
+    async function confirmReject() {
+      const reason = rejectReasonInput.value.trim();
+      if (!reason) { showToast('반려 사유를 입력해주세요.', 'error'); rejectReasonInput.focus(); return; }
+      const id = rejectTargetId;
+      const sub = mockSubmissions.find(s => s.id === id);
+      if (!sub) return;
+      showToast('반려 처리 중...', 'info');
+      await new Promise(r => setTimeout(r, 500));
+      sub.status = 'REJECTED';
+      sub.adminMemo = reason;
+      sub.reviewedAt = new Date().toISOString();
+      sub.reviewedBy = 'admin';
+      sub.groupBuyId = null;
+      closeRejectModal();
+      showToast('반려 완료: 사용자 화면에 노출되지 않습니다.', 'success');
+      renderTable();
+    }
+
+    // Events
+    filterBtns.forEach(btn => btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.status;
+      currentPage = 1;
+      renderTable();
+    }));
+
+    searchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value.trim();
+      currentPage = 1;
+      renderTable();
+    });
+
+    prevPage.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderTable(); } });
+    nextPage.addEventListener('click', () => { const totalPages = Math.max(1, Math.ceil(getFilteredData().length / pageSize)); if (currentPage < totalPages) { currentPage++; renderTable(); } });
+
+    quickReasons.forEach(btn => btn.addEventListener('click', () => {
+      const current = rejectReasonInput.value;
+      rejectReasonInput.value = current ? current + '\n' + btn.dataset.reason : btn.dataset.reason;
+      rejectReasonInput.focus();
+    }));
+
+    rejectConfirm.addEventListener('click', confirmReject);
+    rejectCancel.addEventListener('click', closeRejectModal);
+    rejectModalClose.addEventListener('click', closeRejectModal);
+    rejectModal.addEventListener('click', e => { if (e.target === rejectModal) closeRejectModal(); });
+    detailModalClose.addEventListener('click', closeDetailModal);
+    detailModal.addEventListener('click', e => { if (e.target === detailModal) closeDetailModal(); });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        if (rejectModal.classList.contains('visible')) closeRejectModal();
+        else if (detailModal.classList.contains('visible')) closeDetailModal();
+      }
+    });
+
+    // Toast
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      const colors = { info: 'var(--info)', success: 'var(--success)', error: 'var(--error)', warning: 'var(--warning)' };
+      toast.className = 'toast';
+      toast.style.background = colors[type] || colors.info;
+      toast.textContent = message;
+      toastContainer.appendChild(toast);
+      setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(20px)'; toast.style.transition = 'opacity 0.3s, transform 0.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
+    }
+
+    // Init
+    renderTable();
+  </script>
+</body>
+</html>

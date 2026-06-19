@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>제보 검수 - Admin (Instagram Style)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --sidebar-bg: #ffffff;
+      --text-primary: #1a1a2e;
+      --text-secondary: #6b7280;
+      --text-muted: #9ca3af;
+      --primary: #4f63d7;
+      --primary-hover: #3d4fb0;
+      --primary-light: #eff6ff;
+      --border: #f0f0f0;
+      --border-hover: #e5e7eb;
+      --border-focus: #4f63d7;
+      --error: #ef4444;
+      --error-light: #fef2f2;
+      --success: #22c55e;
+      --success-light: #f0fdf4;
+      --warning: #f59e0b;
+      --warning-light: #fffbeb;
+      --info: #3b82f6;
+      --info-light: #eff6ff;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      --sidebar-w: 260px;
+      --header-h: 64px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text-primary); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    .layout { display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100vh; }
+    .sidebar { background: var(--sidebar-bg); border-right: 1px solid var(--border); position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; }
+    .sidebar-header { padding: 8px 12px 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+    .sidebar-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .sidebar-subtitle { font-size: 12px; color: var(--text-muted); }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--radius-md); color: var(--text-secondary); font-size: 14px; font-weight: 500; text-decoration: none; transition: background 0.15s, color 0.15s; margin-bottom: 4px; }
+    .nav-item:hover { background: var(--border-hover); color: var(--text-primary); }
+    .nav-item.active { background: var(--primary-light); color: var(--primary); }
+    .nav-item .badge { margin-left: auto; background: var(--primary-light); color: var(--primary); padding: 2px 8px; border-radius: var(--radius-full); font-size: 11px; font-weight: 600; }
+    .main { padding: 24px 32px; max-width: 1200px; }
+    .header { margin-bottom: 24px; }
+    .header-title { font-size: 28px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .header-subtitle { font-size: 15px; color: var(--text-secondary); }
+    .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+    .filter-btn { padding: 8px 14px; border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-full); font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; }
+    .filter-btn:hover { border-color: var(--border-hover); background: var(--bg); }
+    .filter-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .card-title { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+    .status-badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: var(--radius-full); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+    .status-pending { background: var(--warning-light); color: #b45309; }
+    .status-approved { background: var(--success-light); color: #166534; }
+    .status-rejected { background: var(--error-light); color: #991b1b; }
+    .status-review { background: var(--info-light); color: #1e40af; }
+    .status-duplicate { background: #f3f4f6; color: #374151; }
+    .submission-card { padding: 20px; border-bottom: 1px solid var(--border); transition: background 0.15s; }
+    .submission-card:last-child { border-bottom: none; }
+    .submission-card:hover { background: var(--bg); }
+    .submission-card.expanded { background: var(--primary-light); }
+    .submission-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+    .submission-main { flex: 1; min-width: 200px; }
+    .submission-product { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+    .submission-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--text-muted); }
+    .submission-meta span { display: flex; align-items: center; gap: 4px; }
+    .submission-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px 20px; }
+    .field-group { display: flex; flex-direction: column; gap: 4px; }
+    .field-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+    .field-value { font-size: 14px; color: var(--text-primary); font-weight: 500; }
+    .field-value.empty { color: var(--text-muted); font-style: italic; }
+    .expanded-content { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); display: none; }
+    .submission-card.expanded .expanded-content { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+    .expanded-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 16px; }
+    .expanded-field { display: flex; flex-direction: column; gap: 6px; }
+    .expanded-field.full-width { grid-column: 1 / -1; }
+    .expanded-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+    .expanded-input { padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; color: var(--text-primary); background: var(--surface); transition: border-color 0.15s, box-shadow 0.15s; }
+    .expanded-input:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--primary-light); }
+    .expanded-textarea { min-height: 80px; resize: vertical; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; padding-top: 12px; border-top: 1px solid var(--border); margin-top: 16px; }
+    .btn { padding: 10px 18px; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-success:hover:not(:disabled) { background: #16a34a; }
+    .btn-danger { background: var(--error); color: white; }
+    .btn-danger:hover:not(:disabled) { background: #dc2626; }
+    .btn-secondary { background: var(--surface); color: var(--text-primary); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--bg); border-color: var(--border-hover); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .reject-memo { margin-top: 12px; padding: 12px; background: var(--error-light); border: 1px solid #fecaca; border-radius: var(--radius-md); display: none; }
+    .reject-memo.visible { display: block; }
+    .reject-memo label { display: block; font-size: 12px; font-weight: 600; color: var(--error); margin-bottom: 6px; }
+    .reject-memo textarea { width: 100%; padding: 10px; border: 1px solid #fecaca; border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; resize: vertical; min-height: 60px; }
+    .empty-state { padding: 48px 24px; text-align: center; color: var(--text-muted); }
+    .empty-state-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+    .loading { display: flex; align-items: center; justify-content: center; padding: 48px; }
+    .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 24px; }
+    .modal-overlay.visible { display: flex; }
+    .modal { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; }
+    .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .modal-title { font-size: 18px; font-weight: 600; color: var(--text-primary); }
+    .modal-close { width: 32px; height: 32px; border: none; background: transparent; border-radius: var(--radius-sm); color: var(--text-muted); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .modal-close:hover { background: var(--bg); color: var(--text-primary); }
+    .modal-body { padding: 24px; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: fixed; left: -100%; width: var(--sidebar-w); z-index: 100; height: 100vh; box-shadow: var(--shadow-lg); transition: left 0.3s; }
+      .sidebar.open { left: 0; }
+      .main { padding: 16px; }
+      .submission-grid { grid-template-columns: 1fr; }
+      .expanded-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="관리자 메뉴">
+      <div class="sidebar-header">
+        <div class="sidebar-title">관리자</div>
+        <div class="sidebar-subtitle">GongGu Calendar</div>
+      </div>
+      <nav>
+        <a href="#" class="nav-item" data-page="dashboard">
+          <span>📊</span> 대시보드
+        </a>
+        <a href="#" class="nav-item active" data-page="submissions">
+          <span>📝</span> 제보 검수
+          <span class="badge" id="pending-count">3</span>
+        </a>
+        <a href="#" class="nav-item" data-page="influencers">
+          <span>👤</span> 인플루언서 관리
+        </a>
+        <a href="#" class="nav-item" data-page="group-buys">
+          <span>📦</span> 공구 관리
+        </a>
+        <a href="#" class="nav-item" data-page="settings">
+          <span>⚙️</span> 설정
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main" role="main">
+      <!-- Header -->
+      <header class="header">
+        <h1 class="header-title">제보 검수</h1>
+        <p class="header-subtitle">사용자 제보를 검토하고 승인/반려 처리합니다.</p>
+      </header>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar" role="group" aria-label="상태 필터">
+        <button class="filter-btn active" data-status="ALL" type="button">전체</button>
+        <button class="filter-btn" data-status="PENDING" type="button">대기 중</button>
+        <button class="filter-btn" data-status="REVIEW_REQUIRED" type="button">검수 필요</button>
+        <button class="filter-btn" data-status="APPROVED" type="button">승인됨</button>
+        <button class="filter-btn" data-status="REJECTED" type="button">반려됨</button>
+        <button class="filter-btn" data-status="DUPLICATE" type="button">중복</button>
+      </div>
+
+      <!-- Submissions List -->
+      <div class="card" id="submissions-container">
+        <div class="card-header">
+          <span class="card-title">제보 목록</span>
+          <span style="font-size: 13px; color: var(--text-muted);">총 <strong id="total-count">6</strong>건</span>
+        </div>
+        <div id="submissions-list">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="card empty-state" id="empty-state" style="display: none;">
+        <div class="empty-state-icon">📭</div>
+        <p style="font-size: 15px; font-weight: 500; margin-bottom: 4px;">제보가 없습니다.</p>
+        <p style="font-size: 13px;">선택한 필터에 해당하는 제보가 없어요.</p>
+      </div>
+    </main>
+
+    <!-- Modal: Reject Reason -->
+    <div class="modal-overlay" id="reject-modal" role="dialog" aria-modal="true" aria-labelledby="reject-modal-title">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 class="modal-title" id="reject-modal-title">제보 반려</h2>
+          <button class="modal-close" id="reject-modal-close" aria-label="닫기">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;">반려 사유를 입력해주세요. 작성자에게 알림이 전송됩니다.</p>
+          <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">빠른 선택</label>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-secondary" style="font-size: 12px; padding: 8px 12px;" data-reason="공동구매가 아님">공동구매가 아님</button>
+              <button type="button" class="btn btn-secondary" style="font-size: 12px; padding: 8px 12px;" data-reason="정보 부족">정보 부족</button>
+              <button type="button" class="btn btn-secondary" style="font-size: 12px; padding: 8px 12px;" data-reason="중복 제보">중복 제보</button>
+              <button type="button" class="btn btn-secondary" style="font-size: 12px; padding: 8px 12px;" data-reason="허위/스팸">허위/스팸</button>
+            </div>
+          </div>
+          <div>
+            <label for="reject-reason-input" style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">상세 사유 <span style="color: var(--error);">*</span></label>
+            <textarea id="reject-reason-input" class="expanded-input expanded-textarea" rows="4" placeholder="구체적인 반려 사유를 적어주세요..." required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="reject-cancel">취소</button>
+          <button type="button" class="btn btn-danger" id="reject-confirm">반려 확정</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" style="position: fixed; bottom: 24px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 8px;"></div>
+  </div>
+
+  <script>
+    // Mock Data
+    const mockSubmissions = [
+      {
+        id: "sub-001",
+        productName: "비건 선크림 공구",
+        brandName: "Sample Beauty",
+        startDate: "2026-07-01T00:00:00+09:00",
+        endDate: "2026-07-15T23:59:59+09:00",
+        purchaseUrl: "https://shop.example.com/sunscreen",
+        discountInfo: "20% 할인 + 무료배송",
+        instagramUrl: "https://www.instagram.com/p/ABC123/",
+        imageUrls: ["https://cdn.example.com/img1.jpg", "https://cdn.example.com/img2.jpg"],
+        summary: "여름철 필수템 비건 선크림 공구입니다. SPF50+ PA++++로 강력 차단.",
+        reporterName: null,
+        isAnonymous: true,
+        status: "APPROVED",
+        adminMemo: null,
+        reviewedAt: "2026-06-15T10:30:00+09:00",
+        reviewedBy: "admin",
+        createdAt: "2026-06-14T15:22:00+09:00",
+        groupBuyId: "gb-001"
+      },
+      {
+        id: "sub-002",
+        productName: "E2E 테스트 공구 - 스프링 재킷",
+        brandName: "Spring Fashion",
+        startDate: "2026-06-20T00:00:00+09:00",
+        endDate: "2026-06-30T23:59:59+09:00",
+        purchaseUrl: "https://shop.example.com/jacket",
+        discountInfo: "30% 할인",
+        instagramUrl: "https://www.instagram.com/p/DEF456/",
+        imageUrls: ["https://cdn.example.com/img3.jpg"],
+        summary: "봄/가을 간절기용 경량 재킷 공구",
+        reporterName: "김제보",
+        isAnonymous: false,
+        status: "APPROVED",
+        adminMemo: null,
+        reviewedAt: "2026-06-15T09:15:00+09:00",
+        reviewedBy: "admin",
+        createdAt: "2026-06-14T14:10:00+09:00",
+        groupBuyId: "gb-002"
+      },
+      {
+        id: "sub-003",
+        productName: "테스트 공구상품",
+        brandName: "Test Brand",
+        startDate: "2026-07-01T00:00:00+09:00",
+        endDate: "2026-07-10T23:59:59+09:00",
+        purchaseUrl: "https://test.example.com/product",
+        discountInfo: "10% 할인",
+        instagramUrl: "https://www.instagram.com/p/GHI789/",
+        imageUrls: ["https://cdn.example.com/img4.jpg"],
+        summary: "테스트용 공구 상품입니다.",
+        reporterName: null,
+        isAnonymous: true,
+        status: "PENDING",
+        adminMemo: null,
+        reviewedAt: null,
+        reviewedBy: null,
+        createdAt: "2026-06-15T08:00:00+09:00",
+        groupBuyId: null
+      },
+      {
+        id: "sub-004",
+        productName: "E2E 테스트 공구 - 스프링 재킷 2",
+        brandName: "Spring Fashion",
+        startDate: "2026-06-25T00:00:00+09:00",
+        endDate: "2026-07-05T23:59:59+09:00",
+        purchaseUrl: "https://shop.example.com/jacket2",
+        discountInfo: "25% 할인",
+        instagramUrl: "https://www.instagram.com/p/JKL012/",
+        imageUrls: ["https://cdn.example.com/img5.jpg"],
+        summary: "업데이트된 스프링 재킷 공구",
+        reporterName: "테스터",
+        isAnonymous: false,
+        status: "APPROVED",
+        adminMemo: null,
+        reviewedAt: "2026-06-15T11:00:00+09:00",
+        reviewedBy: "admin",
+        createdAt: "2026-06-15T10:30:00+09:00",
+        groupBuyId: "gb-003"
+      },
+      {
+        id: "sub-005",
+        productName: "테스트 반려용 $STAMP",
+        brandName: "Stamp Co",
+        startDate: "2026-06-01T00:00:00+09:00",
+        endDate: "2026-06-10T23:59:59+09:00",
+        purchaseUrl: "https://stamp.example.com",
+        discountInfo: "50% 할인",
+        instagramUrl: "https://www.instagram.com/p/MNO345/",
+        imageUrls: [],
+        summary: "스탬프 공구 테스트",
+        reporterName: "스팸봇",
+        isAnonymous: false,
+        status: "REJECTED",
+        adminMemo: "공동구매가 아님: 단순 제품 홍보 게시물",
+        reviewedAt: "2026-06-14T16:00:00+09:00",
+        reviewedBy: "admin",
+        createdAt: "2026-06-14T15:00:00+09:00",
+        groupBuyId: null
+      },
+      {
+        id: "sub-006",
+        productName: "테스트 승인용 $STAMP",
+        brandName: "Stamp Co",
+        startDate: "2026-06-15T00:00:00+09:00",
+        endDate: "2026-06-20T23:59:59+09:00",
+        purchaseUrl: "https://stamp.example.com/approved",
+        discountInfo: "30% 할인",
+        instagramUrl: "https://www.instagram.com/p/PQR678/",
+        imageUrls: ["https://cdn.example.com/img6.jpg"],
+        summary: "승인 테스트용 스탬프 공구",
+        reporterName: null,
+        isAnonymous: true,
+        status: "APPROVED",
+        adminMemo: null,
+        reviewedAt: "2026-06-15T12:00:00+09:00",
+        reviewedBy: "admin",
+        createdAt: "2026-06-15T11:30:00+09:00",
+        groupBuyId: "gb-004"
+      }
+    ];
+
+    // State
+    let currentFilter = "ALL";
+    let expandedId = null;
+    let editingId = null;
+    let rejectTargetId = null;
+    let reviewFormData = {};
+
+    // DOM Elements
+    const submissionsList = document.getElementById('submissions-list');
+    const emptyState = document.getElementById('empty-state');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const totalCount = document.getElementById('total-count');
+    const pendingCount = document.getElementById('pending-count');
+    const rejectModal = document.getElementById('reject-modal');
+    const rejectReasonInput = document.getElementById('reject-reason-input');
+    const rejectConfirm = document.getElementById('reject-confirm');
+    const rejectCancel = document.getElementById('reject-cancel');
+    const rejectModalClose = document.getElementById('reject-modal-close');
+    const toastContainer = document.getElementById('toast-container');
+    const quickReasonBtns = document.querySelectorAll('[data-reason]');
+
+    // Utility
+    function formatDate(dateStr) {
+      if (!dateStr) return '미입력';
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+    function formatRelative(dateStr) {
+      if (!dateStr) return '';
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor(diff / 3600000);
+      const mins = Math.floor(diff / 60000);
+      if (days > 0) return `${days}일 전`;
+      if (hours > 0) return `${hours}시간 전`;
+      if (mins > 0) return `${mins}분 전`;
+      return '방금 전';
+    }
+    function getStatusBadgeClass(status) {
+      const map = { PENDING: 'status-pending', APPROVED: 'status-approved', REJECTED: 'status-rejected', REVIEW_REQUIRED: 'status-review', DUPLICATE: 'status-duplicate' };
+      const labels = { PENDING: '대기 중', APPROVED: '승인됨', REJECTED: '반려됨', REVIEW_REQUIRED: '검수 필요', DUPLICATE: '중복' };
+      return { class: map[status] || '', label: labels[status] || status };
+    }
+    function getReporterDisplay(sub) {
+      if (sub.isAnonymous) return '익명 제보자';
+      return sub.reporterName || '제보자';
+    }
+
+    // Toast
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      const colors = { info: 'var(--info)', success: 'var(--success)', error: 'var(--error)', warning: 'var(--warning)' };
+      toast.style.cssText = `background: ${colors[type] || colors.info}; color: white; padding: 12px 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-lg); font-size: 14px; max-width: 320px; animation: slideIn 0.3s ease;`;
+      toast.textContent = message;
+      toastContainer.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Render
+    function getFilteredSubmissions() {
+      if (currentFilter === "ALL") return mockSubmissions;
+      return mockSubmissions.filter(s => s.status === currentFilter);
+    }
+
+    function renderSubmissions() {
+      const filtered = getFilteredSubmissions();
+      totalCount.textContent = filtered.length;
+      pendingCount.textContent = mockSubmissions.filter(s => s.status === 'PENDING' || s.status === 'REVIEW_REQUIRED').length;
+
+      if (filtered.length === 0) {
+        submissionsList.innerHTML = '';
+        emptyState.style.display = 'block';
+        return;
+      }
+      emptyState.style.display = 'none';
+      submissionsList.innerHTML = filtered.map(sub => renderCard(sub)).join('');
+      attachCardListeners();
+    }
+
+    function renderCard(sub) {
+      const isExpanded = expandedId === sub.id;
+      const { class: badgeClass, label: badgeLabel } = getStatusBadgeClass(sub.status);
+      const canModerate = sub.status === 'PENDING' || sub.status === 'REVIEW_REQUIRED';
+      const reporter = getReporterDisplay(sub);
+
+      return `
+        <article class="submission-card ${isExpanded ? 'expanded' : ''}" data-id="${sub.id}" data-status="${sub.status}">
+          <div class="submission-header">
+            <div class="submission-main">
+              <div class="submission-product">${sub.productName}</div>
+              <div class="submission-meta">
+                <span>${reporter} · ${sub.isAnonymous ? '익명' : '실명'}</span>
+                <span>${formatRelative(sub.createdAt)}</span>
+                <span class="status-badge ${badgeClass}">${badgeLabel}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="submission-grid">
+            <div class="field-group">
+              <span class="field-label">브랜드</span>
+              <span class="field-value ${!sub.brandName ? 'empty' : ''}">${sub.brandName || '미입력'}</span>
+            </div>
+            <div class="field-group">
+              <span class="field-label">시작일</span>
+              <span class="field-value ${!sub.startDate ? 'empty' : ''}">${sub.startDate ? formatDate(sub.startDate) : '미입력'}</span>
+            </div>
+            <div class="field-group">
+              <span class="field-label">종료일</span>
+              <span class="field-value ${!sub.endDate ? 'empty' : ''}">${sub.endDate ? formatDate(sub.endDate) : '미입력'}</span>
+            </div>
+            <div class="field-group">
+              <span class="field-label">구매 링크</span>
+              <span class="field-value ${!sub.purchaseUrl ? 'empty' : ''}">${sub.purchaseUrl ? '<a href="'+sub.purchaseUrl+'" target="_blank" style="color:var(--primary);text-decoration:none;">링크 열기</a>' : '미입력'}</span>
+            </div>
+            <div class="field-group">
+              <span class="field-label">할인/혜택</span>
+              <span class="field-value ${!sub.discountInfo ? 'empty' : ''}">${sub.discountInfo || '미입력'}</span>
+            </div>
+            <div class="field-group">
+              <span class="field-label">인스타 URL</span>
+              <span class="field-value ${!sub.instagramUrl ? 'empty' : ''}">${sub.instagramUrl ? '<a href="'+sub.instagramUrl+'" target="_blank" style="color:var(--primary);text-decoration:none;">게시물 보기</a>' : '미입력'}</span>
+            </div>
+            <div class="field-group">
+              <span class="field-label">이미지</span>
+              <span class="field-value ${!sub.imageUrls?.length ? 'empty' : ''}">${sub.imageUrls?.length ? sub.imageUrls.length + '개' : '미입력'}</span>
+            </div>
+          </div>
+
+          <div class="expanded-content">
+            <div class="expanded-grid">
+              <div class="expanded-field full-width">
+                <label class="expanded-label" for="summary-${sub.id}">요약</label>
+                <textarea id="summary-${sub.id}" class="expanded-input expanded-textarea" rows="3" placeholder="승인 시 표시할 요약을 입력하세요">${reviewFormData[sub.id]?.summary || sub.summary || ''}</textarea>
+              </div>
+              <div class="expanded-field">
+                <label class="expanded-label" for="productName-${sub.id}">제품명</label>
+                <input type="text" id="productName-${sub.id}" class="expanded-input" value="${reviewFormData[sub.id]?.productName || sub.productName || ''}" placeholder="제품명">
+              </div>
+              <div class="expanded-field">
+                <label class="expanded-label" for="brandName-${sub.id}">브랜드</label>
+                <input type="text" id="brandName-${sub.id}" class="expanded-input" value="${reviewFormData[sub.id]?.brandName || sub.brandName || ''}" placeholder="브랜드">
+              </div>
+              <div class="expanded-field">
+                <label class="expanded-label" for="startDate-${sub.id}">시작일</label>
+                <input type="datetime-local" id="startDate-${sub.id}" class="expanded-input" value="${(reviewFormData[sub.id]?.startDate || sub.startDate || '').replace('Z','').slice(0,16)}">
+              </div>
+              <div class="expanded-field">
+                <label class="expanded-label" for="endDate-${sub.id}">종료일</label>
+                <input type="datetime-local" id="endDate-${sub.id}" class="expanded-input" value="${(reviewFormData[sub.id]?.endDate || sub.endDate || '').replace('Z','').slice(0,16)}">
+              </div>
+              <div class="expanded-field full-width">
+                <label class="expanded-label" for="purchaseUrl-${sub.id}">구매 URL</label>
+                <input type="url" id="purchaseUrl-${sub.id}" class="expanded-input" value="${reviewFormData[sub.id]?.purchaseUrl || sub.purchaseUrl || ''}" placeholder="구매 URL">
+              </div>
+              <div class="expanded-field full-width">
+                <label class="expanded-label" for="discountInfo-${sub.id}">할인/혜택</label>
+                <input type="text" id="discountInfo-${sub.id}" class="expanded-input" value="${reviewFormData[sub.id]?.discountInfo || sub.discountInfo || ''}" placeholder="할인/혜택">
+              </div>
+            </div>
+
+            <div class="actions">
+              ${canModerate ? `
+                <button type="button" class="btn btn-success approve-btn" data-id="${sub.id}" ${isExpanded ? '' : 'style="display:none;"'}>승인</button>
+                <button type="button" class="btn btn-danger reject-btn" data-id="${sub.id}" ${isExpanded ? '' : 'style="display:none;"'}>반려</button>
+                <button type="button" class="btn btn-primary save-btn" data-id="${sub.id}" ${isExpanded ? '' : 'style="display:none;"'}>수정사항 저장</button>
+              ` : ''}
+              ${sub.adminMemo ? `
+                <div class="reject-memo visible" style="flex:1; margin-top:0;">
+                  <strong style="color:var(--error);">반려 사유:</strong> ${sub.adminMemo}
+                </div>
+              ` : ''}
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-secondary toggle-btn" data-id="${sub.id}" style="width:100%; margin-top:12px; padding:8px; font-size:13px;">
+            ${isExpanded ? '접기' : '상세 보기'}
+          </button>
+        </article>
+      `;
+    }
+
+    function attachCardListeners() {
+      document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => toggleCard(btn.dataset.id));
+      });
+      document.querySelectorAll('.approve-btn').forEach(btn => {
+        btn.addEventListener('click', () => approveSubmission(btn.dataset.id));
+      });
+      document.querySelectorAll('.reject-btn').forEach(btn => {
+        btn.addEventListener('click', () => openRejectModal(btn.dataset.id));
+      });
+      document.querySelectorAll('.save-btn').forEach(btn => {
+        btn.addEventListener('click', () => saveReview(btn.dataset.id));
+      });
+      // 실시간 폼 데이터 수집
+      document.querySelectorAll('.expanded-input, .expanded-textarea').forEach(input => {
+        input.addEventListener('input', (e) => {
+          const card = e.target.closest('.submission-card');
+          if (!card) return;
+          const id = card.dataset.id;
+          const field = e.target.id.split('-')[0];
+          if (!reviewFormData[id]) reviewFormData[id] = {};
+          reviewFormData[id][field] = e.target.value;
+        });
+      });
+    }
+
+    function toggleCard(id) {
+      expandedId = expandedId === id ? null : id;
+      renderSubmissions();
+    }
+
+    function collectReviewData(id) {
+      const data = reviewFormData[id] || {};
+      // 빈 값은 기존 값 유지
+      const sub = mockSubmissions.find(s => s.id === id);
+      return {
+        productName: data.productName || sub.productName,
+        brandName: data.brandName || sub.brandName,
+        startDate: data.startDate || sub.startDate,
+        endDate: data.endDate || sub.endDate,
+        purchaseUrl: data.purchaseUrl || sub.purchaseUrl,
+        discountInfo: data.discountInfo || sub.discountInfo,
+        summary: data.summary || sub.summary
+      };
+    }
+
+    async function approveSubmission(id) {
+      const sub = mockSubmissions.find(s => s.id === id);
+      if (!sub) return;
+
+      const reviewData = collectReviewData(id);
+      if (!reviewData.productName.trim() || (!reviewData.startDate && !reviewData.endDate)) {
+        showToast('승인 전 제품명과 시작/종료일 중 최소 1개 날짜가 필요합니다.', 'error');
+        return;
+      }
+
+      showToast('승인 처리 중...', 'info');
+      // Simulate API
+      await new Promise(r => setTimeout(r, 800));
+
+      // Update mock
+      sub.status = 'APPROVED';
+      sub.reviewedAt = new Date().toISOString();
+      sub.reviewedBy = 'admin';
+      sub.groupBuyId = 'gb-' + Date.now();
+      Object.assign(sub, reviewData);
+      delete reviewFormData[id];
+      expandedId = null;
+
+      showToast('승인 완료: 캘린더에 반영되었습니다.', 'success');
+      renderSubmissions();
+    }
+
+    function openRejectModal(id) {
+      rejectTargetId = id;
+      rejectReasonInput.value = '';
+      rejectModal.classList.add('visible');
+      setTimeout(() => rejectReasonInput.focus(), 100);
+    }
+
+    function closeRejectModal() {
+      rejectModal.classList.remove('visible');
+      rejectTargetId = null;
+      rejectReasonInput.value = '';
+    }
+
+    async function confirmReject() {
+      const reason = rejectReasonInput.value.trim();
+      if (!reason) {
+        showToast('반려 사유는 필수입니다.', 'error');
+        rejectReasonInput.focus();
+        return;
+      }
+
+      const id = rejectTargetId;
+      const sub = mockSubmissions.find(s => s.id === id);
+      if (!sub) return;
+
+      showToast('반려 처리 중...', 'info');
+      await new Promise(r => setTimeout(r, 600));
+
+      sub.status = 'REJECTED';
+      sub.adminMemo = reason;
+      sub.reviewedAt = new Date().toISOString();
+      sub.reviewedBy = 'admin';
+      sub.groupBuyId = null;
+
+      closeRejectModal();
+      showToast('반려 완료: 사용자 화면에 노출되지 않습니다.', 'success');
+      renderSubmissions();
+    }
+
+    async function saveReview(id) {
+      const sub = mockSubmissions.find(s => s.id === id);
+      if (!sub) return;
+
+      const reviewData = collectReviewData(id);
+      showToast('수정사항 저장 중...', 'info');
+      await new Promise(r => setTimeout(r, 500));
+
+      Object.assign(sub, reviewData);
+      delete reviewFormData[id];
+      expandedId = null;
+
+      showToast('수정사항이 저장되었습니다.', 'success');
+      renderSubmissions();
+    }
+
+    // Filter
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.status;
+        expandedId = null;
+        renderSubmissions();
+      });
+    });
+
+    // Quick reasons
+    quickReasonBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const current = rejectReasonInput.value;
+        const reason = btn.dataset.reason;
+        rejectReasonInput.value = current ? current + '\n' + reason : reason;
+        rejectReasonInput.focus();
+      });
+    });
+
+    // Modal events
+    rejectConfirm.addEventListener('click', confirmReject);
+    rejectCancel.addEventListener('click', closeRejectModal);
+    rejectModalClose.addEventListener('click', closeRejectModal);
+    rejectModal.addEventListener('click', (e) => {
+      if (e.target === rejectModal) closeRejectModal();
+    });
+
+    // Keyboard: ESC to close modal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && rejectModal.classList.contains('visible')) {
+        closeRejectModal();
+      }
+    });
+
+    // Initialize
+    renderSubmissions();
+
+    // Sidebar toggle for mobile (demo)
+    if (window.innerWidth < 900) {
+      const sidebar = document.getElementById('sidebar');
+      document.addEventListener('click', (e) => {
+        if (!sidebar.contains(e.target) && !e.target.closest('.nav-item')) {
+          sidebar.classList.remove('open');
+        }
+      });
+    }
+  </script>
+  <style>
+    @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes slideOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(20px); } }
+  </style>
+</body>
+</html>

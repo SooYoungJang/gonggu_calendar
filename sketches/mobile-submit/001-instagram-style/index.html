@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>공구 제보하기 - Instagram 스타일</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --text-primary: #1a1a2e;
+      --text-secondary: #6b7280;
+      --text-muted: #9ca3af;
+      --primary: #4f63d7;
+      --primary-hover: #3d4fb0;
+      --primary-light: #eff6ff;
+      --border: #f0f0f0;
+      --border-focus: #4f63d7;
+      --error: #ef4444;
+      --error-light: #fef2f2;
+      --success: #22c55e;
+      --success-light: #f0fdf4;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text-primary); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    .safe-area { min-height: 100vh; padding-bottom: env(safe-area-inset-bottom); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+    .input { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 15px; font-family: inherit; color: var(--text-primary); background: var(--surface); transition: border-color 0.15s, box-shadow 0.15s; }
+    .input:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--primary-light); }
+    .input::placeholder { color: var(--text-muted); }
+    .input.error { border-color: var(--error); }
+    .input.error:focus { box-shadow: 0 0 0 3px var(--error-light); }
+    .label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+    .label-required::after { content: " *"; color: var(--error); }
+    .btn-primary { width: 100%; padding: 14px 20px; background: var(--primary); color: white; font-size: 16px; font-weight: 600; border: none; border-radius: var(--radius-md); cursor: pointer; transition: background 0.15s; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary { width: 100%; padding: 14px 20px; background: #f3f4f6; color: #374151; font-size: 16px; font-weight: 600; border: none; border-radius: var(--radius-md); cursor: pointer; transition: background 0.15s; }
+    .btn-secondary:hover { background: #e5e7eb; }
+    .toast { position: fixed; bottom: 24px; left: 16px; right: 16px; max-width: 400px; margin: 0 auto; padding: 14px 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-lg); font-size: 14px; z-index: 1000; animation: slideUp 0.3s ease; }
+    .toast.success { background: var(--success); color: white; }
+    .toast.error { background: var(--error); color: white; }
+    .toast.info { background: var(--text-primary); color: white; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .helper-text { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .helper-text.error { color: var(--error); }
+    .section-gap { margin-bottom: 20px; }
+    .field-gap { margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <div class="safe-area" style="max-width: 430px; margin: 0 auto; padding: 16px;">
+    <!-- Header -->
+    <header style="margin-bottom: 24px;">
+      <p style="font-size: 12px; font-weight: 600; color: var(--primary); letter-spacing: 0.5px; margin-bottom: 4px;">User Submission</p>
+      <h1 style="font-size: 28px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">공구 제보하기</h1>
+      <p style="font-size: 15px; color: var(--text-secondary); line-height: 1.5;">발견한 공동구매 정보를 알려주세요. 필수 제품명만 있어도 접수되며, 운영자 승인 후 캘린더에 반영됩니다.</p>
+    </header>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Form Card -->
+    <form id="submit-form" class="card" style="padding: 20px;">
+      <div class="section-gap">
+        <label class="label label-required" for="productName">제품명</label>
+        <input type="text" id="productName" class="input" placeholder="예: 비건 선크림 공구" required aria-describedby="productName-hint">
+        <p id="productName-hint" class="helper-text">공구 제품명을 정확히 입력해주세요 (필수, 2자 이상)</p>
+      </div>
+
+      <div class="section-gap">
+        <label class="label" for="brandName">브랜드</label>
+        <input type="text" id="brandName" class="input" placeholder="예: Sample Beauty" aria-describedby="brandName-hint">
+        <p id="brandName-hint" class="helper-text">브랜드명을 아신다면 입력해주세요 (선택)</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="field-gap">
+          <label class="label" for="startDate">시작일</label>
+          <input type="date" id="startDate" class="input" aria-describedby="startDate-hint">
+          <p id="startDate-hint" class="helper-text">공구 시작일 (선택)</p>
+        </div>
+        <div class="field-gap">
+          <label class="label" for="endDate">종료일</label>
+          <input type="date" id="endDate" class="input" aria-describedby="endDate-hint">
+          <p id="endDate-hint" class="helper-text">공구 종료일 (선택)</p>
+        </div>
+      </div>
+
+      <div class="section-gap">
+        <label class="label label-required" for="purchaseUrl">구매 링크</label>
+        <input type="url" id="purchaseUrl" class="input" placeholder="https://example.com/purchase" aria-describedby="purchaseUrl-hint">
+        <p id="purchaseUrl-hint" class="helper-text">구매 가능한 링크를 입력해주세요 (필수, URL 형식)</p>
+      </div>
+
+      <div class="section-gap">
+        <label class="label" for="discountInfo">할인/혜택 정보</label>
+        <input type="text" id="discountInfo" class="input" placeholder="예: 20% 할인, 1+1 증정" aria-describedby="discountInfo-hint">
+        <p id="discountInfo-hint" class="helper-text">할인율, 증정품 등 혜택 정보 (선택)</p>
+      </div>
+
+      <div class="section-gap">
+        <label class="label label-required" for="instagramUrl">인스타그램 URL</label>
+        <input type="url" id="instagramUrl" class="input" placeholder="https://www.instagram.com/p/ABC123/" aria-describedby="instagramUrl-hint">
+        <p id="instagramUrl-hint" class="helper-text">원본 인스타그램 게시물 링크 (필수, URL 형식)</p>
+      </div>
+
+      <div class="section-gap">
+        <label class="label label-required" for="imageUrl">이미지 URL</label>
+        <input type="url" id="imageUrl" class="input" placeholder="https://example.com/image.jpg" aria-describedby="imageUrl-hint">
+        <p id="imageUrl-hint" class="helper-text">제품/게시물 대표 이미지 링크 (필수, URL 형식)</p>
+      </div>
+
+      <div class="section-gap">
+        <label class="label" for="summary">요약</label>
+        <textarea id="summary" class="input" rows="4" placeholder="공구에 대한 간단한 설명이나 특징을 적어주세요" aria-describedby="summary-hint"></textarea>
+        <p id="summary-hint" class="helper-text">운영자가 승인 시 참고할 요약 정보 (선택, 최대 500자)</p>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 8px;">
+        <button type="submit" class="btn-primary" style="flex: 1;" id="submit-btn">
+          <span id="submit-btn-text">제보 제출</span>
+        </button>
+        <button type="button" class="btn-secondary" style="flex: 1;" id="cancel-btn">취소</button>
+      </div>
+    </form>
+
+    <p style="margin-top: 16px; text-align: center; font-size: 12px; color: var(--text-muted);">제보하신 내용은 운영자 검수 후 캘린더에 반영됩니다.</p>
+  </div>
+
+  <script>
+    // Toast 시스템
+    function showToast(message, type = 'info', duration = 3000) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-20px)';
+        toast.style.transition = 'opacity 0.3s, transform 0.3s';
+        setTimeout(() => toast.remove(), 300);
+      }, duration);
+    }
+
+    // URL 유효성 검사
+    function isValidUrl(string) {
+      if (!string.trim()) return true; // 선택 필드는 빈 값 허용
+      try {
+        const url = new URL(string.trim());
+        return url.protocol === 'http:' || url.protocol === 'https:';
+      } catch { return false; }
+    }
+
+    // 날짜 검증
+    function validateDates(start, end) {
+      if (start && end) {
+        const s = new Date(start);
+        const e = new Date(end);
+        if (isNaN(s.getTime()) || isNaN(e.getTime())) return '날짜 형식이 올바르지 않습니다.';
+        if (s > e) return '시작일은 종료일보다 늦을 수 없습니다.';
+      }
+      return null;
+    }
+
+    // 필드 에러 상태 관리
+    function setFieldError(inputId, message) {
+      const input = document.getElementById(inputId);
+      const hint = document.getElementById(inputId + '-hint');
+      input.classList.add('error');
+      if (hint && message) {
+        hint.textContent = message;
+        hint.classList.add('error');
+      }
+    }
+
+    function clearFieldError(inputId) {
+      const input = document.getElementById(inputId);
+      const hint = document.getElementById(inputId + '-hint');
+      input.classList.remove('error');
+      if (hint) {
+        hint.classList.remove('error');
+        // 원래 힌트 텍스트 복원
+        const originalHints = {
+          'productName-hint': '공구 제품명을 정확히 입력해주세요 (필수, 2자 이상)',
+          'brandName-hint': '브랜드명을 아신다면 입력해주세요 (선택)',
+          'startDate-hint': '공구 시작일 (선택)',
+          'endDate-hint': '공구 종료일 (선택)',
+          'purchaseUrl-hint': '구매 가능한 링크를 입력해주세요 (필수, URL 형식)',
+          'discountInfo-hint': '할인율, 증정품 등 혜택 정보 (선택)',
+          'instagramUrl-hint': '원본 인스타그램 게시물 링크 (필수, URL 형식)',
+          'imageUrl-hint': '제품/게시물 대표 이미지 링크 (필수, URL 형식)',
+          'summary-hint': '운영자가 승인 시 참고할 요약 정보 (선택, 최대 500자)'
+        };
+        if (originalHints[inputId + '-hint']) {
+          hint.textContent = originalHints[inputId + '-hint'];
+        }
+      }
+    }
+
+    // 실시간 유효성 검사
+    const fields = ['productName', 'brandName', 'startDate', 'endDate', 'purchaseUrl', 'discountInfo', 'instagramUrl', 'imageUrl', 'summary'];
+    fields.forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('input', () => clearFieldError(id));
+      el.addEventListener('blur', () => validateField(id));
+    });
+
+    function validateField(id) {
+      const value = document.getElementById(id).value.trim();
+      switch (id) {
+        case 'productName':
+          if (value.length < 2) { setFieldError(id, '제품명은 2자 이상 필수입니다.'); return false; }
+          break;
+        case 'purchaseUrl':
+          if (value && !isValidUrl(value)) { setFieldError(id, '올바른 URL 형식(http:// 또는 https://)을 입력해주세요.'); return false; }
+          break;
+        case 'instagramUrl':
+          if (!isValidUrl(value)) { setFieldError(id, '인스타그램 URL은 필수이며 올바른 형식이어야 합니다.'); return false; }
+          break;
+        case 'imageUrl':
+          if (!isValidUrl(value)) { setFieldError(id, '이미지 URL은 필수이며 올바른 형식이어야 합니다.'); return false; }
+          break;
+        case 'startDate':
+        case 'endDate':
+          const dateError = validateDates(document.getElementById('startDate').value, document.getElementById('endDate').value);
+          if (dateError) { setFieldError('startDate', dateError); setFieldError('endDate', dateError); return false; }
+          break;
+      }
+      return true;
+    }
+
+    // 폼 제출
+    const form = document.getElementById('submit-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const submitBtnText = document.getElementById('submit-btn-text');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // 전체 유효성 검사
+      let isValid = true;
+      fields.forEach(id => { if (!validateField(id)) isValid = false; });
+
+      if (!isValid) {
+        showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
+
+      // 제출 상태
+      submitBtn.disabled = true;
+      submitBtnText.textContent = '제출 중...';
+      showToast('제보를 접수하는 중입니다...', 'info', 10000);
+
+      // 폼 데이터 수집
+      const formData = {
+        productName: document.getElementById('productName').value.trim(),
+        brandName: document.getElementById('brandName').value.trim() || undefined,
+        startDate: document.getElementById('startDate').value || undefined,
+        endDate: document.getElementById('endDate').value || undefined,
+        purchaseUrl: document.getElementById('purchaseUrl').value.trim() || undefined,
+        discountInfo: document.getElementById('discountInfo').value.trim() || undefined,
+        instagramUrl: document.getElementById('instagramUrl').value.trim(),
+        imageUrl: document.getElementById('imageUrl').value.trim(),
+        summary: document.getElementById('summary').value.trim() || undefined,
+        isAnonymous: true
+      };
+
+      try {
+        const response = await fetch('/api/submissions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({ message: '제보 접수에 실패했습니다.' }));
+          throw new Error(error.message || `서버 오류: ${response.status}`);
+        }
+
+        showToast('제보가 접수되었습니다. 운영자 승인 후 캘린더에 반영됩니다.', 'success');
+        form.reset();
+        fields.forEach(id => clearFieldError(id));
+
+        // 성공 후 홈으로 이동 (데모용: 2초 후 토스트만)
+        setTimeout(() => {
+          showToast('홈 화면으로 이동합니다.', 'info');
+        }, 1500);
+
+      } catch (error) {
+        showToast(error.message, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtnText.textContent = '제보 제출';
+      }
+    });
+
+    // 취소 버튼
+    document.getElementById('cancel-btn').addEventListener('click', () => {
+      if (confirm('작성 중인 내용이 사라집니다. 정말 취소하시겠습니까?')) {
+        form.reset();
+        fields.forEach(id => clearFieldError(id));
+        showToast('작성이 취소되었습니다.', 'info');
+      }
+    });
+
+    // 키보드 접근성: Enter 키로 제출 (textarea 제외)
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && document.activeElement === input) {
+          const index = Array.from(document.querySelectorAll('input')).indexOf(input);
+          const inputs = document.querySelectorAll('input');
+          if (index < inputs.length - 1) {
+            inputs[index + 1].focus();
+            e.preventDefault();
+          } else {
+            form.dispatchEvent(new Event('submit'));
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>

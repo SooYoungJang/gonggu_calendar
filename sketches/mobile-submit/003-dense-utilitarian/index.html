@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>공구 제보하기 - Dense Utilitarian</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f6f6f7;
+      --text-primary: #161616;
+      --text-secondary: #525252;
+      --text-muted: #a3a3a3;
+      --accent: #0066cc;
+      --accent-hover: #0052a3;
+      --accent-light: #e5f0fb;
+      --border: #d4d4d4;
+      --border-focus: #0066cc;
+      --error: #cc0000;
+      --error-light: #fff0f0;
+      --success: #007800;
+      --success-light: #f0fff0;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 2px 6px rgba(0,0,0,0.06);
+      --radius: 6px;
+      --radius-sm: 4px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text-primary); line-height: 1.5; -webkit-font-smoothing: antialiased; font-size: 14px; }
+    .safe-area { min-height: 100vh; padding-bottom: env(safe-area-inset-bottom); }
+    .input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; font-family: inherit; color: var(--text-primary); background: var(--surface); transition: border-color 0.1s; }
+    .input:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 2px var(--accent-light); }
+    .input::placeholder { color: var(--text-muted); }
+    .input.error { border-color: var(--error); }
+    .input.error:focus { box-shadow: 0 0 0 2px var(--error-light); }
+    .label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .label-required::after { content: " *"; color: var(--error); }
+    .btn-primary { width: 100%; padding: 12px 16px; background: var(--accent); color: white; font-size: 14px; font-weight: 600; border: none; border-radius: var(--radius); cursor: pointer; }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-secondary { width: 100%; padding: 12px 16px; background: transparent; color: var(--accent); font-size: 14px; font-weight: 600; border: 1px solid var(--accent); border-radius: var(--radius); cursor: pointer; }
+    .btn-secondary:hover { background: var(--accent-light); }
+    .toast { position: fixed; bottom: 16px; left: 16px; right: 16px; max-width: 100%; margin: 0 auto; padding: 12px 16px; border-radius: var(--radius); box-shadow: var(--shadow-md); font-size: 13px; z-index: 1000; animation: slideUp 0.2s ease; }
+    .toast.success { background: var(--success); color: white; }
+    .toast.error { background: var(--error); color: white; }
+    .toast.info { background: var(--text-primary); color: white; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    .helper-text { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+    .helper-text.error { color: var(--error); }
+    .section { margin-bottom: 16px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .sticky-footer { position: sticky; bottom: 0; background: var(--bg); padding: 12px 0 0; border-top: 1px solid var(--border); margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="safe-area" style="max-width: 100%; padding: 12px 16px;">
+    <!-- Compact Header -->
+    <header style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border);">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+        <div>
+          <h1 style="font-size: 20px; font-weight: 700; color: var(--text-primary);">공구 제보</h1>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">필수 4개 필드만 입력하면 접수 완료</p>
+        </div>
+        <span style="font-size: 11px; font-weight: 600; color: var(--accent); background: var(--accent-light); padding: 4px 8px; border-radius: var(--radius-sm);">v1.2</span>
+      </div>
+    </header>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Form - No Card Wrapper, Direct Fields -->
+    <form id="submit-form" style="display: grid; gap: 12px;">
+
+      <!-- 필수 필드 그룹 (상단 고정 시각적 구분) -->
+      <div style="padding: 12px; background: var(--accent-light); border-radius: var(--radius); margin-bottom: 4px;">
+        <p style="font-size: 11px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;">필수 입력 사항</p>
+      </div>
+
+      <div class="section">
+        <label class="label label-required" for="productName">제품명</label>
+        <input type="text" id="productName" class="input" placeholder="비건 선크림 공구" required aria-describedby="productName-hint" autocomplete="off">
+        <p id="productName-hint" class="helper-text">2자 이상, 200자 이하</p>
+      </div>
+
+      <div class="section">
+        <label class="label label-required" for="purchaseUrl">구매 URL</label>
+        <input type="url" id="purchaseUrl" class="input" placeholder="https://shop.example.com/product" aria-describedby="purchaseUrl-hint" autocomplete="url">
+        <p id="purchaseUrl-hint" class="helper-text">http:// 또는 https:// 필수</p>
+      </div>
+
+      <div class="section">
+        <label class="label label-required" for="instagramUrl">인스타그램 URL</label>
+        <input type="url" id="instagramUrl" class="input" placeholder="https://instagram.com/p/ABC123" aria-describedby="instagramUrl-hint" autocomplete="url">
+        <p id="instagramUrl-hint" class="helper-text">원본 게시물 링크</p>
+      </div>
+
+      <div class="section">
+        <label class="label label-required" for="imageUrl">이미지 URL</label>
+        <input type="url" id="imageUrl" class="input" placeholder="https://cdn.example.com/img.jpg" aria-describedby="imageUrl-hint" autocomplete="url">
+        <p id="imageUrl-hint" class="helper-text">대표 썸네일 이미지</p>
+      </div>
+
+      <!-- 선택 필드 그룹 -->
+      <div style="padding: 12px; background: var(--surface); border-radius: var(--radius); margin: 8px 0 4px;">
+        <p style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">선택 입력 사항</p>
+      </div>
+
+      <div class="section">
+        <label class="label" for="brandName">브랜드</label>
+        <input type="text" id="brandName" class="input" placeholder="Sample Beauty" aria-describedby="brandName-hint" autocomplete="off">
+        <p id="brandName-hint" class="helper-text">알고 있는 경우만 입력</p>
+      </div>
+
+      <div class="section row">
+        <div>
+          <label class="label" for="startDate">시작일</label>
+          <input type="date" id="startDate" class="input" aria-describedby="startDate-hint">
+          <p id="startDate-hint" class="helper-text">YYYY-MM-DD</p>
+        </div>
+        <div>
+          <label class="label" for="endDate">종료일</label>
+          <input type="date" id="endDate" class="input" aria-describedby="endDate-hint">
+          <p id="endDate-hint" class="helper-text">YYYY-MM-DD</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <label class="label" for="discountInfo">할인/혜택</label>
+        <input type="text" id="discountInfo" class="input" placeholder="20% 할인, 1+1" aria-describedby="discountInfo-hint" autocomplete="off">
+        <p id="discountInfo-hint" class="helper-text">간단히 한 줄로</p>
+      </div>
+
+      <div class="section">
+        <label class="label" for="summary">메모</label>
+        <textarea id="summary" class="input" rows="3" placeholder="운영자 참고용 메모 (선택)" aria-describedby="summary-hint"></textarea>
+        <p id="summary-hint" class="helper-text">최대 500자</p>
+      </div>
+
+      <!-- 익명 체크 - 인라인 -->
+      <div class="section" style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--surface); border-radius: var(--radius);">
+        <input type="checkbox" id="isAnonymous" checked style="width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0;">
+        <label for="isAnonymous" style="font-size: 13px; font-weight: 500; color: var(--text-primary); cursor: pointer; margin: 0;">익명 제보 (작성자 비공개)</label>
+      </div>
+
+      <!-- Sticky Footer Actions -->
+      <div class="sticky-footer" style="display: grid; gap: 8px;">
+        <button type="submit" class="btn-primary" id="submit-btn">
+          <span id="submit-btn-text">제보 제출</span>
+        </button>
+        <button type="button" class="btn-secondary" id="cancel-btn">취소</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    function showToast(message, type = 'info', duration = 2500) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-12px)';
+        toast.style.transition = 'opacity 0.2s, transform 0.2s';
+        setTimeout(() => toast.remove(), 200);
+      }, duration);
+    }
+
+    function isValidUrl(string) {
+      if (!string.trim()) return true;
+      try {
+        const url = new URL(string.trim());
+        return url.protocol === 'http:' || url.protocol === 'https:';
+      } catch { return false; }
+    }
+
+    function validateDates(start, end) {
+      if (start && end) {
+        const s = new Date(start), e = new Date(end);
+        if (isNaN(s.getTime()) || isNaN(e.getTime())) return '날짜 형식 오류';
+        if (s > e) return '시작일 ≤ 종료일';
+      }
+      return null;
+    }
+
+    function setError(id, msg) {
+      const el = document.getElementById(id), hint = document.getElementById(id + '-hint');
+      el.classList.add('error');
+      if (hint && msg) { hint.textContent = msg; hint.classList.add('error'); }
+    }
+    function clearError(id) {
+      const el = document.getElementById(id), hint = document.getElementById(id + '-hint');
+      el.classList.remove('error');
+      if (hint) { hint.classList.remove('error'); }
+    }
+
+    const fields = ['productName','brandName','startDate','endDate','purchaseUrl','discountInfo','instagramUrl','imageUrl','summary'];
+    fields.forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('input', () => clearError(id));
+      el.addEventListener('blur', () => validate(id));
+    });
+
+    function validate(id) {
+      const v = document.getElementById(id).value.trim();
+      switch(id) {
+        case 'productName': if(v.length<2){setError(id,'2자 이상');return false;} if(v.length>200){setError(id,'200자 이하');return false;} break;
+        case 'purchaseUrl': if(v&&!isValidUrl(v)){setError(id,'URL 형식');return false;} break;
+        case 'instagramUrl': if(!v||!isValidUrl(v)){setError(id,'필수·URL 형식');return false;} break;
+        case 'imageUrl': if(!v||!isValidUrl(v)){setError(id,'필수·URL 형식');return false;} break;
+        case 'summary': if(v.length>500){setError(id,'500자 이하');return false;} break;
+        case 'startDate': case 'endDate':
+          const de = validateDates(document.getElementById('startDate').value, document.getElementById('endDate').value);
+          if(de){setError('startDate',de);setError('endDate',de);return false;}
+          break;
+      }
+      return true;
+    }
+
+    const form = document.getElementById('submit-form');
+    const btn = document.getElementById('submit-btn');
+    const btnText = document.getElementById('submit-btn-text');
+
+    form.addEventListener('submit', async e=>{
+      e.preventDefault();
+      let ok=true; fields.forEach(id=>{if(!validate(id))ok=false;});
+      if(!ok){showToast('입력 확인 필요','error'); document.querySelector('.input.error')?.focus(); return;}
+      btn.disabled=true; btnText.textContent='접수 중...'; showToast('접수 중...','info',9999);
+      const data={productName:document.getElementById('productName').value.trim(),brandName:document.getElementById('brandName').value.trim()||undefined,startDate:document.getElementById('startDate').value||undefined,endDate:document.getElementById('endDate').value||undefined,purchaseUrl:document.getElementById('purchaseUrl').value.trim()||undefined,discountInfo:document.getElementById('discountInfo').value.trim()||undefined,instagramUrl:document.getElementById('instagramUrl').value.trim(),imageUrl:document.getElementById('imageUrl').value.trim(),summary:document.getElementById('summary').value.trim()||undefined,isAnonymous:document.getElementById('isAnonymous').checked};
+      try{
+        const r=await fetch('/api/submissions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+        if(!r.ok){const err=await r.json().catch(()=>({message:'실패'}));throw new Error(err.message||`오류:${r.status}`);}
+        showToast('접수 완료. 승인 후 캘린더 반영','success'); form.reset(); fields.forEach(id=>clearError(id));
+        setTimeout(()=>showToast('홈으로 이동','info'),1200);
+      }catch(err){showToast(err.message,'error');}finally{btn.disabled=false;btnText.textContent='제보 제출';}
+    });
+
+    document.getElementById('cancel-btn').addEventListener('click',()=>{
+      if(confirm('취소하시겠습니까?')){form.reset();fields.forEach(id=>clearError(id));showToast('취소됨','info');}
+    });
+
+    // Enter 키 네비게이션
+    document.querySelectorAll('input:not([type="checkbox"]),textarea').forEach((el,i,arr)=>{
+      el.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName!=='TEXTAREA'){e.preventDefault();if(i<arr.length-1)arr[i+1].focus();else form.dispatchEvent(new Event('submit'));}});
+    });
+  </script>
+</body>
+</html>

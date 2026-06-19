@@ -1,0 +1,14 @@
+{
+  "extends": ["expo/tsconfig.base", "../../tsconfig.base.json"],
+  "compilerOptions": {
+    "strict": true,
+    "baseUrl": ".",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "paths": {
+      "@/*": ["src/*"],
+      "@gonggu/shared/*": ["../../packages/shared/src/*"]
+    }
+  },
+  "include": ["src", "index.js", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", "dist", ".expo", "vitest.config.ts", "vitest.setup.ts"]
+}

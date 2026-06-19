@@ -1,0 +1,440 @@
+@import "tailwindcss";
+
+@theme {
+  /* Fonts */
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+
+  /* ========================================================================
+     PRIMARY / BRAND COLORS (from tokens)
+     ======================================================================== */
+  --color-primary-50: oklch(0.97 0.03 252);
+  --color-primary-100: oklch(0.93 0.06 252);
+  --color-primary-200: oklch(0.88 0.11 252);
+  --color-primary-300: oklch(0.81 0.16 252);
+  --color-primary-400: oklch(0.72 0.2 252);
+  --color-primary-500: oklch(0.62 0.23 252);
+  --color-primary-600: oklch(0.54 0.23 252);
+  --color-primary-700: oklch(0.45 0.21 252);
+  --color-primary-800: oklch(0.38 0.18 252);
+  --color-primary-900: oklch(0.32 0.15 252);
+  --color-primary-950: oklch(0.27 0.12 252);
+
+  /* ========================================================================
+     SEMANTIC STATUS COLORS
+     ======================================================================== */
+  --color-success-50: oklch(0.97 0.03 142);
+  --color-success-100: oklch(0.93 0.08 142);
+  --color-success-500: oklch(0.65 0.2 142);
+  --color-success-600: oklch(0.58 0.19 142);
+
+  --color-warning-50: oklch(0.98 0.02 90);
+  --color-warning-100: oklch(0.95 0.06 90);
+  --color-warning-500: oklch(0.77 0.18 90);
+  --color-warning-600: oklch(0.7 0.17 90);
+
+  --color-error-50: oklch(0.98 0.01 25);
+  --color-error-100: oklch(0.94 0.04 25);
+  --color-error-500: oklch(0.62 0.22 25);
+  --color-error-600: oklch(0.55 0.21 25);
+
+  /* ========================================================================
+     STATUS-SPECIFIC (for badges, cards, etc.)
+     ======================================================================== */
+  --color-status-pending-bg: oklch(0.98 0.02 90);       /* amber-50 */
+  --color-status-pending-text: oklch(0.7 0.17 90);       /* amber-600 */
+  --color-status-pending-border: oklch(0.9 0.1 90);      /* amber-200 */
+
+  --color-status-approved-bg: oklch(0.97 0.03 142);      /* green-50 */
+  --color-status-approved-text: oklch(0.58 0.19 142);    /* green-600 */
+  --color-status-approved-border: oklch(0.85 0.1 142);   /* green-200 */
+
+  --color-status-rejected-bg: oklch(0.98 0.01 25);       /* red-50 */
+  --color-status-rejected-text: oklch(0.55 0.21 25);     /* red-600 */
+  --color-status-rejected-border: oklch(0.9 0.08 25);    /* red-200 */
+
+  --color-status-review-bg: oklch(0.97 0.03 252);        /* blue-50 */
+  --color-status-review-text: oklch(0.54 0.23 252);      /* blue-600 */
+  --color-status-review-border: oklch(0.88 0.11 252);    /* blue-200 */
+
+  --color-status-duplicate-bg: oklch(0.97 0.005 250);    /* gray-100 */
+  --color-status-duplicate-text: oklch(0.55 0.01 250);   /* gray-600 */
+  --color-status-duplicate-border: oklch(0.9 0.01 250);  /* gray-200 */
+
+  /* ========================================================================
+     NEUTRAL / GRAY SCALE
+     ======================================================================== */
+  --color-neutral-0: oklch(1 0 0);
+  --color-neutral-50: oklch(0.98 0.005 250);
+  --color-neutral-100: oklch(0.96 0.01 250);
+  --color-neutral-200: oklch(0.9 0.01 250);
+  --color-neutral-300: oklch(0.82 0.01 250);
+  --color-neutral-400: oklch(0.7 0.01 250);
+  --color-neutral-500: oklch(0.55 0.01 250);
+  --color-neutral-600: oklch(0.45 0.01 250);
+  --color-neutral-700: oklch(0.37 0.01 250);
+  --color-neutral-800: oklch(0.27 0.01 250);
+  --color-neutral-900: oklch(0.21 0.01 250);
+  --color-neutral-950: oklch(0.15 0.01 250);
+
+  /* ========================================================================
+     BACKGROUND / SURFACE
+     ======================================================================== */
+  --color-bg-primary: oklch(1 0 0);
+  --color-bg-secondary: oklch(0.98 0.005 250);
+  --color-bg-tertiary: oklch(0.96 0.01 250);
+  --color-bg-inverse: oklch(0.21 0.01 250);
+
+  /* ========================================================================
+     TEXT COLORS
+     ======================================================================== */
+  --color-text-primary: oklch(0.21 0.01 250);
+  --color-text-secondary: oklch(0.45 0.01 250);
+  --color-text-tertiary: oklch(0.55 0.01 250);
+  --color-text-inverse: oklch(1 0 0);
+  --color-text-disabled: oklch(0.7 0.01 250);
+  --color-text-link: oklch(0.62 0.23 252);
+
+  /* ========================================================================
+     BORDER COLORS
+     ======================================================================== */
+  --color-border-primary: oklch(0.9 0.01 250);
+  --color-border-secondary: oklch(0.82 0.01 250);
+  --color-border-focus: oklch(0.62 0.23 252);
+  --color-border-error: oklch(0.62 0.22 25);
+
+  /* ========================================================================
+     RADIUS
+     ======================================================================== */
+  --radius-none: 0;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* ========================================================================
+     SHADOWS
+     ======================================================================== */
+  --shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -2px oklch(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.1), 0 4px 6px -4px oklch(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px oklch(0 0 0 / 0.1), 0 8px 10px -6px oklch(0 0 0 / 0.1);
+  --shadow-card: 0 2px 8px oklch(0 0 0 / 0.06), 0 0 1px oklch(0 0 0 / 0.04);
+  --shadow-modal: 0 8px 24px oklch(0 0 0 / 0.08);
+  --shadow-toast: 0 4px 16px oklch(0 0 0 / 0.12);
+  --shadow-focus: 0 0 0 3px oklch(0.93 0.06 252);
+  --shadow-focus-error: 0 0 0 3px oklch(0.94 0.04 25);
+
+  /* ========================================================================
+     SPACING (8px grid)
+     ======================================================================== */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* ========================================================================
+     LAYOUT
+     ======================================================================== */
+  --sidebar-width: 260px;
+  --header-height: 64px;
+  --card-gap: 16px;
+  --density-compact: 8px;
+  --density-comfortable: 16px;
+
+  /* ========================================================================
+     Z-INDEX
+     ======================================================================== */
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-modal: 1200;
+  --z-popover: 1300;
+  --z-toast: 1400;
+  --z-tooltip: 1500;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Smooth scrolling */
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    line-height: 1.5;
+  }
+
+  /* Focus visible for keyboard navigation */
+  :focus-visible {
+    outline: none;
+    ring: 3px solid var(--color-border-focus);
+    ring-offset: 2px;
+  }
+
+  /* Selection styling */
+  ::selection {
+    background-color: var(--color-primary-200);
+    color: var(--color-primary-900);
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* Scrollbar hiding */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Text truncation */
+  .truncate-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  .truncate-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .truncate-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* Focus ring utilities */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary-100 focus-visible:ring-offset-2;
+  }
+  .focus-ring-error {
+    @apply focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-error-50 focus-visible:ring-offset-2;
+  }
+
+  /* Animation utilities */
+  .animate-in {
+    animation: animateIn var(--duration-medium) var(--ease-out) forwards;
+  }
+  .animate-out {
+    animation: animateOut var(--duration-medium) var(--ease-in) forwards;
+  }
+
+  /* Card hover effect */
+  .card-hover {
+    transition: background-color var(--duration-normal) var(--ease-out),
+                box-shadow var(--duration-normal) var(--ease-out);
+  }
+  .card-hover:hover {
+    background-color: var(--color-bg-tertiary);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* Button press effect */
+  .button-press {
+    transition: transform var(--duration-buttonTap) var(--ease-out);
+  }
+  .button-press:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  /* Modal/Dialog animations */
+  @keyframes modalEnter {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes modalExit {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+  }
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes slideDown {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  @keyframes accordionExpand {
+    from { height: 0; opacity: 0; }
+    to { height: auto; opacity: 1; }
+  }
+  @keyframes accordionCollapse {
+    from { height: auto; opacity: 1; }
+    to { height: 0; opacity: 0; }
+  }
+  @keyframes animateIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes animateOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-4px); }
+  }
+
+  .animate-modal-enter { animation: modalEnter var(--duration-modalEnter) var(--ease-out) forwards; }
+  .animate-modal-exit { animation: modalExit var(--duration-modalExit) var(--ease-in) forwards; }
+  .animate-slide-up { animation: slideUp var(--duration-toastEnter) var(--ease-out) forwards; }
+  .animate-slide-down { animation: slideDown var(--duration-toastExit) var(--ease-in) forwards; }
+  .animate-fade-in { animation: fadeIn var(--duration-normal) var(--ease-out) forwards; }
+  .animate-fade-out { animation: fadeOut var(--duration-normal) var(--ease-in) forwards; }
+  .animate-accordion-expand { animation: accordionExpand var(--duration-accordion) var(--ease-in-out) forwards; }
+  .animate-accordion-collapse { animation: accordionCollapse var(--duration-accordion) var(--ease-in-out) forwards; }
+}
+
+/* ============================================================================
+   DARK MODE SUPPORT (via [data-theme="dark"] or prefers-color-scheme)
+   ============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg-primary: oklch(0.18 0.01 250);
+    --color-bg-secondary: oklch(0.21 0.01 250);
+    --color-bg-tertiary: oklch(0.25 0.01 250);
+    --color-bg-inverse: oklch(1 0 0);
+
+    --color-text-primary: oklch(0.98 0.005 250);
+    --color-text-secondary: oklch(0.7 0.01 250);
+    --color-text-tertiary: oklch(0.55 0.01 250);
+    --color-text-inverse: oklch(0.21 0.01 250);
+    --color-text-disabled: oklch(0.45 0.01 250);
+    --color-text-link: oklch(0.72 0.2 252);
+
+    --color-border-primary: oklch(0.3 0.01 250);
+    --color-border-secondary: oklch(0.37 0.01 250);
+    --color-border-focus: oklch(0.72 0.2 252);
+    --color-border-error: oklch(0.7 0.2 25);
+
+    --shadow-card: 0 2px 8px oklch(0 0 0 / 0.3), 0 0 1px oklch(0 0 0 / 0.2);
+    --shadow-modal: 0 8px 24px oklch(0 0 0 / 0.4);
+    --shadow-toast: 0 4px 16px oklch(0 0 0 / 0.4);
+    --shadow-focus: 0 0 0 3px oklch(0.88 0.11 252);
+    --shadow-focus-error: 0 0 0 3px oklch(0.9 0.08 25);
+
+    --color-status-pending-bg: oklch(0.3 0.05 90);
+    --color-status-pending-text: oklch(0.85 0.15 90);
+    --color-status-pending-border: oklch(0.4 0.1 90);
+
+    --color-status-approved-bg: oklch(0.3 0.05 142);
+    --color-status-approved-text: oklch(0.8 0.15 142);
+    --color-status-approved-border: oklch(0.4 0.1 142);
+
+    --color-status-rejected-bg: oklch(0.3 0.05 25);
+    --color-status-rejected-text: oklch(0.8 0.15 25);
+    --color-status-rejected-border: oklch(0.4 0.1 25);
+
+    --color-status-review-bg: oklch(0.3 0.05 252);
+    --color-status-review-text: oklch(0.8 0.15 252);
+    --color-status-review-border: oklch(0.4 0.1 252);
+
+    --color-status-duplicate-bg: oklch(0.3 0.005 250);
+    --color-status-duplicate-text: oklch(0.7 0.01 250);
+    --color-status-duplicate-border: oklch(0.4 0.01 250);
+  }
+}
+
+/* Explicit dark mode via data attribute (for manual toggle) */
+[data-theme="dark"] {
+  --color-bg-primary: oklch(0.18 0.01 250);
+  --color-bg-secondary: oklch(0.21 0.01 250);
+  --color-bg-tertiary: oklch(0.25 0.01 250);
+  --color-bg-inverse: oklch(1 0 0);
+
+  --color-text-primary: oklch(0.98 0.005 250);
+  --color-text-secondary: oklch(0.7 0.01 250);
+  --color-text-tertiary: oklch(0.55 0.01 250);
+  --color-text-inverse: oklch(0.21 0.01 250);
+  --color-text-disabled: oklch(0.45 0.01 250);
+  --color-text-link: oklch(0.72 0.2 252);
+
+  --color-border-primary: oklch(0.3 0.01 250);
+  --color-border-secondary: oklch(0.37 0.01 250);
+  --color-border-focus: oklch(0.72 0.2 252);
+  --color-border-error: oklch(0.7 0.2 25);
+
+  --shadow-card: 0 2px 8px oklch(0 0 0 / 0.3), 0 0 1px oklch(0 0 0 / 0.2);
+  --shadow-modal: 0 8px 24px oklch(0 0 0 / 0.4);
+  --shadow-toast: 0 4px 16px oklch(0 0 0 / 0.4);
+  --shadow-focus: 0 0 0 3px oklch(0.88 0.11 252);
+  --shadow-focus-error: 0 0 0 3px oklch(0.9 0.08 25);
+
+  --color-status-pending-bg: oklch(0.3 0.05 90);
+  --color-status-pending-text: oklch(0.85 0.15 90);
+  --color-status-pending-border: oklch(0.4 0.1 90);
+
+  --color-status-approved-bg: oklch(0.3 0.05 142);
+  --color-status-approved-text: oklch(0.8 0.15 142);
+  --color-status-approved-border: oklch(0.4 0.1 142);
+
+  --color-status-rejected-bg: oklch(0.3 0.05 25);
+  --color-status-rejected-text: oklch(0.8 0.15 25);
+  --color-status-rejected-border: oklch(0.4 0.1 25);
+
+  --color-status-review-bg: oklch(0.3 0.05 252);
+  --color-status-review-text: oklch(0.8 0.15 252);
+  --color-status-review-border: oklch(0.4 0.1 252);
+
+  --color-status-duplicate-bg: oklch(0.3 0.005 250);
+  --color-status-duplicate-text: oklch(0.7 0.01 250);
+  --color-status-duplicate-border: oklch(0.4 0.01 250);
+}
+
+/* Light mode explicit */
+[data-theme="light"] {
+  /* Uses default :root values */
+}

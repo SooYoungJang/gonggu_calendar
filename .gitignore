@@ -1,0 +1,55 @@
+# dependencies
+node_modules/
+.codex-tools/
+.turbo/
+
+# Expo / Next / build outputs
+.expo/
+dist/
+web-build/
+.next/
+**/.next/
+coverage/
+**/coverage/
+playwright-report/
+**/playwright-report/
+test-results/
+**/test-results/
+*.tsbuildinfo
+
+# native builds
+android/
+ios/
+
+# environment
+.env
+.env.*
+!.env.example
+
+# Python worker
+.venv/
+__pycache__/
+workers/instagram/session.json
+
+# Local LLM pipeline artifacts
+exports/*.jsonl
+imports/*.jsonl
+**/exports/*.jsonl
+**/imports/*.jsonl
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# macOS
+.DS_Store
+
+# Hermes / local DB / local helper scripts
+kanban.db
+.hermes_tmp_thread.py
+fix_env.py
+setup_env.py
+**/discord_post.py
+**/_discord_thread.py

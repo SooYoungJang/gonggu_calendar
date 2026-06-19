@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "GongGu Calendar",
+    "slug": "gonggu-calendar",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "scheme": "gonggucalendar",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.gonggu.calendar"
+    },
+    "android": {
+      "package": "com.gonggu.calendar",
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "experiments": {
+      "typedRoutes": false
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
+  }
+}
