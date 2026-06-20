@@ -16,7 +16,7 @@ request: GET /isScreenStatic
 request: GET /screenshot
 ```
 
-The app was still foregrounded as `com.gonggu.calendar`; the failure matched Maestro/XCUITest post-swipe capture flakiness rather than a React Native crash.
+The app was still foregrounded as `com.gonggu.wish`; the failure matched Maestro/XCUITest post-swipe capture flakiness rather than a React Native crash.
 
 ## App-side risk found
 

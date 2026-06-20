@@ -3,7 +3,7 @@ appId: com.gonggu.wish
 - launchApp:
     clearState: false
 - waitForAnimationToEnd
-- tapOn: "Search 탭"
+- tapOn: "랭킹 탭"
 - waitForAnimationToEnd
 - assertVisible: "스토어 랭킹"
 - assertVisible: "셀러 랭킹 목록"

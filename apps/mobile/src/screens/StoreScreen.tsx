@@ -196,9 +196,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   periodChip: {
+    alignItems: 'center',
     borderColor: colors.border,
     borderRadius: borderRadius.full,
     borderWidth: 1,
+    justifyContent: 'center',
     minHeight: 32,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,

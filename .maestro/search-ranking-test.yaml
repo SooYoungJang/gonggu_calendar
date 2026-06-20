@@ -11,14 +11,14 @@ appId: com.gonggu.wish
     clearState: true
 - waitForAnimationToEnd
 - assertVisible: "Home 탭"
-- assertVisible: "Search 탭"
+- assertVisible: "랭킹 탭"
 - assertVisible: "Submit 탭"
 - assertVisible: "Community 탭"
 - assertVisible: "MyPage 탭"
 - takeScreenshot: 01-home-screen
 
 # --- Section 2: Tap Search tab → ranking loaded ---
-- tapOn: "Search 탭"
+- tapOn: "랭킹 탭"
 - waitForAnimationToEnd
 - waitForAnimationToEnd
 - assertVisible: "스토어 랭킹"
@@ -28,7 +28,7 @@ appId: com.gonggu.wish
 
 # Verify tab bar intact
 - assertVisible: "Home 탭"
-- assertVisible: "Search 탭"
+- assertVisible: "랭킹 탭"
 - assertVisible: "Submit 탭"
 - assertVisible: "Community 탭"
 - assertVisible: "MyPage 탭"

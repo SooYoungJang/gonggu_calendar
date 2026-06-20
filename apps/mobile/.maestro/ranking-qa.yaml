@@ -1,7 +1,7 @@
-appId: com.gonggu.calendar
+appId: com.gonggu.wish
 ---
 - launchApp
-- tapOn: "Search 탭"
+- tapOn: "랭킹 탭"
 - assertVisible: "쇼핑몰 랭킹"
 - assertVisible: "스토어 랭킹"
 - assertVisible: "브랜드명, 제품명, 셀러명으로 검색"

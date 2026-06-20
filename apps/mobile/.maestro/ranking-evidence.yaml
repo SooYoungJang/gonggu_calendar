@@ -1,4 +1,4 @@
-appId: com.gonggu.calendar
+appId: com.gonggu.wish
 ---
 # Evidence flow: used by the test runner for collecting visual evidence
 # across device widths. Run with:
@@ -9,7 +9,7 @@ appId: com.gonggu.calendar
 # the programmatic swipe (known to cause intermittent runner crashes).
 
 - launchApp
-- tapOn: "Search 탭"
+- tapOn: "랭킹 탭"
 - assertVisible: "쇼핑몰 랭킹"
 - assertVisible: "스토어 랭킹"
 - assertVisible: "브랜드명, 제품명, 셀러명으로 검색"
@@ -17,7 +17,7 @@ appId: com.gonggu.calendar
 - scroll
 - takeScreenshot: evidence/02-ranking-scroll
 - launchApp
-- tapOn: "Search 탭"
+- tapOn: "랭킹 탭"
 - assertVisible: "쇼핑몰 랭킹"
 - scroll
 - takeScreenshot: evidence/03-ranking-scroll-2

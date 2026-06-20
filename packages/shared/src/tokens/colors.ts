@@ -237,6 +237,50 @@ export const overlay = {
   card: 'oklch(0 0 0 / 0.06)',
 } as const;
 
+/**
+ * Ranking-specific tokens — Search tab seller/공구 ranking screen.
+ * Additive namespace; does not modify primary, accent, cta, categoryPastel, or status.
+ *
+ * Usage intent:
+ *   - rank.*         rank number capsules (top1~3 highlight, default muted)
+ *   - ad.*           sponsored "AD" label
+ *   - movement.*     rank delta badges (up/down/same/new)
+ *   - following.*    Follow/Following button states
+ */
+export const ranking = {
+  rank: {
+    top1Bg: 'oklch(0.96 0.055 88)',
+    top1Text: 'oklch(0.52 0.13 78)',
+    top2Bg: 'oklch(0.95 0.012 250)',
+    top2Text: 'oklch(0.48 0.015 250)',
+    top3Bg: 'oklch(0.95 0.045 55)',
+    top3Text: 'oklch(0.50 0.12 55)',
+    defaultBg: 'oklch(0.98 0.005 250)',
+    defaultText: 'oklch(0.37 0.01 250)',
+  },
+  ad: {
+    bg: 'oklch(0.97 0.025 260)',
+    text: 'oklch(0.51 0.16 260)',
+    border: 'oklch(0.88 0.06 260)',
+  },
+  movement: {
+    upText: 'oklch(0.58 0.19 142)',
+    upBg: 'oklch(0.97 0.03 142)',
+    downText: 'oklch(0.55 0.18 25)',
+    downBg: 'oklch(0.98 0.018 25)',
+    sameText: 'oklch(0.55 0.01 250)',
+    sameBg: 'oklch(0.97 0.005 250)',
+    newText: 'oklch(0.51 0.22 260)',
+    newBg: 'oklch(0.97 0.03 260)',
+  },
+  following: {
+    activeBg: 'oklch(0.97 0.02 355)',
+    activeText: 'oklch(0.52 0.19 355)',
+    inactiveBg: 'oklch(1 0 0)',
+    inactiveText: 'oklch(0.45 0.01 250)',
+  },
+} as const;
+
 // ============================================================================
 // COMPOSITE COLORS EXPORT
 // ============================================================================
@@ -247,6 +291,7 @@ export const colors = {
   cta,
   categoryPastel,
   cardOverlayGradient,
+  ranking,
   success,
   warning,
   error,
@@ -257,6 +302,8 @@ export const colors = {
   border,
   overlay,
 } as const;
+
+export type RankingTokens = typeof ranking;
 
 // ============================================================================
 // PLATFORM CONVERSION UTILITIES

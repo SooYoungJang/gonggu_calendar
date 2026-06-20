@@ -4,8 +4,8 @@ appId: com.gonggu.wish
 - launchApp:
     clearState: false
 - waitForAnimationToEnd
-- assertVisible: "Search 탭"
-- tapOn: "Search 탭"
+- assertVisible: "랭킹 탭"
+- tapOn: "랭킹 탭"
 - waitForAnimationToEnd
 - assertVisible: "스토어 랭킹"
 - takeScreenshot: dia-before-scroll

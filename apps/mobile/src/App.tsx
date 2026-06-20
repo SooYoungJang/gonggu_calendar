@@ -58,9 +58,9 @@ function tabIcon(routeName: keyof MainTabParamList) {
 function tabLabel(routeName: keyof MainTabParamList) {
   switch (routeName) {
     case 'Home':
-      return 'Home';
+      return '홈';
     case 'Search':
-      return 'Search';
+      return '랭킹';
     case 'Submit':
       return 'Submit';
     case 'Community':
