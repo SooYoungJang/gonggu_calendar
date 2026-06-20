@@ -11,7 +11,7 @@ appId: com.gonggu.wish
 - launchApp:
     clearState: false
 - waitForAnimationToEnd
-- tapOn: "Search"
+- tapOn: "랭킹 탭"
 - waitForAnimationToEnd
 - assertVisible: "스토어 랭킹"
 - assertVisible: "쇼핑몰 랭킹"
@@ -23,7 +23,7 @@ appId: com.gonggu.wish
 - waitForAnimationToEnd
 # Use partial label text to survive 320pt truncation where labels may be clipped
 - assertVisible:
-    text: "Search"
+    text: "랭킹 탭"
     timeout: 10000
 - assertVisible:
     text: "Submit"
