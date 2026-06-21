@@ -22,7 +22,7 @@ type RootStackWithTabs = RootStackParamList & {
 const queryClient = new QueryClient();
 const Stack = createNativeStackNavigator<RootStackWithTabs>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
-const TAB_BAR_HEIGHT = 70;
+const TAB_BAR_HEIGHT = 72;
 
 function PlaceholderScreen({ title, subtitle }: { title: string; subtitle: string }) {
   return (
@@ -65,9 +65,9 @@ function tabLabel(routeName: keyof MainTabParamList) {
     case 'Submit':
       return 'Submit';
     case 'Community':
-      return 'Community';
+      return '커뮤니티';
     case 'MyPage':
-      return 'MyPage';
+      return 'MY';
   }
 }
 
@@ -99,7 +99,7 @@ function MainTabs() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textTertiary,
         tabBarLabelStyle: [
-          { fontSize: 10, fontWeight: '700' },
+          { fontSize: 11, fontWeight: '700' },
           route.name === 'Submit' && { color: colors.ctaPurpleText },
         ],
         tabBarStyle: [styles.tabBar, { bottom: tabBarBottomOffset, marginHorizontal: tabBarMarginHorizontal }],
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   },
   tabIcon: {
     color: colors.textSecondary,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '800',
   },
   tabIconFocused: {
@@ -195,6 +195,6 @@ const styles = StyleSheet.create({
   },
   submitTabIcon: {
     color: colors.ctaPurpleText,
-    fontSize: 22,
+    fontSize: 24,
   },
 });

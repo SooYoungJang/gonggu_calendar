@@ -16,6 +16,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useQuery } from '@tanstack/react-query';
 
 import { fallbackGroupBuys, fetchGroupBuys, fetchInfluencers, searchInfluencers } from '../api';
+import { DealCard } from '../components/DealCard';
 import {
   borderRadius,
   cardOverlayGradientStops,
@@ -83,18 +84,6 @@ function getFallbackInfluencers(groupBuys: GroupBuy[]): Influencer[] {
   }
 
   return Array.from(influencers.values()).sort((a, b) => a.instagramUsername.localeCompare(b.instagramUsername));
-}
-
-function formatDeadline(endDate: string | null) {
-  if (!endDate) return '마감일 미정';
-  const date = new Date(endDate);
-  if (Number.isNaN(date.getTime())) return '마감일 확인 필요';
-
-  const days = Math.ceil((date.getTime() - Date.now()) / 86_400_000);
-  if (days <= 0) return '오늘 마감';
-  if (days === 1) return '내일 마감';
-  if (days <= 7) return `${days}일 남음`;
-  return `${date.getMonth() + 1}월 ${date.getDate()}일 마감`;
 }
 
 function getWeekDays() {
@@ -200,46 +189,40 @@ function CategoryIcon({ item, onPress }: { item: CategoryItem; onPress: (categor
 
 function CategoryRow({ onPressCategory }: Pick<HomeScreenContentProps, 'onPressCategory'>) {
   return (
-    <View style={styles.categoryRow}>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryRow}>
       {CATEGORIES.map((item) => (
         <CategoryIcon key={item.key} item={item} onPress={onPressCategory} />
       ))}
-    </View>
+    </ScrollView>
   );
 }
 
-function WeeklyCalendarStrip() {
+function WeeklyCalendarStrip({ onPressCalendar }: { onPressCalendar: HomeAction }) {
+  const weekDays = useMemo(() => getWeekDays(), []);
   return (
-    <View style={styles.calendarStrip}>
-      {getWeekDays().map((day) => (
-        <View key={`${day.label}-${day.day}`} style={styles.calendarDay}>
+    <View style={styles.calendarSection}>
+      <View style={styles.calendarTitleRow}>
+        <Text style={styles.calendarTitle}>주간 공구</Text>
+        <Pressable
+          accessibilityLabel="전체 캘린더 보기"
+          accessibilityRole="button"
+          onPress={onPressCalendar}
+          style={styles.calendarViewAll}
+        >
+          <Text style={styles.calendarViewAllText}>→ 전체</Text>
+        </Pressable>
+      </View>
+      <View style={styles.calendarStrip}>
+        {weekDays.map((day) => (
+          <View key={`${day.label}-${day.day}`} style={styles.calendarDay}>
           <Text style={[styles.calendarWeekLabel, day.selected && styles.calendarWeekLabelSelected]}>{day.label}</Text>
           <View style={[styles.calendarDateCircle, day.selected && styles.calendarDateCircleSelected]}>
             <Text style={[styles.calendarDateText, day.selected && styles.calendarDateTextSelected]}>{day.day}</Text>
           </View>
         </View>
-      ))}
-    </View>
-  );
-}
-
-function DealCard({ item, category, onPress }: { item: GroupBuy; category: CategoryColorName; onPress: HomeAction }) {
-  const token = categoryColors[category];
-  return (
-    <Pressable
-      accessibilityLabel={`${item.productName ?? '공구'} 상세 보기`}
-      accessibilityRole="button"
-      onPress={onPress}
-      style={styles.dealCard}
-    >
-      <View style={[styles.dealImage, { backgroundColor: token.bg, borderColor: token.border }]}>
-        <Text style={[styles.dealImageText, { color: token.text }]}>{item.brandName?.slice(0, 2) ?? '공구'}</Text>
+        ))}
       </View>
-      <Text numberOfLines={2} style={styles.dealTitle}>{item.productName ?? '공동구매 상품'}</Text>
-      <Text numberOfLines={1} style={styles.dealBrand}>{item.brandName ?? `@${item.rawPost.influencer.instagramUsername}`}</Text>
-      <Text style={styles.dealDiscount}>{item.discountInfo ?? '혜택 확인'}</Text>
-      <Text style={styles.dealDeadline}>{formatDeadline(item.endDate)}</Text>
-    </Pressable>
+    </View>
   );
 }
 
@@ -252,21 +235,6 @@ function DealCardGrid({ groupBuys, onPressDeal }: Pick<HomeScreenContentProps, '
     </View>
   );
 }
-
-function FloatingCalendarCTA({ onPressCalendar, bottomInset }: Pick<HomeScreenContentProps, 'onPressCalendar'> & { bottomInset: number }) {
-  return (
-    <Pressable
-      accessibilityLabel="캘린더 보기"
-      accessibilityRole="button"
-      onPress={onPressCalendar}
-      style={[styles.floatingCta, { bottom: 86 + bottomInset }]}
-    >
-      <Text style={styles.floatingCtaIcon}>▦</Text>
-      <Text style={styles.floatingCtaText}>캘린더 보기</Text>
-    </Pressable>
-  );
-}
-
 
 function SearchResultsPanel({ results, onPressInfluencer }: { results: Influencer[]; onPressInfluencer: (influencer: Influencer) => void }) {
   return (
@@ -348,7 +316,7 @@ export function HomeScreenContent({
               {isFetching && groupBuys.length === 0 ? <ActivityIndicator color={colors.primary} /> : null}
               <MonthlyBannerCarousel groupBuys={groupBuys} onPressDeal={onPressDeal} />
               <CategoryRow onPressCategory={onPressCategory} />
-              <WeeklyCalendarStrip />
+              <WeeklyCalendarStrip onPressCalendar={onPressCalendar} />
               <View style={styles.sectionHeaderRow}>
                 <View>
                   <Text style={styles.sectionEyebrow}>DISCOVERY FEED</Text>
@@ -362,8 +330,7 @@ export function HomeScreenContent({
           )}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={[styles.listContent, { paddingBottom: spacing['3xl'] + insets.bottom }]}
-        />
-        <FloatingCalendarCTA onPressCalendar={onPressCalendar} bottomInset={insets.bottom} />
+        />        {/* FloatingCTA removed — now in WeeklyCalendarStrip header */}
       </View>
     </SafeAreaView>
   );
@@ -401,7 +368,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
       onRefresh={refetch}
       onOpenBookmarks={() => undefined}
       onOpenNotifications={() => undefined}
-      onPressCalendar={() => undefined}
+      onPressCalendar={() => navigation.navigate('CalendarScreen', {})}
       onPressCategory={() => undefined}
       onPressDeal={(groupBuy) => navigation.navigate('Detail', { groupBuy })}
       onPressInfluencer={(influencer) => {
@@ -489,21 +456,20 @@ const styles = StyleSheet.create({
   bannerEyebrow: { color: colors.ctaPurpleText, fontSize: 12, fontWeight: '700', marginBottom: spacing.xs },
   bannerTitle: { color: colors.ctaPurpleText, fontSize: 22, fontWeight: '800', marginBottom: spacing.xs },
   bannerMeta: { color: colors.ctaPurpleText, fontSize: 13, fontWeight: '600' },
-  categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.xl },
+  categoryRow: { gap: spacing.sm, marginBottom: spacing.xl, paddingRight: spacing.lg },
   categoryItem: {
     alignItems: 'center',
-    aspectRatio: 1,
     borderRadius: borderRadius.full,
     borderWidth: 1,
-    flexBasis: '30%',
-    flexGrow: 0,
+    flexDirection: 'row',
+    gap: spacing.xs,
     justifyContent: 'center',
-    minHeight: 76,
-    minWidth: 76,
-    paddingVertical: spacing.md,
+    minHeight: 44,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
-  categoryGlyph: { fontSize: 22, fontWeight: '800', marginBottom: spacing.xs },
-  categoryLabel: { fontSize: 13, fontWeight: '700' },
+  categoryGlyph: { fontSize: 14, fontWeight: '800' },
+  categoryLabel: { fontSize: 12, fontWeight: '700' },
   calendarStrip: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
@@ -524,24 +490,34 @@ const styles = StyleSheet.create({
   sectionHeaderRow: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.md },
   sectionEyebrow: { ...typography.eyebrow, color: colors.ctaPurple },
   sectionAction: { color: colors.textLink, fontSize: 13, fontWeight: '700', paddingTop: spacing.xs },
-  dealGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, marginBottom: spacing.xl },
-  dealCard: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: 22,
-    borderWidth: 1,
-    flexBasis: '47%',
-    flexGrow: 1,
-    minHeight: 236,
-    padding: spacing.md,
-    ...shadows.sm,
+  calendarViewAll: {
+    alignItems: 'center',
+    alignSelf: 'center',
+    backgroundColor: 'transparent',
+    borderColor: colors.primary,
+    borderRadius: borderRadius.full,
+    borderWidth: 1.5,
+    flexDirection: 'row',
+    gap: spacing.xs,
+    justifyContent: 'center',
+    minHeight: 44,
+    minWidth: 44,
+    paddingHorizontal: spacing.lg,
   },
-  dealImage: { alignItems: 'center', borderRadius: 18, borderWidth: 1, justifyContent: 'center', marginBottom: spacing.md, minHeight: 104 },
-  dealImageText: { fontSize: 18, fontWeight: '800' },
-  dealTitle: { color: colors.textPrimary, fontSize: 15, fontWeight: '800', lineHeight: 20, marginBottom: spacing.xs },
-  dealBrand: { color: colors.textSecondary, fontSize: 12, marginBottom: spacing.xs },
-  dealDiscount: { color: colors.accent, fontSize: 13, fontWeight: '800', marginBottom: spacing.xs },
-  dealDeadline: { color: colors.textTertiary, fontSize: 12, fontWeight: '700' },
+  calendarViewAllText: {
+    color: colors.primary,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  calendarTitleRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.md,
+  },
+  calendarTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: '800' },
+  calendarSection: { marginBottom: spacing.xl },
+  dealGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, marginBottom: spacing.xl },
   submitPrompt: { backgroundColor: colors.ctaPurpleBg, borderRadius: 24, marginBottom: spacing.xl, padding: spacing.lg },
   submitPromptTitle: { color: colors.textPrimary, fontSize: 18, fontWeight: '800', marginBottom: spacing.xs },
   submitPromptText: { color: colors.textSecondary, fontSize: 13, lineHeight: 20, marginBottom: spacing.md },

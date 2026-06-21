@@ -4,6 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 export type RootStackParamList = {
   MainTabs: undefined;
+  CalendarScreen: { initialDate?: string };
   Detail: { groupBuy: GroupBuy };
   InfluencerGroupBuys: { influencerUsername: string; influencerDisplayName: string | null };
   Admin: undefined;
@@ -111,5 +112,6 @@ export type SubmitScreenProps = CompositeScreenProps<
   NativeStackScreenProps<RootStackParamList>
 >;
 export type DetailScreenProps = NativeStackScreenProps<RootStackParamList, 'Detail'>;
+export type CalendarScreenProps = NativeStackScreenProps<RootStackParamList, 'CalendarScreen'>;
 export type InfluencerGroupBuysScreenProps = NativeStackScreenProps<RootStackParamList, 'InfluencerGroupBuys'>;
 export type AdminScreenProps = NativeStackScreenProps<RootStackParamList, 'Admin'>;

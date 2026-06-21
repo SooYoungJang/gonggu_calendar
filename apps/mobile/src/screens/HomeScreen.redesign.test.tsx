@@ -129,11 +129,11 @@ describe('HomeScreenContent redesign', () => {
     expect(text).toContain('월');
     expect(text).toContain('일');
     expect(text).toContain('비건 선크림 공구');
-    expect(text).toContain('캘린더 보기');
+    expect(text).toContain('전체');
     expect(text).not.toMatch(/\bHome\b|\bSearch\b|\bSubmit\b|\bCommunity\b|\bMyPage\b/);
   });
 
-  it('uses circular category containers with token border radius', () => {
+  it('uses horizontal pill category containers with token border radius', () => {
     const renderer = renderHomeContent();
     const categoryLabels = ['뷰티', '패션', '푸드', '라이프', '육아', '디지털'];
     const pressables = renderer!.root.findAllByType('Pressable' as unknown as React.ElementType);
@@ -146,17 +146,19 @@ describe('HomeScreenContent redesign', () => {
     for (const pressable of categoryPressables) {
       const style = flattenStyle(pressable.props.style);
       expect(style.borderRadius).toBe(999);
-      expect(style.aspectRatio).toBe(1);
-      expect(style.minWidth).toBeGreaterThanOrEqual(72);
+      expect(style.flexDirection).toBe('row');
+      expect(style.minHeight).toBeGreaterThanOrEqual(44);
     }
   });
 
-  it('positions the floating calendar call to action above the safe bottom inset', () => {
+  it('renders the calendar header with 주간 공구 title and 전체 pill link', () => {
     const renderer = renderHomeContent();
-    const cta = renderer!.root.findByProps({ accessibilityLabel: '캘린더 보기' });
-    const style = flattenStyle(cta.props.style);
+    const viewAllCta = renderer!.root.findByProps({ accessibilityLabel: '전체 캘린더 보기' });
+    expect(viewAllCta).toBeDefined();
 
-    expect(style.bottom).toBe(110);
+    const text = flattenText(renderer!.toJSON());
+    expect(text).toContain('주간 공구');
+    expect(text).toContain('전체');
   });
 });
 
@@ -169,7 +171,7 @@ describe('HomeScreenContent redesign interactions', () => {
 
     expect(labels).toContain('북마크 열기');
     expect(labels).toContain('알림 열기');
-    expect(labels).toContain('캘린더 보기');
+    expect(labels).toContain('전체 캘린더 보기');
     expect(labels).toContain('비건 선크림 공구 상세 보기');
     for (const pressable of pressables) {
       const style = Array.isArray(pressable.props.style) ? Object.assign({}, ...pressable.props.style) : pressable.props.style;
