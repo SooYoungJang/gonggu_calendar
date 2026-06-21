@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 
 import { fallbackGroupBuys, fetchGroupBuys, fetchInfluencers, searchInfluencers } from '../api';
@@ -83,7 +83,6 @@ export function HomeScreenContent({
   onPressSubmit,
 }: HomeScreenContentProps) {
   const showSearchResults = searchQuery.trim().length > 0;
-  const insets = useSafeAreaInsets();
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
@@ -113,7 +112,7 @@ export function HomeScreenContent({
             </View>
           )}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={[styles.listContent, { paddingBottom: spacing['3xl'] + insets.bottom }]}
+          contentContainerStyle={styles.listContent}
         />
       </View>
     </SafeAreaView>
@@ -170,8 +169,8 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.bg },
   container: { flex: 1, backgroundColor: colors.bg },
-  content: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm, paddingBottom: 132 },
-  listContent: { paddingBottom: spacing['3xl'] },
+  content: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm },
+  listContent: { paddingBottom: 64 },
   notice: { backgroundColor: colors.warningBg, borderRadius: borderRadius.sm, marginBottom: spacing.md, padding: spacing.md },
   noticeText: { color: colors.noticeText, fontSize: 13, textAlign: 'center' },
 });
