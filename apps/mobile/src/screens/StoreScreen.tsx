@@ -214,6 +214,8 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: 12,
     fontWeight: '800',
+    includeFontPadding: false,
+    lineHeight: 12,
   },
   safeArea: {
     backgroundColor: colors.bg,

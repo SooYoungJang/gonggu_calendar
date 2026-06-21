@@ -90,6 +90,8 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 13,
     fontWeight: '800',
+    includeFontPadding: false,
+    lineHeight: 13,
   },
   chipRow: {
     gap: spacing.sm,
@@ -116,6 +118,8 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: 12,
     fontWeight: '800',
+    includeFontPadding: false,
+    lineHeight: 12,
   },
   subChipRow: {
     gap: spacing.sm,
