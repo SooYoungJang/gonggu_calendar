@@ -83,9 +83,9 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.full,
     borderWidth: 1,
     justifyContent: 'center',
-    minHeight: 36,
+    height: 36,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: 0,
   },
   categoryText: {
     fontSize: 13,
@@ -110,9 +110,9 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.full,
     borderWidth: 1,
     justifyContent: 'center',
-    minHeight: 32,
+    height: 32,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+    paddingVertical: 0,
   },
   sortText: {
     color: colors.textSecondary,

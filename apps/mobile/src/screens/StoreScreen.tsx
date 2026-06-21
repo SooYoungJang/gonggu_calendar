@@ -201,9 +201,9 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.full,
     borderWidth: 1,
     justifyContent: 'center',
-    minHeight: 32,
+    height: 32,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+    paddingVertical: 0,
   },
   periodRow: {
     flexDirection: 'row',
