@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { borderRadius, categoryColors, colors, spacing } from '../../design/tokens';
 import {
@@ -26,7 +26,7 @@ function getCategoryPalette(category: RankingCategory) {
 
 export function RankingCategoryChips({ value, categories, sort, onChange, onChangeSort }: RankingCategoryChipsProps) {
   return (
-    <>
+    <View style={{ gap: spacing.sm }}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
         {categories.map((category) => {
           const selected = category === value;
@@ -73,14 +73,16 @@ export function RankingCategoryChips({ value, categories, sort, onChange, onChan
           );
         })}
       </ScrollView>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   categoryChip: {
+    alignItems: 'center',
     borderRadius: borderRadius.full,
     borderWidth: 1,
+    justifyContent: 'center',
     minHeight: 36,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
@@ -101,9 +103,11 @@ const styles = StyleSheet.create({
     color: colors.textInverse,
   },
   sortChip: {
+    alignItems: 'center',
     borderColor: colors.border,
     borderRadius: borderRadius.full,
     borderWidth: 1,
+    justifyContent: 'center',
     minHeight: 32,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
@@ -116,6 +120,5 @@ const styles = StyleSheet.create({
   subChipRow: {
     gap: spacing.sm,
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
   },
 });
