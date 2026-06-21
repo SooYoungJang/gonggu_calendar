@@ -29,7 +29,7 @@ appId: com.gonggu.wish
     text: "Submit"
     timeout: 10000
 - assertVisible:
-    text: "MyPage"
+    text: "MY"
     timeout: 10000
 - takeScreenshot: 04-search-ranking-after-scroll
 - swipe:

@@ -13,8 +13,8 @@ appId: com.gonggu.wish
 - assertVisible: "홈 탭"
 - assertVisible: "랭킹 탭"
 - assertVisible: "Submit 탭"
-- assertVisible: "Community 탭"
-- assertVisible: "MyPage 탭"
+- assertVisible: "커뮤니티 탭"
+- assertVisible: "MY 탭"
 - takeScreenshot: 01-home-screen
 
 # --- Section 2: Tap Search tab → ranking loaded ---
@@ -30,8 +30,8 @@ appId: com.gonggu.wish
 - assertVisible: "홈 탭"
 - assertVisible: "랭킹 탭"
 - assertVisible: "Submit 탭"
-- assertVisible: "Community 탭"
-- assertVisible: "MyPage 탭"
+- assertVisible: "커뮤니티 탭"
+- assertVisible: "MY 탭"
 
 # --- Section 3: Following Sellers tab (different viewport) ---
 - tapOn: "팔로잉 셀러 탭"

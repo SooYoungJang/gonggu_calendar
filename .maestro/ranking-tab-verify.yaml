@@ -7,8 +7,8 @@ appId: com.gonggu.wish
 - assertVisible: "홈"
 - assertVisible: "랭킹 탭"
 - assertVisible: "Submit"
-- assertVisible: "Community"
-- assertVisible: "MyPage"
+- assertVisible: "커뮤니티"
+- assertVisible: "MY"
 - takeScreenshot: 01-home-screen
 - tapOn: "랭킹 탭"
 - waitForAnimationToEnd
@@ -19,6 +19,6 @@ appId: com.gonggu.wish
 - assertVisible: "홈"
 - assertVisible: "랭킹 탭"
 - assertVisible: "Submit"
-- assertVisible: "Community"
-- assertVisible: "MyPage"
+- assertVisible: "커뮤니티"
+- assertVisible: "MY"
 - takeScreenshot: 03-search-ranking-tabbar-intact
