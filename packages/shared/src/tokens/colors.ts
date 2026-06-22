@@ -6,7 +6,7 @@
  * Platform-specific conversion utilities provided at the bottom.
  *
  * Architecture:
- *   primary  — brand blue (v2 unified: oklch(0.58 0.22 260))
+ *   primary  — Airbnb Rausch coral (v2: oklch(0.66 0.231 17))
  *   accent   — Instagram pink (#e1306c / oklch(0.6 0.21 7))
  *   semantic — status colors (success, warning, error)
  *   neutral  — gray scale (warm-tinted)
@@ -26,22 +26,22 @@
 // ============================================================================
 
 /**
- * Primary brand — Cool blue
- * v2 unified value: oklch(0.58 0.22 260) — slightly deeper hue than Tailwind blue-500
- * Hue 260 = blue-violet quadrant, between Tailwind blue (252°) and indigo (270°)
+ * Primary brand — Airbnb Rausch coral
+ * v2 unified value: oklch(0.66 0.231 17) — Airbnb Rausch coral (#ff385c)
+ * Hue 17 = coral-red quadrant, warm and energetic — inspired by Airbnb's brand
  */
 export const primary = {
-  50: 'oklch(0.97 0.03 260)',
-  100: 'oklch(0.93 0.06 260)',
-  200: 'oklch(0.88 0.1 260)',
-  300: 'oklch(0.81 0.15 260)',
-  400: 'oklch(0.71 0.19 260)',
-  500: 'oklch(0.58 0.22 260)',  // ★ v2 unified brand color
-  600: 'oklch(0.51 0.22 260)',
-  700: 'oklch(0.44 0.2 260)',
-  800: 'oklch(0.37 0.17 260)',
-  900: 'oklch(0.31 0.14 260)',
-  950: 'oklch(0.26 0.11 260)',
+  50: 'oklch(0.97 0.02 17)',
+  100: 'oklch(0.93 0.05 17)',
+  200: 'oklch(0.86 0.10 17)',
+  300: 'oklch(0.78 0.15 17)',
+  400: 'oklch(0.72 0.19 17)',
+  500: 'oklch(0.66 0.231 17)',  // ★ Airbnb Rausch (#ff385c)
+  600: 'oklch(0.58 0.22 17)',   // ★ primary-active (#e00b41)
+  700: 'oklch(0.49 0.19 17)',
+  800: 'oklch(0.41 0.16 17)',
+  900: 'oklch(0.34 0.13 17)',
+  950: 'oklch(0.28 0.10 17)',
 } as const;
 
 /**
@@ -214,7 +214,7 @@ export const text = {
   tertiary: 'oklch(0.55 0.01 250)',
   inverse: 'oklch(1 0 0)',
   disabled: 'oklch(0.7 0.01 250)',
-  link: 'oklch(0.58 0.22 260)',
+  link: 'oklch(0.66 0.231 17)',
 } as const;
 
 /**
@@ -223,7 +223,7 @@ export const text = {
 export const border = {
   primary: 'oklch(0.9 0.01 250)',
   secondary: 'oklch(0.82 0.01 250)',
-  focus: 'oklch(0.58 0.22 260)',
+  focus: 'oklch(0.66 0.231 17)',
   error: 'oklch(0.62 0.22 25)',
 } as const;
 
@@ -310,7 +310,7 @@ export type RankingTokens = typeof ranking;
 // ============================================================================
 
 /**
- * Parse an OKLCH string like "oklch(0.58 0.22 260)" or "oklch(0 0 0 / 0.5)"
+ * Parse an OKLCH string like "oklch(0.66 0.231 17)" or "oklch(0 0 0 / 0.5)"
  * Returns { l, c, h, alpha? }
  */
 export function parseOklch(value: string): {

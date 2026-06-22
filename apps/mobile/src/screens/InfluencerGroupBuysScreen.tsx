@@ -1,4 +1,4 @@
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 
@@ -6,7 +6,8 @@ import { fallbackGroupBuys, fetchGroupBuysByInfluencer } from '../api';
 import { AlertCard } from '../components/AlertCard';
 import { AppButton } from '../components/AppButton';
 import { ScreenHeader } from '../components/ScreenHeader';
-import { borderRadius, colors, spacing, typography } from '../design/tokens';
+import { SText } from '../components/ui/SText';
+import { borderRadius, colors, spacing } from '../design/tokens';
 import type { GroupBuy, InfluencerGroupBuysScreenProps } from '../types';
 
 function getFallbackGroupBuysByInfluencer(username: string): GroupBuy[] {
@@ -43,7 +44,7 @@ export function InfluencerGroupBuysScreen({ navigation, route }: InfluencerGroup
 
         {isError ? (
           <View style={styles.notice}>
-            <Text style={styles.noticeText}>로컬 API가 꺼져 있어 샘플 데이터를 표시 중입니다.</Text>
+            <SText variant="caption" style={{ color: colors.noticeText, textAlign: 'center' }}>로컬 API가 꺼져 있어 샘플 데이터를 표시 중입니다.</SText>
           </View>
         ) : null}
 
@@ -56,8 +57,8 @@ export function InfluencerGroupBuysScreen({ navigation, route }: InfluencerGroup
               <ActivityIndicator color={colors.primary} />
             ) : (
               <View style={styles.emptyState}>
-                <Text style={styles.emptyTitle}>아직 표시할 공구가 없어요</Text>
-                <Text style={styles.emptyText}>이 인플루언서의 승인된 공동구매가 등록되면 여기에서 확인할 수 있습니다.</Text>
+                <SText variant="cardTitle" style={{ marginBottom: spacing.xs, textAlign: 'center' }}>아직 표시할 공구가 없어요</SText>
+                <SText variant="body" style={{ textAlign: 'center' }}>이 인플루언서의 승인된 공동구매가 등록되면 여기에서 확인할 수 있습니다.</SText>
               </View>
             )
           }
@@ -77,7 +78,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   backButton: { alignSelf: 'flex-start', marginTop: 0, paddingHorizontal: spacing.lg, paddingVertical: 10 },
   notice: { backgroundColor: colors.warningBg, borderRadius: borderRadius.sm, marginBottom: spacing.lg, padding: spacing.md },
-  noticeText: { color: colors.noticeText, fontSize: 13, textAlign: 'center' },
   listContent: { flexGrow: 1, paddingBottom: spacing['2xl'] },
   emptyState: {
     alignItems: 'center',
@@ -87,14 +87,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginTop: spacing.md,
     padding: spacing['2xl'],
-  },
-  emptyTitle: {
-    ...typography.cardTitle,
-    marginBottom: spacing.xs,
-    textAlign: 'center',
-  },
-  emptyText: {
-    ...typography.body,
-    textAlign: 'center',
   },
 });

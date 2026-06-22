@@ -95,7 +95,7 @@ The mobile consumer app and the web admin operator tool serve **different jobs**
 | `--color-primary-600` | `oklch(0.54 0.25 252)` → `#2563eb` | — | Button hover state |
 | `--color-primary-50` | `#eff6ff` | — | Light background (status-review-bg) |
 
-> **v2 goal:** Lock ONE primary blue value for both platforms. Recommended: `oklch(0.58 0.22 260)`.
+> **v2 goal:** Lock ONE primary color for both platforms. Recommended: `oklch(0.66 0.231 17)` — Airbnb Rausch coral `#ff385c`.
 
 #### Accent (v2 addition — both platforms)
 

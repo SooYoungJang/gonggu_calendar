@@ -7,7 +7,7 @@
  * color, spacing, radius, elevation, typography, and motion decisions to
  * the shared cross-platform token package.
  *
- * Primary (v2 unified): oklch(0.58 0.22 260)
+ * Primary (v2 unified — Airbnb Rausch): oklch(0.66 0.231 17) (#ff385c)
  * Accent (Instagram pink): oklch(0.6 0.21 7) / #e1306c
  */
 

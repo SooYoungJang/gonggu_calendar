@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
+import { SText } from '../../components/ui/SText';
 import { borderRadius, colors, spacing } from '../../design/tokens';
 
 type WeeklyCalendarStripProps = {
@@ -26,26 +27,26 @@ export function WeeklyCalendarStrip({ onPressCalendar }: WeeklyCalendarStripProp
   return (
     <View style={styles.calendarSection}>
       <View style={styles.calendarTitleRow}>
-        <Text style={styles.calendarTitle}>이번주 공구</Text>
+        <SText variant="cardTitle">이번주 공구</SText>
         <Pressable
           accessibilityLabel="전체 캘린더 보기"
           accessibilityRole="button"
           onPress={onPressCalendar}
           style={styles.calendarViewAll}
         >
-          <Text style={styles.calendarViewAllText}>전체보기</Text>
+          <SText variant="cardBrand">전체보기</SText>
         </Pressable>
       </View>
       <View style={styles.calendarStrip}>
         {weekDays.map((day) => (
           <View key={`${day.label}-${day.day}`} style={styles.calendarDay}>
-            <Text style={[styles.calendarWeekLabel, day.selected && styles.calendarWeekLabelSelected]}>
+            <SText variant="caption">
               {day.label}
-            </Text>
+            </SText>
             <View style={[styles.calendarDateCircle, day.selected && styles.calendarDateCircleSelected]}>
-              <Text style={[styles.calendarDateText, day.selected && styles.calendarDateTextSelected]}>
+              <SText variant="label">
                 {day.day}
-              </Text>
+              </SText>
             </View>
           </View>
         ))}

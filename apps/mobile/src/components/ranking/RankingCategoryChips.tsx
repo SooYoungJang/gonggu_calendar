@@ -1,4 +1,6 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+
+import { SText } from '../ui/SText';
 
 import { borderRadius, categoryColors, colors, spacing } from '../../design/tokens';
 import {
@@ -47,9 +49,9 @@ export function RankingCategoryChips({ value, categories, sort, onChange, onChan
                 },
               ]}
             >
-              <Text style={[styles.categoryText, { color: selected ? palette.text : colors.textSecondary }]}>
+              <SText variant="body" style={[{ fontWeight: '800', includeFontPadding: false }, { color: selected ? palette.text : colors.textSecondary }]}>
                 {RANKING_CATEGORY_LABELS[category]}
-              </Text>
+              </SText>
             </Pressable>
           );
         })}
@@ -68,7 +70,7 @@ export function RankingCategoryChips({ value, categories, sort, onChange, onChan
               onPress={() => onChangeSort(chip.key)}
               style={[styles.sortChip, selected && styles.selectedSortChip]}
             >
-              <Text style={[styles.sortText, selected && styles.selectedSortText]}>{chip.label}</Text>
+              <SText variant="caption" style={[{ fontWeight: '800', includeFontPadding: false, color: colors.textSecondary }, selected && { color: colors.textInverse }]}>{chip.label}</SText>
             </Pressable>
           );
         })}
@@ -87,11 +89,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: 0,
   },
-  categoryText: {
-    fontSize: 13,
-    fontWeight: '800',
-    includeFontPadding: false,
-  },
   chipRow: {
     gap: spacing.sm,
     paddingHorizontal: spacing.lg,
@@ -99,9 +96,6 @@ const styles = StyleSheet.create({
   selectedSortChip: {
     backgroundColor: colors.textPrimary,
     borderColor: colors.textPrimary,
-  },
-  selectedSortText: {
-    color: colors.textInverse,
   },
   sortChip: {
     alignItems: 'center',
@@ -112,12 +106,6 @@ const styles = StyleSheet.create({
     height: 32,
     paddingHorizontal: spacing.md,
     paddingVertical: 0,
-  },
-  sortText: {
-    color: colors.textSecondary,
-    fontSize: 12,
-    fontWeight: '800',
-    includeFontPadding: false,
   },
   subChipRow: {
     gap: spacing.sm,

@@ -1,4 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+
+import { SText } from '../ui/SText';
 
 import { borderRadius, colors, shadows, spacing } from '../../design/tokens';
 import type { RankingThumbnail, SellerRanking } from '../../features/ranking/types';
@@ -30,22 +32,22 @@ export function SellerRankingRow({ item, onPress, onPressThumbnail, onToggleFoll
         <View style={styles.rankAvatarGroup}>
           <RankBadge rank={item.rank} />
           <View style={styles.avatarCircle}>
-            <Text style={styles.avatarText}>{item.displayName.charAt(0)}</Text>
+            <SText variant="title" style={{ fontSize: 18, fontWeight: '900', marginBottom: 0 }}>{item.displayName.charAt(0)}</SText>
           </View>
         </View>
 
         <View style={styles.infoColumn}>
           <View style={styles.nameRow}>
-            <Text numberOfLines={1} style={styles.displayName}>
+            <SText variant="body" style={{ flex: 1, fontWeight: '800', minWidth: 0 }} numberOfLines={1}>
               {item.displayName}
-            </Text>
+            </SText>
             {item.isSponsored ? <AdBadge /> : null}
           </View>
 
-          <Text numberOfLines={1} style={styles.meta}>
+          <SText variant="caption" style={{ fontWeight: '600', minWidth: 0, overflow: 'hidden' }} numberOfLines={1}>
             @{item.username} · 공구 {item.activeDealCount}개
             {typeof item.followerCount === 'number' ? ` · 팔로워 ${formatCompactCount(item.followerCount)}` : ''}
-          </Text>
+          </SText>
         </View>
 
         <View style={styles.endColumn}>
@@ -81,18 +83,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 42,
   },
-  avatarText: {
-    color: colors.textPrimary,
-    fontSize: 18,
-    fontWeight: '900',
-  },
-  displayName: {
-    color: colors.textPrimary,
-    flex: 1,
-    fontSize: 15,
-    fontWeight: '800',
-    minWidth: 0,
-  },
   endColumn: {
     alignItems: 'flex-end',
     gap: spacing.xs,
@@ -108,13 +98,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     flexDirection: 'row',
     gap: spacing.sm,
-  },
-  meta: {
-    color: colors.textTertiary,
-    fontSize: 12,
-    fontWeight: '600',
-    minWidth: 0,
-    overflow: 'hidden',
   },
   nameRow: {
     alignItems: 'center',

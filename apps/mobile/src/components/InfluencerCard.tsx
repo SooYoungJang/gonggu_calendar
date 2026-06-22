@@ -1,4 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+
+import { SText } from './ui/SText';
 
 import { borderRadius, colors, shadows, spacing } from '../design/tokens';
 import type { Influencer } from '../types';
@@ -20,20 +22,20 @@ export function InfluencerCard({ influencer, onPress }: InfluencerCardProps) {
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
       <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{initials}</Text>
+        <SText variant="cardBrand" style={{ color: colors.accent, fontWeight: '800' }}>{initials}</SText>
       </View>
 
       <View style={styles.info}>
-        <Text style={styles.username} numberOfLines={1}>
+        <SText variant="subtitle" style={{ color: colors.textPrimary, fontWeight: '800', marginBottom: spacing.xxs }} numberOfLines={1}>
           @{username}
-        </Text>
-        <Text style={styles.displayName} numberOfLines={1}>
+        </SText>
+        <SText variant="cardBrand" numberOfLines={1}>
           {displayName}
-        </Text>
+        </SText>
       </View>
 
       <View style={styles.ctaPill}>
-        <Text style={styles.ctaText}>공구 보기</Text>
+        <SText variant="badge" style={{ fontSize: 11, fontWeight: '700' }}>공구 보기</SText>
       </View>
     </Pressable>
   );
@@ -64,33 +66,13 @@ const styles = StyleSheet.create({
     marginRight: spacing.md,
     width: 44,
   },
-  avatarText: {
-    color: colors.accent,
-    fontSize: 13,
-    fontWeight: '800',
-  },
   info: {
     flex: 1,
-  },
-  username: {
-    color: colors.textPrimary,
-    fontSize: 15,
-    fontWeight: '800',
-    marginBottom: spacing.xxs,
-  },
-  displayName: {
-    color: colors.textSecondary,
-    fontSize: 13,
   },
   ctaPill: {
     backgroundColor: colors.badgeBg,
     borderRadius: borderRadius.full,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
-  },
-  ctaText: {
-    color: colors.badgeText,
-    fontSize: 11,
-    fontWeight: '700',
   },
 });

@@ -1,4 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+
+import { SText } from '../../components/ui/SText';
 
 import { borderRadius, colors, spacing } from '../../design/tokens';
 
@@ -9,15 +11,15 @@ type SubmitPromptProps = {
 export function SubmitPrompt({ onPressSubmit }: SubmitPromptProps) {
   return (
     <View style={styles.submitPrompt}>
-      <Text style={styles.submitPromptTitle}>놓치기 아까운 공구를 제보해 주세요</Text>
-      <Text style={styles.submitPromptText}>승인된 제보만 캘린더와 알림에 표시돼요.</Text>
+      <SText variant="cardTitle">놓치기 아까운 공구를 제보해 주세요</SText>
+      <SText variant="cardSummary">승인된 제보만 캘린더와 알림에 표시돼요.</SText>
       <Pressable
         accessibilityLabel="공구 제보하기"
         accessibilityRole="button"
         onPress={onPressSubmit}
         style={styles.submitPromptButton}
       >
-        <Text style={styles.submitPromptButtonText}>공구 제보하기</Text>
+        <SText variant="label">공구 제보하기</SText>
       </Pressable>
     </View>
   );

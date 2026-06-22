@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { SText } from '../../components/ui/SText';
 
 import { borderRadius, colors, spacing, typography } from '../../design/tokens';
 import type { GroupBuy } from '../../types';
@@ -34,8 +35,8 @@ export function ExpiringSoonSection({ groupBuys, onPressDeal }: ExpiringSoonSect
   return (
     <View style={styles.section}>
       <View style={styles.header}>
-        <Text style={styles.title}>마감임박 공구</Text>
-        <Text style={styles.action}>전체보기</Text>
+        <SText variant="cardTitle">마감임박 공구</SText>
+        <SText variant="cardBrand">전체보기</SText>
       </View>
       {expiringItems.length > 0 ? (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scroll}>
@@ -47,7 +48,7 @@ export function ExpiringSoonSection({ groupBuys, onPressDeal }: ExpiringSoonSect
         </ScrollView>
       ) : (
         <View style={styles.empty}>
-          <Text style={styles.emptyText}>마감임박 공구가 없습니다</Text>
+          <SText variant="body">마감임박 공구가 없습니다</SText>
         </View>
       )}
     </View>

@@ -1,4 +1,5 @@
-import { ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ImageBackground, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { SText } from '../../components/ui/SText';
 
 import { cardOverlayGradientStops, colors, shadows, spacing } from '../../design/tokens';
 import type { GroupBuy } from '../../types';
@@ -23,11 +24,11 @@ function BannerCard({ item, onPress }: { item: GroupBuy; onPress: () => void }) 
       >
         <View style={styles.bannerOverlayTop} />
         <View style={styles.bannerOverlayBottom}>
-          <Text style={styles.bannerEyebrow}>이달의 공구</Text>
-          <Text style={styles.bannerTitle}>{item.productName ?? '새 공동구매'}</Text>
-          <Text style={styles.bannerMeta}>
+          <SText variant="eyebrow" style={styles.bannerEyebrow}>이달의 공구</SText>
+          <SText variant="cardTitle" style={styles.bannerTitle}>{item.productName ?? '새 공동구매'}</SText>
+          <SText variant="cardBrand" style={styles.bannerMeta}>
             {item.brandName ?? `@${item.rawPost.influencer.instagramUsername}`} · {item.discountInfo ?? '혜택 확인'}
-          </Text>
+          </SText>
         </View>
       </ImageBackground>
     </Pressable>
@@ -37,7 +38,7 @@ function BannerCard({ item, onPress }: { item: GroupBuy; onPress: () => void }) 
 export function MonthlyBannerCarousel({ groupBuys, onPressDeal }: MonthlyBannerCarouselProps) {
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>이달의 공구</Text>
+      <SText variant="cardTitle" style={styles.sectionTitle}>이달의 공구</SText>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.bannerCarousel}>
         {groupBuys.slice(0, 4).map((item) => (
           <BannerCard key={item.id} item={item} onPress={() => onPressDeal(item)} />

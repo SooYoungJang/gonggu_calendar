@@ -191,8 +191,56 @@ describe('SText', () => {
     }
   });
 
+  it('applies subtitle typography for variant="subtitle"', () => {
+    let renderer: TestRenderer.ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(<SText variant="subtitle">Subtitle</SText>);
+    });
+    const json = renderer!.toJSON();
+    expect(json).not.toBeNull();
+    if (json && !Array.isArray(json)) {
+      expect(json.props.style).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ fontSize: 15 }),
+        ]),
+      );
+    }
+  });
+
+  it('applies cardBrand typography for variant="cardBrand"', () => {
+    let renderer: TestRenderer.ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(<SText variant="cardBrand">Brand</SText>);
+    });
+    const json = renderer!.toJSON();
+    expect(json).not.toBeNull();
+    if (json && !Array.isArray(json)) {
+      expect(json.props.style).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ color: expect.any(String) }),
+        ]),
+      );
+    }
+  });
+
+  it('applies cardSummary typography for variant="cardSummary"', () => {
+    let renderer: TestRenderer.ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(<SText variant="cardSummary">Summary</SText>);
+    });
+    const json = renderer!.toJSON();
+    expect(json).not.toBeNull();
+    if (json && !Array.isArray(json)) {
+      expect(json.props.style).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ lineHeight: 20 }),
+        ]),
+      );
+    }
+  });
+
   it('all type variants are assignable and render', () => {
-    const variants = ['eyebrow', 'title', 'cardTitle', 'body', 'caption', 'label', 'badge'] as const;
+    const variants = ['eyebrow', 'title', 'subtitle', 'cardTitle', 'cardBrand', 'cardSummary', 'body', 'caption', 'label', 'badge'] as const;
     for (const v of variants) {
       let renderer: TestRenderer.ReactTestRenderer;
       act(() => {

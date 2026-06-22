@@ -47,8 +47,9 @@ export type SellerRankingQuery = {
 };
 
 export const API_BASE_URL = Platform.select({
-  android: 'http://10.0.2.2:3000/api/v1',
-  default: 'http://localhost:3000/api/v1',
+  android: 'http://10.0.2.2:3003/api/v1',
+  ios: 'http://localhost:3003/api/v1',
+  default: 'http://192.168.219.122:3003/api/v1',
 });
 
 export const fallbackGroupBuys: GroupBuy[] = [
@@ -145,13 +146,22 @@ export async function fetchGroupBuys() {
 }
 
 export async function fetchFeeds(page = 1, limit = 20): Promise<FeedPostListResponse> {
-  const response = await fetch(`${API_BASE_URL}/feeds?page=${page}&limit=${limit}`);
+  try {
+    const response = await fetch(`${API_BASE_URL}/feeds?page=${page}&limit=${limit}`);
 
-  if (!response.ok) {
-    throw new Error('Feeds API unavailable');
+    if (!response.ok) {
+      const body = await response.text();
+      console.log('[Feed] HTTP error:', response.status, body.substring(0, 300));
+      throw new Error('Feeds API unavailable');
+    }
+
+    const data = (await response.json()) as FeedPostListResponse;
+    console.log('[Feed] success, items:', data?.items?.length);
+    return data;
+  } catch (error) {
+    console.log('[Feed] fetch failed:', error instanceof Error ? error.message : String(error));
+    throw error;
   }
-
-  return (await response.json()) as FeedPostListResponse;
 }
 
 export async function fetchFeedPost(id: string): Promise<FeedPost> {

@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { SText } from '../ui/SText';
 
-import { borderRadius, colors, shadows, spacing, typography } from '../../design/tokens';
+import { borderRadius, colors, shadows, spacing } from '../../design/tokens';
 
 type HomeHeaderProps = {
   onOpenBookmarks: () => void;
@@ -11,8 +12,8 @@ export function HomeHeader({ onOpenBookmarks, onOpenNotifications }: HomeHeaderP
   return (
     <View style={styles.header}>
       <View>
-        <Text style={styles.headerEyebrow}>GongGu Alert</Text>
-        <Text style={styles.appName}>공구캘린더</Text>
+        <SText variant="eyebrow">GongGu Alert</SText>
+        <SText variant="title" style={{ fontWeight: '800' }}>공구캘린더</SText>
       </View>
       <View style={styles.headerActions}>
         <Pressable
@@ -21,7 +22,7 @@ export function HomeHeader({ onOpenBookmarks, onOpenNotifications }: HomeHeaderP
           onPress={onOpenBookmarks}
           style={styles.iconButton}
         >
-          <Text style={styles.iconButtonText}>⌑</Text>
+          <SText variant="cardTitle">⌑</SText>
         </Pressable>
         <Pressable
           accessibilityLabel="알림 열기"
@@ -29,7 +30,7 @@ export function HomeHeader({ onOpenBookmarks, onOpenNotifications }: HomeHeaderP
           onPress={onOpenNotifications}
           style={styles.iconButton}
         >
-          <Text style={styles.iconButtonText}>◔</Text>
+          <SText variant="cardTitle">◔</SText>
         </Pressable>
       </View>
     </View>
@@ -43,8 +44,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: spacing.lg,
   },
-  headerEyebrow: { ...typography.eyebrow, marginBottom: spacing.xs },
-  appName: { color: colors.textPrimary, fontSize: 28, fontWeight: '800' },
   headerActions: { flexDirection: 'row', gap: spacing.sm },
   iconButton: {
     alignItems: 'center',
@@ -57,5 +56,4 @@ const styles = StyleSheet.create({
     minWidth: 44,
     ...shadows.sm,
   },
-  iconButtonText: { color: colors.textPrimary, fontSize: 18, fontWeight: '700' },
 });

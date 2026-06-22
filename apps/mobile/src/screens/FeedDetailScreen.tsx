@@ -1,11 +1,12 @@
-import { ActivityIndicator, Image, Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Linking, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchFeedPost } from '../api';
 import { AppButton } from '../components/AppButton';
 import { InstagramCard } from '../components/InstagramCard';
-import { borderRadius, colors, spacing, typography } from '../design/tokens';
+import { SText } from '../components/ui/SText';
+import { borderRadius, colors, spacing } from '../design/tokens';
 import type { FeedDetailScreenProps } from '../types';
 
 function formatDateRange(openDate: string | null, closeDate: string | null): {
@@ -58,7 +59,9 @@ export function FeedDetailScreen({ route, navigation }: FeedDetailScreenProps) {
     return (
       <SafeAreaView edges={['bottom', 'top']} style={styles.safeArea}>
         <View style={styles.centered}>
-          <Text style={styles.errorText}>피드를 불러올 수 없습니다.</Text>
+          <SText variant="subtitle" style={{ fontSize: 16, marginBottom: spacing.lg }}>
+            피드를 불러올 수 없습니다.
+          </SText>
           <AppButton variant="secondary" onPress={() => navigation.goBack()}>
             뒤로 가기
           </AppButton>
@@ -90,14 +93,14 @@ export function FeedDetailScreen({ route, navigation }: FeedDetailScreenProps) {
             ) : null}
             {isVideo ? (
               <View style={styles.videoPlaceholder}>
-                <Text style={styles.videoIcon}>▶</Text>
-                <Text style={styles.videoLabel}>영상</Text>
+                <SText variant="body" style={{ fontSize: 48, color: '#fff', marginBottom: spacing.sm }}>▶</SText>
+                <SText variant="caption" style={{ fontSize: 14 }}>영상</SText>
               </View>
             ) : null}
             <View style={styles.mediaTypeBadge}>
-              <Text style={styles.mediaTypeText}>
+              <SText variant="caption" style={{ fontSize: 11, fontWeight: '700', color: '#fff', letterSpacing: 1 }}>
                 {isVideo ? 'VIDEO' : 'IMAGE'}
-              </Text>
+              </SText>
             </View>
           </View>
         ) : null}
@@ -107,26 +110,28 @@ export function FeedDetailScreen({ route, navigation }: FeedDetailScreenProps) {
           <InstagramCard>
             {/* Account Name */}
             {feed.accountName ? (
-              <Text style={styles.accountName}>
+              <SText variant="eyebrow" style={{ fontSize: 15, marginBottom: spacing.md }}>
                 @{feed.accountName}
-              </Text>
+              </SText>
             ) : null}
 
             {/* Caption */}
             {feed.caption ? (
-              <Text style={styles.caption}>{feed.caption}</Text>
+              <SText variant="body" style={{ color: colors.textPrimary, fontSize: 15, lineHeight: 24, marginBottom: spacing.lg }}>
+                {feed.caption}
+              </SText>
             ) : null}
 
             {/* Date Range */}
             <View style={styles.dateRow}>
-              <Text style={styles.dateLabel}>일정</Text>
+              <SText variant="label" style={{ marginRight: spacing.md, width: 48 }}>일정</SText>
               <View style={styles.dateValueRow}>
-                <Text style={[styles.dateValue, dateInfo.isExpired && styles.dateExpired]}>
+                <SText variant="body" style={[{ fontSize: 14 }, dateInfo.isExpired && { color: colors.error, textDecorationLine: 'line-through' }]}>
                   {dateInfo.label}
-                </Text>
+                </SText>
                 {dateInfo.isExpired ? (
                   <View style={styles.expiredBadge}>
-                    <Text style={styles.expiredBadgeText}>마감</Text>
+                    <SText variant="caption" style={{ fontSize: 11, fontWeight: '700', color: colors.error }}>마감</SText>
                   </View>
                 ) : null}
               </View>
@@ -162,11 +167,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: spacing['2xl'],
   },
-  errorText: {
-    color: colors.textSecondary,
-    fontSize: 16,
-    marginBottom: spacing.lg,
-  },
   scrollContent: { paddingBottom: spacing['4xl'] },
   /* ── Media ── */
   mediaContainer: {
@@ -184,15 +184,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     justifyContent: 'center',
   },
-  videoIcon: {
-    color: '#fff',
-    fontSize: 48,
-    marginBottom: spacing.sm,
-  },
-  videoLabel: {
-    color: colors.textTertiary,
-    fontSize: 14,
-  },
   mediaTypeBadge: {
     backgroundColor: 'rgba(0,0,0,0.6)',
     borderRadius: borderRadius.sm,
@@ -202,28 +193,10 @@ const styles = StyleSheet.create({
     right: spacing.sm,
     top: spacing.sm,
   },
-  mediaTypeText: {
-    color: '#fff',
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1,
-  },
   /* ── Content ── */
   contentSection: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
-  },
-  accountName: {
-    ...typography.eyebrow,
-    fontSize: 15,
-    marginBottom: spacing.md,
-  },
-  caption: {
-    ...typography.body,
-    color: colors.textPrimary,
-    fontSize: 15,
-    lineHeight: 24,
-    marginBottom: spacing.lg,
   },
   dateRow: {
     borderTopColor: colors.divider,
@@ -231,23 +204,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingTop: spacing.md,
   },
-  dateLabel: {
-    ...typography.label,
-    marginRight: spacing.md,
-    width: 48,
-  },
   dateValueRow: {
     alignItems: 'center',
     flex: 1,
     flexDirection: 'row',
-  },
-  dateValue: {
-    color: colors.textSecondary,
-    fontSize: 14,
-  },
-  dateExpired: {
-    color: colors.error,
-    textDecorationLine: 'line-through',
   },
   expiredBadge: {
     backgroundColor: colors.errorBg,
@@ -255,11 +215,6 @@ const styles = StyleSheet.create({
     marginLeft: spacing.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-  },
-  expiredBadgeText: {
-    color: colors.error,
-    fontSize: 11,
-    fontWeight: '700',
   },
   ctaButton: {
     marginTop: spacing.lg,

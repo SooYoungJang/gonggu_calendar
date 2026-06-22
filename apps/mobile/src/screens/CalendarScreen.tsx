@@ -6,7 +6,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   View,
   useWindowDimensions,
 } from 'react-native';
@@ -15,6 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { fallbackGroupBuys, fetchGroupBuys } from '../api';
 import { DealCard } from '../components/DealCard';
+import { SText } from '../components/ui/SText';
 import { borderRadius, colors, shadows, spacing } from '../design/tokens';
 import type { CategoryColorName } from '../design/tokens';
 import type { CalendarScreenProps, GroupBuy } from '../types';
@@ -150,7 +150,9 @@ function CalendarHeader({
         onPress={onToday}
         style={styles.todayButton}
       >
-        <Text style={styles.todayButtonText}>오늘</Text>
+        <SText variant="body" style={{ color: colors.textInverse, fontSize: 14, fontWeight: '800' }}>
+          오늘
+        </SText>
       </Pressable>
 
       {/* Center: navigation arrows + title */}
@@ -161,16 +163,18 @@ function CalendarHeader({
           onPress={onPrevMonth}
           style={styles.navArrow}
         >
-          <Text style={styles.navArrowText}>◀</Text>
+          <SText variant="body" style={{ fontSize: 16 }}>◀</SText>
         </Pressable>
-        <Text style={styles.headerTitle}>{label}</Text>
+        <SText variant="cardTitle" style={{ fontSize: 20, fontWeight: '800', minWidth: 110, textAlign: 'center' }}>
+          {label}
+        </SText>
         <Pressable
           accessibilityLabel="다음 달"
           accessibilityRole="button"
           onPress={onNextMonth}
           style={styles.navArrow}
         >
-          <Text style={styles.navArrowText}>▶</Text>
+          <SText variant="body" style={{ fontSize: 16 }}>▶</SText>
         </Pressable>
       </View>
 
@@ -188,14 +192,15 @@ function CalendarHeader({
           },
         ]}
       >
-        <Text
+        <SText
+          variant="cardBrand"
           style={[
-            styles.filterChipText,
+            { fontWeight: '700' },
             { color: showFollowedOnly ? colors.textInverse : colors.textSecondary },
           ]}
         >
           {showFollowedOnly ? '✓ 팔로잉' : '팔로잉만 보기'}
-        </Text>
+        </SText>
       </Pressable>
     </View>
   );
@@ -206,9 +211,9 @@ function WeekdayHeader() {
     <View style={styles.weekdayRow}>
       {WEEKDAY_LABELS.map((label) => (
         <View key={label} style={styles.weekdayCell}>
-          <Text style={[styles.weekdayText, (label === '토' || label === '일') && styles.weekendText]}>
+          <SText variant="caption" style={[{ fontWeight: '700' }, label === '토' || label === '일' ? { color: colors.textSecondary } : undefined]}>
             {label}
-          </Text>
+          </SText>
         </View>
       ))}
     </View>
@@ -244,16 +249,17 @@ function DayCell({
         isSelected && styles.dayCellSelected,
       ]}
     >
-      <Text
+      <SText
+        variant="subtitle"
         style={[
-          styles.dayText,
-          !isCurrentMonth && styles.dayTextOtherMonth,
-          isTodayDate && !isSelected && styles.dayTextToday,
-          isSelected && styles.dayTextSelected,
+          { color: colors.textPrimary, fontWeight: '700', marginBottom: 0 },
+          !isCurrentMonth && { color: colors.textPrimary },
+          isTodayDate && !isSelected && { color: colors.ctaPurple },
+          isSelected && { color: colors.ctaPurpleText },
         ]}
       >
         {day}
-      </Text>
+      </SText>
       {hasGroupBuys ? (
         <View
           style={[
@@ -411,14 +417,14 @@ export function CalendarScreen({ navigation, route }: CalendarScreenProps) {
 
         {/* Bottom: Selected date's group buys */}
         <View style={styles.dealsHeader}>
-          <Text style={styles.dealsTitle}>
+          <SText variant="cardTitle" style={{ fontSize: 17, fontWeight: '800' }}>
             {selectedDateKey === formatDateKey(today)
               ? '오늘의 공구'
               : `${selectedDate.getMonth() + 1}월 ${selectedDate.getDate()}일 공구`}
-          </Text>
-          <Text style={styles.dealsCount}>
+          </SText>
+          <SText variant="label">
             {showFollowedOnly ? `${selectedDateGroupBuys.length}개 (팔로잉)` : `${selectedDateGroupBuys.length}개`}
-          </Text>
+          </SText>
         </View>
 
         {isFetching && groupBuys.length === 0 ? (
@@ -441,14 +447,14 @@ export function CalendarScreen({ navigation, route }: CalendarScreenProps) {
           </ScrollView>
         ) : (
           <View style={styles.emptyDeals}>
-            <Text style={styles.emptyDealsTitle}>
+            <SText variant="subtitle" style={{ color: colors.textPrimary, fontWeight: '700', marginBottom: spacing.xs }}>
               {showFollowedOnly ? '팔로잉 중인 인플루언서의 공구가 없어요' : '이 날짜의 공구가 없어요'}
-            </Text>
-            <Text style={styles.emptyDealsText}>
+            </SText>
+            <SText variant="caption" style={{ fontSize: 13 }}>
               {showFollowedOnly
                 ? '필터를 해제하거나 다른 날짜를 선택해보세요.'
                 : '아직 등록된 공동구매가 없습니다.'}
-            </Text>
+            </SText>
           </View>
         )}
       </View>
@@ -475,22 +481,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.md,
   },
-  headerTitle: {
-    color: colors.textPrimary,
-    fontSize: 20,
-    fontWeight: '800',
-    minWidth: 110,
-    textAlign: 'center',
-  },
   navArrow: {
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 44,
     minWidth: 44,
-  },
-  navArrowText: {
-    color: colors.textSecondary,
-    fontSize: 16,
   },
   todayButton: {
     alignItems: 'center',
@@ -500,12 +495,6 @@ const styles = StyleSheet.create({
     minHeight: 36,
     paddingHorizontal: spacing.lg,
   },
-  todayButtonText: {
-    color: colors.textInverse,
-    fontSize: 14,
-    fontWeight: '800',
-  },
-
   // Filter chip (integrated into headerRow)
   filterChip: {
     alignItems: 'center',
@@ -516,11 +505,6 @@ const styles = StyleSheet.create({
     minHeight: 34,
     paddingHorizontal: spacing.lg,
   },
-  filterChipText: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-
   // Calendar grid
   calendarWrapper: {
     backgroundColor: colors.surface,
@@ -539,14 +523,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     minHeight: 32,
-  },
-  weekdayText: {
-    color: colors.textTertiary,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  weekendText: {
-    color: colors.textSecondary,
   },
   gridContainer: {
     gap: spacing.xxs,
@@ -576,20 +552,6 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.full,
     borderWidth: 0,
   },
-  dayText: {
-    color: colors.textPrimary,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  dayTextOtherMonth: {
-    color: colors.textPrimary,
-  },
-  dayTextToday: {
-    color: colors.ctaPurple,
-  },
-  dayTextSelected: {
-    color: colors.ctaPurpleText,
-  },
 
   // Dot indicator
   dot: {
@@ -617,16 +579,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     paddingTop: spacing.md,
   },
-  dealsTitle: {
-    color: colors.textPrimary,
-    fontSize: 17,
-    fontWeight: '800',
-  },
-  dealsCount: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    fontWeight: '600',
-  },
   dealsGrid: {
     paddingBottom: spacing['2xl'],
   },
@@ -649,15 +601,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginTop: spacing.md,
     padding: spacing['2xl'],
-  },
-  emptyDealsTitle: {
-    color: colors.textPrimary,
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: spacing.xs,
-  },
-  emptyDealsText: {
-    color: colors.textTertiary,
-    fontSize: 13,
   },
 });

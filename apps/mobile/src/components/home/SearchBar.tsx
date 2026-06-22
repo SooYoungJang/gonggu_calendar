@@ -1,5 +1,6 @@
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
+import { SText } from '../../components/ui/SText';
 import { borderRadius, colors, shadows, spacing } from '../../design/tokens';
 
 type SearchBarProps = {
@@ -11,7 +12,7 @@ type SearchBarProps = {
 export function SearchBar({ value, onChangeText, onClear }: SearchBarProps) {
   return (
     <View style={styles.searchBar}>
-      <Text style={styles.searchIcon}>⌕</Text>
+      <SText variant="body" style={styles.searchIcon}>⌕</SText>
       <TextInput
         accessibilityLabel="공구 검색"
         placeholder="브랜드명, 제품명으로 검색해보세요"
@@ -27,7 +28,7 @@ export function SearchBar({ value, onChangeText, onClear }: SearchBarProps) {
           onPress={onClear}
           style={styles.clearButton}
         >
-          <Text style={styles.clearButtonText}>×</Text>
+          <SText variant="body" style={styles.clearButtonText}>×</SText>
         </Pressable>
       ) : null}
     </View>

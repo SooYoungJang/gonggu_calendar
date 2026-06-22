@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { SText } from '../../components/ui/SText';
 import { borderRadius, colors, spacing, typography } from '../../design/tokens';
 import type { GroupBuy } from '../../types';
 import { DealCard } from '../DealCard';
@@ -40,7 +40,7 @@ export function ThisWeekDeals({ groupBuys, onPressDeal }: ThisWeekDealsProps) {
         </ScrollView>
       ) : (
         <View style={styles.empty}>
-          <Text style={styles.emptyText}>이번주 공구가 없습니다</Text>
+          <SText variant="body" style={styles.emptyText}>이번주 공구가 없습니다</SText>
         </View>
       )}
     </View>

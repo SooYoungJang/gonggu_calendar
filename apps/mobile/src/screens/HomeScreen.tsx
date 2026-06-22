@@ -1,16 +1,16 @@
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
   RefreshControl,
+  ScrollView,
   StatusBar,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 
+import { SText } from '../components/ui/SText';
 import { fallbackGroupBuys, fetchGroupBuys, fetchFeeds, fetchInfluencers, searchInfluencers } from '../api';
 import { CategoryRow } from '../components/home/CategoryRow';
 import { ExpiringSoonSection } from '../components/home/ExpiringSoonSection';
@@ -100,33 +100,30 @@ export function HomeScreenContent({
     <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
       <StatusBar barStyle="dark-content" />
       <View style={styles.container}>
-        <FlatList
-          data={[{ key: 'home-discovery-feed' }]}
-          keyExtractor={(item) => item.key}
+        <ScrollView
           refreshControl={<RefreshControl refreshing={isFetching} onRefresh={onRefresh} tintColor={colors.primary} />}
-          renderItem={() => (
-            <View style={styles.content}>
-              <HomeHeader onOpenBookmarks={onOpenBookmarks} onOpenNotifications={onOpenNotifications} />
-              {isError ? (
-                <View style={styles.notice}>
-                  <Text style={styles.noticeText}>로컬 API가 꺼져 있어 샘플 데이터를 표시 중입니다.</Text>
-                </View>
-              ) : null}
-              <SearchBar value={searchQuery} onChangeText={onChangeSearchQuery} onClear={onClearSearchQuery} />
-              {showSearchResults ? <SearchResultsPanel results={searchResults} onPressInfluencer={onPressInfluencer} /> : null}
-              {isFetching && groupBuys.length === 0 ? <ActivityIndicator color={colors.primary} /> : null}
-              <MonthlyBannerCarousel groupBuys={groupBuys} onPressDeal={onPressDeal} />
-              <CategoryRow onPressCategory={onPressCategory} />
-              <WeeklyCalendarStrip onPressCalendar={onPressCalendar} />
-              <ThisWeekDeals groupBuys={groupBuys} onPressDeal={onPressDeal} />
-              <ExpiringSoonSection groupBuys={groupBuys} onPressDeal={onPressDeal} />
-              <FeedSection feedPosts={feedPosts} onPressFeed={onPressFeed} isLoading={feedsLoading} isError={feedsError} onRetry={onRetryFeed} />
-              <SubmitPrompt onPressSubmit={onPressSubmit} />
-            </View>
-          )}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
-        />
+        >
+          <View style={styles.content}>
+            <HomeHeader onOpenBookmarks={onOpenBookmarks} onOpenNotifications={onOpenNotifications} />
+            <FeedSection feedPosts={feedPosts} onPressFeed={onPressFeed} isLoading={feedsLoading} isError={feedsError} onRetry={onRetryFeed} />
+            {isError ? (
+              <View style={styles.notice}>
+                <SText variant="caption" style={styles.noticeText}>로컬 API가 꺼져 있어 샘플 데이터를 표시 중입니다.</SText>
+              </View>
+            ) : null}
+            <SearchBar value={searchQuery} onChangeText={onChangeSearchQuery} onClear={onClearSearchQuery} />
+            {showSearchResults ? <SearchResultsPanel results={searchResults} onPressInfluencer={onPressInfluencer} /> : null}
+            {isFetching && groupBuys.length === 0 ? <ActivityIndicator color={colors.primary} /> : null}
+            <MonthlyBannerCarousel groupBuys={groupBuys} onPressDeal={onPressDeal} />
+            <CategoryRow onPressCategory={onPressCategory} />
+            <WeeklyCalendarStrip onPressCalendar={onPressCalendar} />
+            <ThisWeekDeals groupBuys={groupBuys} onPressDeal={onPressDeal} />
+            <ExpiringSoonSection groupBuys={groupBuys} onPressDeal={onPressDeal} />
+            <SubmitPrompt onPressSubmit={onPressSubmit} />
+          </View>
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
@@ -149,9 +146,15 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
 
   const { data: feedsData, isError: feedsError, isLoading: feedsLoading, refetch: refetchFeeds } = useQuery({
     queryKey: ['feeds'],
-    queryFn: () => fetchFeeds(1, 50),
-    retry: false,
+    queryFn: () => fetchFeeds(1, 20),
+    retry: 3,
+    staleTime: 0,
   });
+
+  // DEBUG: log feed state
+  console.log('[CEO DEBUG] feedsData:', JSON.stringify(feedsData));
+  console.log('[CEO DEBUG] feedsLoading:', feedsLoading, 'feedsError:', feedsError);
+  console.log('[CEO DEBUG] feedPosts:', feedsData?.items?.length ?? 0);
 
   const groupBuys = data?.length ? data : fallbackGroupBuys;
   const influencers = influencersData?.length ? influencersData : getFallbackInfluencers(groupBuys);
@@ -195,7 +198,7 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.bg },
   container: { flex: 1, backgroundColor: colors.bg },
   content: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm },
-  listContent: { paddingBottom: 64 },
+  listContent: { paddingBottom: 120 },
   notice: { backgroundColor: colors.warningBg, borderRadius: borderRadius.sm, marginBottom: spacing.md, padding: spacing.md },
-  noticeText: { color: colors.noticeText, fontSize: 13, textAlign: 'center' },
+  noticeText: { color: colors.noticeText, fontSize: 12, textAlign: 'center' },
 });

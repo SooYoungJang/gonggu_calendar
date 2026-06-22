@@ -1,5 +1,6 @@
-import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { SText } from '../../components/ui/SText';
 import { borderRadius, colors, shadows, spacing, typography } from '../../design/tokens';
 import type { FeedPost } from '../../types';
 
@@ -15,33 +16,39 @@ type FeedSectionProps = {
 };
 
 function FeedCard({ item, onPress }: { item: FeedPost; onPress: () => void }) {
-  const hasThumbnail = !!item.thumbnailUrl;
-  const caption = item.caption ?? '';
+  const ogImage = item.ogImage ?? item.thumbnailUrl;
+  const title = item.ogTitle ?? item.caption ?? '';
+  const description = item.ogDescription ?? '';
   const accountName = item.accountName ?? '알 수 없음';
 
   return (
     <Pressable
-      accessibilityLabel={`${caption || accountName} 피드 열기`}
+      accessibilityLabel={`${title || accountName} 피드 열기`}
       accessibilityRole="button"
       onPress={onPress}
       style={styles.card}
     >
       <View style={styles.thumbnailContainer}>
-        {hasThumbnail ? (
-          <Image source={{ uri: item.thumbnailUrl! }} style={styles.thumbnail} />
+        {ogImage ? (
+          <Image source={{ uri: ogImage }} style={styles.thumbnail} />
         ) : (
           <View style={styles.placeholder}>
-            <Text style={styles.placeholderIcon}>📷</Text>
+            <SText variant="body" style={styles.placeholderIcon}>📷</SText>
           </View>
         )}
       </View>
       <View style={styles.cardBody}>
-        <Text numberOfLines={2} style={styles.caption}>
-          {caption}
-        </Text>
-        <Text numberOfLines={1} style={styles.accountName}>
+        <SText variant="cardBrand" numberOfLines={2} style={styles.caption}>
+          {title}
+        </SText>
+        {description ? (
+          <SText variant="caption" numberOfLines={2} style={styles.description}>
+            {description}
+          </SText>
+        ) : null}
+        <SText variant="caption" numberOfLines={1} style={styles.accountName}>
           {accountName}
-        </Text>
+        </SText>
       </View>
     </Pressable>
   );
@@ -53,12 +60,12 @@ export function FeedSection({ feedPosts, onPressFeed, isLoading, isError, onRetr
     return (
       <View style={styles.section}>
         <View style={styles.headerRow}>
-          <Text style={styles.sectionTitle}>피드</Text>
+          <SText variant="cardTitle" style={styles.sectionTitle}>피드</SText>
           <View style={styles.headerDot} />
         </View>
         <View style={styles.statusContainer}>
           <ActivityIndicator color={colors.primary} size="small" />
-          <Text style={styles.statusText}>피드를 불러오는 중...</Text>
+          <SText variant="body" style={styles.statusText}>피드를 불러오는 중...</SText>
         </View>
       </View>
     );
@@ -69,12 +76,12 @@ export function FeedSection({ feedPosts, onPressFeed, isLoading, isError, onRetr
     return (
       <View style={styles.section}>
         <View style={styles.headerRow}>
-          <Text style={styles.sectionTitle}>피드</Text>
+          <SText variant="cardTitle" style={styles.sectionTitle}>피드</SText>
           <View style={styles.headerDot} />
         </View>
         <View style={styles.statusContainer}>
-          <Text style={styles.errorIcon}>⚠️</Text>
-          <Text style={styles.statusText}>피드를 불러올 수 없습니다.</Text>
+          <SText variant="body" style={styles.errorIcon}>⚠️</SText>
+          <SText variant="body" style={styles.statusText}>피드를 불러올 수 없습니다.</SText>
           {onRetry ? (
             <Pressable
               accessibilityLabel="피드 다시 불러오기"
@@ -82,7 +89,7 @@ export function FeedSection({ feedPosts, onPressFeed, isLoading, isError, onRetr
               onPress={onRetry}
               style={styles.retryButton}
             >
-              <Text style={styles.retryText}>다시 시도</Text>
+              <SText variant="label" style={styles.retryText}>다시 시도</SText>
             </Pressable>
           ) : null}
         </View>
@@ -95,11 +102,11 @@ export function FeedSection({ feedPosts, onPressFeed, isLoading, isError, onRetr
     return (
       <View style={styles.section}>
         <View style={styles.headerRow}>
-          <Text style={styles.sectionTitle}>피드</Text>
+          <SText variant="cardTitle" style={styles.sectionTitle}>피드</SText>
           <View style={styles.headerDot} />
         </View>
         <View style={styles.statusContainer}>
-          <Text style={styles.statusText}>등록된 피드가 없습니다.</Text>
+          <SText variant="body" style={styles.statusText}>등록된 피드가 없습니다.</SText>
         </View>
       </View>
     );
@@ -109,7 +116,7 @@ export function FeedSection({ feedPosts, onPressFeed, isLoading, isError, onRetr
   return (
     <View style={styles.section}>
       <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>피드</Text>
+        <SText variant="cardTitle" style={styles.sectionTitle}>피드</SText>
         <View style={styles.headerDot} />
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -124,6 +131,7 @@ export function FeedSection({ feedPosts, onPressFeed, isLoading, isError, onRetr
 const styles = StyleSheet.create({
   section: {
     marginBottom: spacing.xl,
+    //
   },
   headerRow: {
     alignItems: 'center',
@@ -183,6 +191,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     lineHeight: 18,
+    marginBottom: 2,
+  },
+  description: {
+    ...typography.caption,
+    color: colors.textTertiary,
+    fontSize: 11,
     marginBottom: 2,
   },
   accountName: {

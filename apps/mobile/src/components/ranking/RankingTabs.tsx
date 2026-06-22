@@ -1,4 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+
+import { SText } from '../ui/SText';
 
 import { borderRadius, colors, spacing } from '../../design/tokens';
 import type { RankingTab } from '../../features/ranking/types';
@@ -33,10 +35,10 @@ export function RankingTabs({ value, rankingCount, followingCount, onChange }: R
             onPress={() => onChange(tab.key)}
             style={[styles.tab, selected && styles.selectedTab]}
           >
-            <Text style={[styles.label, selected && styles.selectedLabel]}>
+            <SText variant="label" style={[{ fontWeight: '800' }, selected && { color: colors.primary }]}>
               {tab.label}
               {typeof count === 'number' ? ` ${count}` : ''}
-            </Text>
+            </SText>
           </Pressable>
         );
       })}
@@ -52,17 +54,6 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     padding: spacing.xs,
   },
-  label: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  selectedLabel: {
-    color: colors.primary,
-  },
-  selectedTab: {
-    backgroundColor: colors.surface,
-  },
   tab: {
     alignItems: 'center',
     borderRadius: borderRadius.full,
@@ -70,5 +61,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: 42,
     paddingHorizontal: spacing.md,
+  },
+  selectedTab: {
+    backgroundColor: colors.surface,
   },
 });

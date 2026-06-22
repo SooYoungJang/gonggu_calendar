@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { SText } from '../../components/ui/SText';
 
 import { borderRadius, colors, spacing, typography } from '../../design/tokens';
 import type { Influencer } from '../../types';
@@ -11,7 +12,7 @@ type SearchResultsPanelProps = {
 export function SearchResultsPanel({ results, onPressInfluencer }: SearchResultsPanelProps) {
   return (
     <View style={styles.searchPanel}>
-      <Text style={styles.searchPanelTitle}>검색 결과</Text>
+      <SText variant="label" style={styles.searchPanelTitle}>검색 결과</SText>
       {results.length > 0 ? (
         results.map((influencer) => (
           <Pressable
@@ -21,14 +22,14 @@ export function SearchResultsPanel({ results, onPressInfluencer }: SearchResults
             onPress={() => onPressInfluencer(influencer)}
             style={styles.searchResultRow}
           >
-            <Text style={styles.searchResultName}>{influencer.displayName ?? influencer.instagramUsername}</Text>
-            <Text style={styles.searchResultMeta}>@{influencer.instagramUsername.replace(/^@/, '')}</Text>
+            <SText variant="label" style={styles.searchResultName}>{influencer.displayName ?? influencer.instagramUsername}</SText>
+            <SText variant="caption" style={styles.searchResultMeta}>@{influencer.instagramUsername.replace(/^@/, '')}</SText>
           </Pressable>
         ))
       ) : (
         <View style={styles.emptySearchResult}>
-          <Text style={styles.emptySearchTitle}>검색 결과가 없어요</Text>
-          <Text style={styles.emptySearchText}>인스타그램 username 또는 브랜드명을 다시 확인해 주세요.</Text>
+          <SText variant="label" style={styles.emptySearchTitle}>검색 결과가 없어요</SText>
+          <SText variant="caption" style={styles.emptySearchText}>인스타그램 username 또는 브랜드명을 다시 확인해 주세요.</SText>
         </View>
       )}
     </View>

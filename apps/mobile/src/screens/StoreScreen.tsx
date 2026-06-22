@@ -1,9 +1,10 @@
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { RankingCategoryChips, RankingTabs, SellerRankingList } from '../components/ranking';
-import { borderRadius, colors, spacing, typography } from '../design/tokens';
+import { SText } from '../components/ui/SText';
+import { borderRadius, colors, spacing } from '../design/tokens';
 import { MOCK_RANKINGS } from '../features/ranking/rankingFixtures';
 import {
   RANKING_CATEGORIES,
@@ -91,22 +92,24 @@ export function StoreScreen({ navigation }: StoreScreenProps) {
       <View style={styles.header}>
         <View style={styles.titleRow}>
           <View>
-            <Text style={typography.eyebrow}>스토어 랭킹</Text>
-            <Text style={styles.title}>쇼핑몰 랭킹</Text>
+            <SText variant="eyebrow">스토어 랭킹</SText>
+            <SText variant="title" style={{ fontWeight: '900', letterSpacing: -0.6 }}>
+              쇼핑몰 랭킹
+            </SText>
           </View>
           <View style={styles.headerActions}>
             <Pressable accessibilityLabel="랭킹 검색" accessibilityRole="button" style={styles.iconButton}>
-              <Text style={styles.iconText}>⌕</Text>
+              <SText variant="body" style={{ fontSize: 16, fontWeight: '900', color: colors.textPrimary }}>⌕</SText>
             </Pressable>
             <Pressable accessibilityLabel="랭킹 알림" accessibilityRole="button" style={styles.iconButton}>
-              <Text style={styles.iconText}>♡</Text>
+              <SText variant="body" style={{ fontSize: 16, fontWeight: '900', color: colors.textPrimary }}>♡</SText>
             </Pressable>
           </View>
         </View>
 
         <View style={styles.searchPreview} accessibilityLabel="브랜드명, 제품명, 셀러명으로 검색">
-          <Text style={styles.searchIcon}>⌕</Text>
-          <Text style={styles.searchPlaceholder}>브랜드명, 제품명, 셀러명으로 검색</Text>
+          <SText variant="body" style={{ fontSize: 14, fontWeight: '900', color: colors.textTertiary }}>⌕</SText>
+          <SText variant="label" style={{ fontSize: 14, flex: 1 }}>브랜드명, 제품명, 셀러명으로 검색</SText>
         </View>
 
         <RankingTabs
@@ -130,9 +133,9 @@ export function StoreScreen({ navigation }: StoreScreenProps) {
                 onPress={() => setPeriod(nextPeriod)}
                 style={[styles.periodChip, selected && styles.selectedPeriodChip]}
               >
-                <Text style={[styles.periodText, selected && styles.selectedPeriodText]}>
+                <SText variant="caption" style={[{ fontWeight: '800', color: colors.textSecondary, includeFontPadding: false }, selected && { color: colors.primary }]}>
                   {RANKING_PERIOD_LABELS[nextPeriod]}
-                </Text>
+                </SText>
               </Pressable>
             );
           })}
@@ -186,11 +189,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 38,
   },
-  iconText: {
-    color: colors.textPrimary,
-    fontSize: 16,
-    fontWeight: '900',
-  },
   listContainer: {
     flex: 1,
     paddingHorizontal: spacing.lg,
@@ -210,26 +208,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingHorizontal: spacing.lg,
   },
-  periodText: {
-    color: colors.textSecondary,
-    fontSize: 12,
-    fontWeight: '800',
-    includeFontPadding: false,
-  },
   safeArea: {
     backgroundColor: colors.bg,
     flex: 1,
-  },
-  searchIcon: {
-    color: colors.textTertiary,
-    fontSize: 14,
-    fontWeight: '900',
-  },
-  searchPlaceholder: {
-    color: colors.textSecondary,
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '600',
   },
   searchPreview: {
     alignItems: 'center',
@@ -245,15 +226,6 @@ const styles = StyleSheet.create({
   selectedPeriodChip: {
     backgroundColor: colors.primaryBg,
     borderColor: colors.primaryLight,
-  },
-  selectedPeriodText: {
-    color: colors.primary,
-  },
-  title: {
-    color: colors.textPrimary,
-    fontSize: 28,
-    fontWeight: '900',
-    letterSpacing: -0.6,
   },
   titleRow: {
     alignItems: 'center',

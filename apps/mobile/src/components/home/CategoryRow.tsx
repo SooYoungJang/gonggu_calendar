@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { SText } from '../../components/ui/SText';
 
 import { borderRadius, categoryColors, colors, spacing } from '../../design/tokens';
 import type { CategoryColorName } from '../../design/tokens';
@@ -32,8 +33,8 @@ function CategoryIcon({ item, onPress }: CategoryIconProps) {
       onPress={() => onPress(item.key)}
       style={[styles.categoryItem, { backgroundColor: token.bg, borderColor: token.border }]}
     >
-      <Text style={[styles.categoryGlyph, { color: token.text }]}>{item.icon}</Text>
-      <Text style={[styles.categoryLabel, { color: token.text }]}>{item.label}</Text>
+      <SText variant="body" style={[styles.categoryGlyph, { color: token.text }]}>{item.icon}</SText>
+      <SText variant="caption" style={[styles.categoryLabel, { color: token.text }]}>{item.label}</SText>
     </Pressable>
   );
 }
@@ -65,6 +66,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  categoryGlyph: { fontSize: 14, fontWeight: '800' },
-  categoryLabel: { fontSize: 12, fontWeight: '700' },
+  categoryGlyph: { fontWeight: '800' },
+  categoryLabel: { fontWeight: '700' },
 });

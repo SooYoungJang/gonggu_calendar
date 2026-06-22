@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+
+import { SText } from '../components/ui/SText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { QueryClient, useQuery } from '@tanstack/react-query';
 
@@ -179,38 +181,38 @@ export function AdminScreen({ navigation }: AdminScreenProps) {
           subtitle="인스타 계정 등록/비활성화, 공구 후보 목록·상세, 승인/반려를 한 화면에서 처리합니다."
         >
           <View style={styles.actionRow}>
-            <Text style={styles.badge}>검수 대기 {pendingCount}건</Text>
-            <Text style={styles.badge}>soft delete: 비활성화</Text>
+            <SText variant="badge" style={{ backgroundColor: colors.warningBg, borderRadius: borderRadius.full, color: colors.noticeText, paddingHorizontal: 10, paddingVertical: 4 }}>검수 대기 {pendingCount}건</SText>
+            <SText variant="badge" style={{ backgroundColor: colors.warningBg, borderRadius: borderRadius.full, color: colors.noticeText, paddingHorizontal: 10, paddingVertical: 4 }}>soft delete: 비활성화</SText>
           </View>
         </ScreenHeader>
 
         {hasAdminError ? (
           <View style={styles.notice}>
-            <Text style={styles.noticeText}>
+            <SText variant="caption" style={{ color: colors.noticeText, textAlign: 'center' }}>
               Admin API 호출 실패. API 서버가 켜져 있고 ADMIN_TOKEN 설정 시 브라우저 localStorage의 gonggu.adminToken 값이 맞는지 확인하세요.
-            </Text>
+            </SText>
           </View>
         ) : null}
 
         {feedback ? (
           <View style={styles.notice}>
-            <Text style={styles.noticeText}>{feedback}</Text>
+            <SText variant="caption" style={{ color: colors.noticeText, textAlign: 'center' }}>{feedback}</SText>
           </View>
         ) : null}
 
         <View style={styles.card}>
-          <Text style={styles.product}>인스타 계정 관리</Text>
+          <SText variant="cardTitle">인스타 계정 관리</SText>
           <FormInput label="핸들 *" value={influencerForm.instagramUsername} onChangeText={(value) => setInfluencerForm({ ...influencerForm, instagramUsername: value })} />
           <FormInput label="표시명 *" value={influencerForm.displayName} onChangeText={(value) => setInfluencerForm({ ...influencerForm, displayName: value })} />
           <Pressable onPress={() => void createInfluencer().catch((error: Error) => setFeedback(error.message))} style={styles.primaryButton}>
-            <Text style={styles.primaryButtonText}>계정 등록</Text>
+            <SText variant="label" style={{ color: colors.textInverse, fontSize: 16 }}>계정 등록</SText>
           </Pressable>
           {(influencersQuery.data ?? []).map((item) => (
             <View key={item.id} style={styles.infoRow}>
-              <Text style={styles.infoValue}>@{item.instagramUsername} · {item.displayName ?? '표시명 없음'} · {item.isActive ? '활성' : '비활성'}</Text>
+              <SText variant="body" style={{ color: colors.textPrimary, flex: 1 }}>@{item.instagramUsername} · {item.displayName ?? '표시명 없음'} · {item.isActive ? '활성' : '비활성'}</SText>
               {item.isActive ? (
                 <Pressable onPress={() => void deactivateInfluencer(item.id).catch((error: Error) => setFeedback(error.message))} style={styles.secondaryButton}>
-                  <Text style={styles.secondaryButtonText}>비활성화</Text>
+                  <SText variant="label">비활성화</SText>
                 </Pressable>
               ) : null}
             </View>
@@ -218,7 +220,7 @@ export function AdminScreen({ navigation }: AdminScreenProps) {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.product}>수동 공구 제보 등록</Text>
+          <SText variant="cardTitle">수동 공구 제보 등록</SText>
           <FormInput label="인스타 *" value={form.influencerUsername} onChangeText={(value) => setForm({ ...form, influencerUsername: value })} />
           <FormInput label="표시명" value={form.influencerDisplayName} onChangeText={(value) => setForm({ ...form, influencerDisplayName: value })} />
           <FormInput label="게시물 URL *" value={form.postUrl} onChangeText={(value) => setForm({ ...form, postUrl: value })} />
@@ -232,30 +234,30 @@ export function AdminScreen({ navigation }: AdminScreenProps) {
           <FormInput label="캡션 *" multiline value={form.caption} onChangeText={(value) => setForm({ ...form, caption: value })} />
           <FormInput label="요약" multiline value={form.summary} onChangeText={(value) => setForm({ ...form, summary: value })} />
           <Pressable onPress={() => void submitManualSubmission().catch((error: Error) => setFeedback(error.message))} style={styles.primaryButton}>
-            <Text style={styles.primaryButtonText}>제보 등록</Text>
+            <SText variant="label" style={{ color: colors.textInverse, fontSize: 16 }}>제보 등록</SText>
           </Pressable>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.product}>공구 후보 목록</Text>
+          <SText variant="cardTitle">공구 후보 목록</SText>
           {submissionsQuery.isFetching ? <ActivityIndicator color={colors.primary} /> : null}
           {(submissionsQuery.data ?? []).map((item) => (
             <Pressable key={item.id} onPress={() => selectSubmission(item)} style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
               <View style={styles.cardHeader}>
-                <Text style={styles.influencer}>#{item.id.slice(0, 8)} · @{item.rawPost.influencer.instagramUsername}</Text>
-                <Text style={styles.badge}>{item.status}</Text>
+                <SText variant="label" style={{ color: colors.primary }}>#{item.id.slice(0, 8)} · @{item.rawPost.influencer.instagramUsername}</SText>
+                <SText variant="badge" style={{ backgroundColor: colors.warningBg, borderRadius: borderRadius.full, color: colors.noticeText, paddingHorizontal: 10, paddingVertical: 4 }}>{item.status}</SText>
               </View>
-              <Text style={styles.product}>{item.productName ?? '추정 공구명 미확인'}</Text>
-              <Text style={styles.brand}>{item.brandName ?? '브랜드 미확인'} · 출처 {item.rawPost.instagramPostId?.startsWith('manual:') ? '운영자 등록' : '수집/제보'}</Text>
-              <Text style={styles.summary}>{item.summary ?? item.rawPost.caption}</Text>
-              <Text style={styles.secondaryButtonText}>상세 보기 / 승인 / 반려</Text>
+              <SText variant="cardTitle">{item.productName ?? '추정 공구명 미확인'}</SText>
+              <SText variant="body" style={{ marginBottom: spacing.sm }}>{item.brandName ?? '브랜드 미확인'} · 출처 {item.rawPost.instagramPostId?.startsWith('manual:') ? '운영자 등록' : '수집/제보'}</SText>
+              <SText variant="body">{item.summary ?? item.rawPost.caption}</SText>
+              <SText variant="label">상세 보기 / 승인 / 반려</SText>
             </Pressable>
           ))}
         </View>
 
         {selectedSubmission && reviewForm ? (
           <View style={styles.card}>
-            <Text style={styles.product}>공구 후보 상세</Text>
+            <SText variant="cardTitle">공구 후보 상세</SText>
             <InfoRow label="후보 ID" value={selectedSubmission.id} />
             <InfoRow label="계정" value={`@${selectedSubmission.rawPost.influencer.instagramUsername}`} />
             <InfoRow label="원문 URL" value={selectedSubmission.rawPost.postUrl} />
@@ -272,15 +274,15 @@ export function AdminScreen({ navigation }: AdminScreenProps) {
             <FormInput label="혜택" value={reviewForm.discountInfo} onChangeText={(value) => setReviewForm({ ...reviewForm, discountInfo: value })} />
             <FormInput label="설명/메모" multiline value={reviewForm.summary} onChangeText={(value) => setReviewForm({ ...reviewForm, summary: value })} />
             <Pressable onPress={() => void saveReviewFields(selectedSubmission.id).catch((error: Error) => setFeedback(error.message))} style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>상세 수정 저장</Text>
+              <SText variant="label">상세 수정 저장</SText>
             </Pressable>
             <FormInput label="반려 사유 *" value={rejectReason} onChangeText={setRejectReason} />
             <View style={styles.actionRow}>
               <Pressable onPress={() => void moderateSubmission(selectedSubmission.id, 'approve').catch((error: Error) => setFeedback(error.message))} style={styles.primaryButton}>
-                <Text style={styles.primaryButtonText}>승인 및 반영</Text>
+                <SText variant="label" style={{ color: colors.textInverse, fontSize: 16 }}>승인 및 반영</SText>
               </Pressable>
               <Pressable onPress={() => void moderateSubmission(selectedSubmission.id, 'reject').catch((error: Error) => setFeedback(error.message))} style={styles.secondaryButton}>
-                <Text style={styles.secondaryButtonText}>반려 처리</Text>
+                <SText variant="label">반려 처리</SText>
               </Pressable>
             </View>
           </View>
@@ -294,20 +296,11 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.lg, paddingBottom: spacing['3xl'] },
   notice: { backgroundColor: colors.warningBg, borderRadius: borderRadius.sm, marginBottom: spacing.lg, padding: spacing.md },
-  noticeText: { color: colors.noticeText, fontSize: 13, textAlign: 'center' },
   card: { backgroundColor: colors.surface, borderRadius: borderRadius.xl, padding: spacing.lg, marginBottom: spacing.md, shadowColor: colors.shadow, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: colors.border },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
-  influencer: { color: colors.primary, fontSize: 14, fontWeight: '600' },
-  product: { fontSize: 18, fontWeight: '700', color: colors.textPrimary, marginBottom: 2 },
-  brand: { fontSize: 14, color: colors.textSecondary, marginBottom: spacing.sm },
-  summary: { color: colors.textSecondary, fontSize: 14, lineHeight: 20 },
   infoRow: { borderBottomColor: colors.border, borderBottomWidth: 1, flexDirection: 'row', marginBottom: spacing.md, paddingBottom: spacing.md },
-  infoValue: { color: colors.textPrimary, flex: 1, fontSize: 14, lineHeight: 20 },
-  badge: { backgroundColor: colors.warningBg, borderRadius: borderRadius.full, color: colors.noticeText, fontSize: 12, fontWeight: '600', paddingHorizontal: 10, paddingVertical: 4 },
   primaryButton: { backgroundColor: colors.primary, marginTop: spacing.lg, paddingVertical: 14, borderRadius: borderRadius.lg, alignItems: 'center' },
-  primaryButtonText: { color: colors.textInverse, fontSize: 16, fontWeight: '600' },
   secondaryButton: { backgroundColor: colors.borderLight, paddingVertical: 10, paddingHorizontal: spacing.lg, borderRadius: borderRadius.md, alignSelf: 'flex-start' },
-  secondaryButtonText: { color: colors.textSecondary, fontSize: 14, fontWeight: '600' },
   pressed: { opacity: 0.8 },
   actionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.md },
 });
