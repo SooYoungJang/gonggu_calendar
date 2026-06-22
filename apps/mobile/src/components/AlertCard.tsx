@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { SText } from './ui/SText';
 
 import { borderRadius, colors, shadows, spacing } from '../design/tokens';
 import type { GroupBuy } from '../types';
@@ -19,30 +20,30 @@ export function AlertCard({ item, onPress }: AlertCardProps) {
   return (
     <Pressable testID={`alert-card-${item.id}`} onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
       <View style={styles.brandBadge}>
-        <Text style={styles.brandBadgeEyebrow}>BRAND</Text>
-        <Text style={styles.brandBadgeText} numberOfLines={2}>{brandLabel}</Text>
+        <SText variant="eyebrow" style={styles.brandBadgeEyebrow}>BRAND</SText>
+        <SText variant="caption" style={styles.brandBadgeText} numberOfLines={2}>{brandLabel}</SText>
       </View>
 
       <View style={styles.info}>
         <View style={styles.topRow}>
-          <Text style={styles.influencerName} numberOfLines={1}>@{influencerUsername}</Text>
+          <SText variant="eyebrow" style={styles.influencerName} numberOfLines={1}>@{influencerUsername}</SText>
           <View style={styles.deadlinePill}>
-            <Text style={styles.deadlineText}>{deadlineLabel}</Text>
+            <SText variant="badge" style={styles.deadlineText}>{deadlineLabel}</SText>
           </View>
         </View>
 
-        <Text style={styles.productName} numberOfLines={1}>{item.productName ?? '제품명 미확인'}</Text>
+        <SText variant="cardTitle" style={styles.productName} numberOfLines={1}>{item.productName ?? '제품명 미확인'}</SText>
 
         <View style={styles.discountRow}>
-          <Text style={styles.discount} numberOfLines={1}>{discountLabel}</Text>
+          <SText variant="cardBrand" style={styles.discount} numberOfLines={1}>{discountLabel}</SText>
           <View style={styles.confidenceBadge}>
-            <Text style={styles.confidenceText}>신뢰도 {confidencePercent}%</Text>
+            <SText variant="badge" style={styles.confidenceText}>신뢰도 {confidencePercent}%</SText>
           </View>
         </View>
 
-        <Text style={styles.timeText} numberOfLines={1}>시간 정보 · {deadlineLabel}</Text>
+        <SText variant="caption" style={styles.timeText} numberOfLines={1}>시간 정보 · {deadlineLabel}</SText>
 
-        {item.summary ? <Text style={styles.summary} numberOfLines={2}>{item.summary}</Text> : null}
+        {item.summary ? <SText variant="caption" style={styles.summary} numberOfLines={2}>{item.summary}</SText> : null}
       </View>
     </Pressable>
   );

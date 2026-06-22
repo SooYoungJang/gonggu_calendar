@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { SText } from './ui/SText';
 
 import { borderRadius, categoryColors, colors, shadows, spacing } from '../design/tokens';
 import type { CategoryColorName } from '../design/tokens';
@@ -32,12 +33,12 @@ export function DealCard({ item, category, onPress }: DealCardProps) {
       style={styles.card}
     >
       <View style={[styles.image, { backgroundColor: token.bg, borderColor: token.border }]}>
-        <Text style={[styles.imageText, { color: token.text }]}>{item.brandName?.slice(0, 2) ?? '공구'}</Text>
+        <SText variant="cardTitle" style={[styles.imageText, { color: token.text }]}>{item.brandName?.slice(0, 2) ?? '공구'}</SText>
       </View>
-      <Text numberOfLines={2} style={styles.title}>{item.productName ?? '공동구매 상품'}</Text>
-      <Text numberOfLines={1} style={styles.brand}>{item.brandName ?? `@${item.rawPost.influencer.instagramUsername}`}</Text>
-      <Text style={styles.discount}>{item.discountInfo ?? '혜택 확인'}</Text>
-      <Text style={styles.deadline}>{formatDeadline(item.endDate)}</Text>
+      <SText variant="subtitle" numberOfLines={2} style={styles.title}>{item.productName ?? '공동구매 상품'}</SText>
+      <SText variant="caption" numberOfLines={1} style={styles.brand}>{item.brandName ?? `@${item.rawPost.influencer.instagramUsername}`}</SText>
+      <SText variant="cardBrand" style={styles.discount}>{item.discountInfo ?? '혜택 확인'}</SText>
+      <SText variant="caption" style={styles.deadline}>{formatDeadline(item.endDate)}</SText>
     </Pressable>
   );
 }
