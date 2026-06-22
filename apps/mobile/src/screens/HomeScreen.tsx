@@ -11,9 +11,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 
-import { fallbackGroupBuys, fetchGroupBuys, fetchInfluencers, searchInfluencers } from '../api';
+import { fallbackGroupBuys, fetchGroupBuys, fetchFeeds, fetchInfluencers, searchInfluencers } from '../api';
 import { CategoryRow } from '../components/home/CategoryRow';
 import { ExpiringSoonSection } from '../components/home/ExpiringSoonSection';
+import { FeedSection } from '../components/home/FeedSection';
 import { HomeHeader } from '../components/home/HomeHeader';
 import { MonthlyBannerCarousel } from '../components/home/MonthlyBannerCarousel';
 import { SearchBar } from '../components/home/SearchBar';
@@ -22,12 +23,13 @@ import { SubmitPrompt } from '../components/home/SubmitPrompt';
 import { ThisWeekDeals } from '../components/home/ThisWeekDeals';
 import { WeeklyCalendarStrip } from '../components/home/WeeklyCalendarStrip';
 import { borderRadius, colors, spacing, typography } from '../design/tokens';
-import type { GroupBuy, HomeScreenProps, Influencer } from '../types';
+import type { FeedPost, GroupBuy, HomeScreenProps, Influencer } from '../types';
 
 type HomeAction = () => void;
 
 type HomeScreenContentProps = {
   groupBuys: GroupBuy[];
+  feedPosts: FeedPost[];
   influencers: Influencer[];
   isError: boolean;
   isFetching: boolean;
@@ -41,8 +43,12 @@ type HomeScreenContentProps = {
   onPressCalendar: HomeAction;
   onPressCategory: (category: string) => void;
   onPressDeal: (groupBuy: GroupBuy) => void;
+  onPressFeed: (feedPost: FeedPost) => void;
   onPressInfluencer: (influencer: Influencer) => void;
   onPressSubmit: HomeAction;
+  feedsLoading: boolean;
+  feedsError: boolean;
+  onRetryFeed: () => void;
 };
 
 function getFallbackInfluencers(groupBuys: GroupBuy[]): Influencer[] {
@@ -67,6 +73,8 @@ function getFallbackInfluencers(groupBuys: GroupBuy[]): Influencer[] {
 
 export function HomeScreenContent({
   groupBuys,
+  feedPosts,
+  influencers,
   isError,
   isFetching,
   searchQuery,
@@ -79,8 +87,12 @@ export function HomeScreenContent({
   onPressCalendar,
   onPressCategory,
   onPressDeal,
+  onPressFeed,
   onPressInfluencer,
   onPressSubmit,
+  feedsLoading,
+  feedsError,
+  onRetryFeed,
 }: HomeScreenContentProps) {
   const showSearchResults = searchQuery.trim().length > 0;
 
@@ -108,6 +120,7 @@ export function HomeScreenContent({
               <WeeklyCalendarStrip onPressCalendar={onPressCalendar} />
               <ThisWeekDeals groupBuys={groupBuys} onPressDeal={onPressDeal} />
               <ExpiringSoonSection groupBuys={groupBuys} onPressDeal={onPressDeal} />
+              <FeedSection feedPosts={feedPosts} onPressFeed={onPressFeed} isLoading={feedsLoading} isError={feedsError} onRetry={onRetryFeed} />
               <SubmitPrompt onPressSubmit={onPressSubmit} />
             </View>
           )}
@@ -134,13 +147,21 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
     retry: false,
   });
 
+  const { data: feedsData, isError: feedsError, isLoading: feedsLoading, refetch: refetchFeeds } = useQuery({
+    queryKey: ['feeds'],
+    queryFn: () => fetchFeeds(1, 50),
+    retry: false,
+  });
+
   const groupBuys = data?.length ? data : fallbackGroupBuys;
   const influencers = influencersData?.length ? influencersData : getFallbackInfluencers(groupBuys);
+  const feedPosts = feedsData?.items ?? [];
   const searchResults = useMemo(() => searchInfluencers(influencers, searchQuery).slice(0, 5), [influencers, searchQuery]);
 
   return (
     <HomeScreenContent
       groupBuys={groupBuys}
+      feedPosts={feedPosts}
       influencers={influencers}
       isError={isError}
       isFetching={isFetching}
@@ -154,6 +175,10 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
       onPressCalendar={() => navigation.navigate('CalendarScreen', {})}
       onPressCategory={() => undefined}
       onPressDeal={(groupBuy) => navigation.navigate('Detail', { groupBuy })}
+      onPressFeed={(feedPost) => navigation.navigate('FeedDetail', { feedId: feedPost.id })}
+      feedsLoading={feedsLoading}
+      feedsError={feedsError}
+      onRetryFeed={refetchFeeds}
       onPressInfluencer={(influencer) => {
         setSearchQuery('');
         navigation.navigate('InfluencerGroupBuys', {

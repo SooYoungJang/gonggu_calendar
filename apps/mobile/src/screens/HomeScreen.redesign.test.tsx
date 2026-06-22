@@ -104,6 +104,7 @@ function renderHomeContent() {
     renderer = TestRenderer.create(
       <HomeScreenContent
         groupBuys={sampleGroupBuys}
+        feedPosts={[]}
         influencers={influencers}
         isError={false}
         isFetching={false}
@@ -117,8 +118,12 @@ function renderHomeContent() {
         onPressCalendar={vi.fn()}
         onPressCategory={vi.fn()}
         onPressDeal={vi.fn()}
+        onPressFeed={vi.fn()}
         onPressInfluencer={vi.fn()}
         onPressSubmit={vi.fn()}
+        feedsLoading={false}
+        feedsError={false}
+        onRetryFeed={vi.fn()}
       />,
     );
   });

@@ -8,6 +8,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import type { MainTabParamList, RootStackParamList } from './types';
 import { AdminScreen } from './screens/AdminScreen';
 import { CalendarScreen } from './screens/CalendarScreen';
+import { FeedDetailScreen } from './screens/FeedDetailScreen';
 import { HomeScreen } from './screens/HomeScreen';
 import { InfluencerGroupBuysScreen } from './screens/InfluencerGroupBuysScreen';
 import { DetailScreen } from './screens/DetailScreen';
@@ -133,6 +134,7 @@ export default function App() {
             <Stack.Screen name="MainTabs" component={MainTabs} />
             <Stack.Screen name="CalendarScreen" component={CalendarScreen} />
             <Stack.Screen name="Detail" component={DetailScreen} />
+            <Stack.Screen name="FeedDetail" component={FeedDetailScreen} />
             <Stack.Screen name="InfluencerGroupBuys" component={InfluencerGroupBuysScreen} />
             <Stack.Screen name="Admin" component={AdminScreen} />
           </Stack.Navigator>

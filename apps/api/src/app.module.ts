@@ -4,7 +4,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
+import { CrawlingModule } from './crawling/crawling.module';
 import { FavoritesModule } from './favorites/favorites.module';
+import { FeedPostsModule } from './feed-posts/feed-posts.module';
 import { GroupBuysModule } from './group-buys/group-buys.module';
 import { InfluencersModule } from './influencers/influencers.module';
 import { NotificationsModule } from './notifications/notifications.module';
@@ -29,8 +31,10 @@ import { UsersModule } from './users/users.module';
     }),
     PrismaModule,
     AuthModule,
+    CrawlingModule,
     InfluencersModule,
     RawPostsModule,
+    FeedPostsModule,
     GroupBuysModule,
     FavoritesModule,
     SearchModule,

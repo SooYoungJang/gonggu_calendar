@@ -6,6 +6,7 @@ export type RootStackParamList = {
   MainTabs: undefined;
   CalendarScreen: { initialDate?: string };
   Detail: { groupBuy: GroupBuy };
+  FeedDetail: { feedId: string };
   InfluencerGroupBuys: { influencerUsername: string; influencerDisplayName: string | null };
   Admin: undefined;
   Login: undefined;
@@ -99,6 +100,36 @@ export type PublicSubmissionForm = {
   summary: string;
 };
 
+export type FeedPost = {
+  id: string;
+  instagramUrl: string;
+  thumbnailUrl: string | null;
+  mediaUrl: string | null;
+  mediaType: 'IMAGE' | 'VIDEO' | null;
+  caption: string | null;
+  accountName: string | null;
+  linkUrl: string | null;
+  openDate: string | null;
+  closeDate: string | null;
+  isActive: boolean;
+  sortOrder: number;
+  ogTitle: string | null;
+  ogDescription: string | null;
+  ogImage: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type FeedPostListResponse = {
+  items: FeedPost[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+};
+
 export type HomeScreenProps = CompositeScreenProps<
   BottomTabScreenProps<MainTabParamList, 'Home'>,
   NativeStackScreenProps<RootStackParamList>
@@ -112,6 +143,8 @@ export type SubmitScreenProps = CompositeScreenProps<
   NativeStackScreenProps<RootStackParamList>
 >;
 export type DetailScreenProps = NativeStackScreenProps<RootStackParamList, 'Detail'>;
+export type FeedDetailScreenProps = NativeStackScreenProps<RootStackParamList, 'FeedDetail'>;
 export type CalendarScreenProps = NativeStackScreenProps<RootStackParamList, 'CalendarScreen'>;
 export type InfluencerGroupBuysScreenProps = NativeStackScreenProps<RootStackParamList, 'InfluencerGroupBuys'>;
 export type AdminScreenProps = NativeStackScreenProps<RootStackParamList, 'Admin'>;
+

@@ -23,6 +23,11 @@ enum GroupBuyStatus {
   EXPIRED
 }
 
+enum FeedMediaType {
+  IMAGE
+  VIDEO
+}
+
 enum SubmissionStatus {
   PENDING
   APPROVED
@@ -162,4 +167,31 @@ model GongguSubmission {
   @@index([createdAt])
   @@index([productName])
   @@map("gonggu_submissions")
+}
+
+model FeedPost {
+  id            String        @id @default(uuid())
+  instagramUrl  String        @map("instagram_url")
+  thumbnailUrl  String?       @map("thumbnail_url")
+  mediaUrl      String?       @map("media_url")
+  mediaType     FeedMediaType?
+  caption       String?
+  accountName   String?       @map("account_name")
+  linkUrl       String?       @map("link_url")
+  openDate      DateTime?     @map("open_date")
+  closeDate     DateTime?     @map("close_date")
+  isActive      Boolean       @default(true) @map("is_active")
+  sortOrder     Int           @default(0) @map("sort_order")
+
+  // OG 태그 캐시 (크롤링 결과)
+  ogTitle       String?       @map("og_title")
+  ogDescription String?       @map("og_description")
+  ogImage       String?       @map("og_image")
+  ogVideo       String?       @map("og_video")
+  ogUpdatedAt   DateTime?     @map("og_updated_at")
+
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@map("feed_posts")
 }

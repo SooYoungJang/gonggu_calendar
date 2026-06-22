@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 
-import type { GroupBuy, Influencer, Submission } from './types';
+import type { FeedPost, FeedPostListResponse, GroupBuy, Influencer, Submission } from './types';
 export { searchInfluencers } from './utils/search';
 
 /* ── Local types for fetchSellerRankings (avoids feature -> shared dependency) ── */
@@ -142,6 +142,26 @@ export async function fetchGroupBuys() {
   }
 
   return (await response.json()) as GroupBuy[];
+}
+
+export async function fetchFeeds(page = 1, limit = 20): Promise<FeedPostListResponse> {
+  const response = await fetch(`${API_BASE_URL}/feeds?page=${page}&limit=${limit}`);
+
+  if (!response.ok) {
+    throw new Error('Feeds API unavailable');
+  }
+
+  return (await response.json()) as FeedPostListResponse;
+}
+
+export async function fetchFeedPost(id: string): Promise<FeedPost> {
+  const response = await fetch(`${API_BASE_URL}/feeds/${encodeURIComponent(id)}`);
+
+  if (!response.ok) {
+    throw new Error('Feed post API unavailable');
+  }
+
+  return (await response.json()) as FeedPost;
 }
 
 export async function fetchSellerRankings(query: SellerRankingQuery): Promise<SellerRanking[]> {
