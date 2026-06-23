@@ -1,7 +1,9 @@
 import React from 'react';
 import TestRenderer, { act } from 'react-test-renderer';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
+import { colors } from '../../design/tokens';
+import { Animated } from 'react-native';
 import { UrlInputStatus } from '../UrlInputStatus';
 
 function flattenText(node: any): string {
@@ -71,5 +73,42 @@ describe('UrlInputStatus', function() {
     expect(json).not.toBeNull();
     const textElements = getAllByType(renderer.root, 'Text');
     expect(textElements.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('starts the loading animation when status is loading', function() {
+    const loopSpy = vi.spyOn(Animated, 'loop');
+
+    act(function() {
+      TestRenderer.create(
+        React.createElement(UrlInputStatus, { status: 'loading' }),
+      );
+    });
+
+    expect(loopSpy).toHaveBeenCalled();
+    loopSpy.mockRestore();
+  });
+
+  it('uses correct tokens.ts colors for success and error icons', function() {
+    // Verify success icon has backgroundColor === colors.ctaPurple
+    const successRenderer = renderStatus('success');
+    const successViews = getAllByType(successRenderer.root, 'View');
+    const successIcon = successViews.find(function(v: any) {
+      const style = v.props.style;
+      return Array.isArray(style) && style.some(function(s: any) {
+        return s && s.backgroundColor === colors.ctaPurple;
+      });
+    });
+    expect(successIcon).toBeTruthy();
+
+    // Verify error icon has backgroundColor === colors.error
+    const errorRenderer = renderStatus('error');
+    const errorViews = getAllByType(errorRenderer.root, 'View');
+    const errorIcon = errorViews.find(function(v: any) {
+      const style = v.props.style;
+      return Array.isArray(style) && style.some(function(s: any) {
+        return s && s.backgroundColor === colors.error;
+      });
+    });
+    expect(errorIcon).toBeTruthy();
   });
 });

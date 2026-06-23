@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 
 import { SText } from './ui/SText';
-import { borderRadius, colors, spacing } from '../design/tokens';
+import { colors, spacing } from '../design/tokens';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
