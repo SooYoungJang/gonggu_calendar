@@ -15,9 +15,11 @@ import { useQuery } from '@tanstack/react-query';
 import { fallbackGroupBuys, fetchGroupBuys } from '../api';
 import { DealCard } from '../components/DealCard';
 import { SText } from '../components/ui/SText';
-import { borderRadius, colors, shadows, spacing } from '../design/tokens';
+import { borderRadius, spacing } from '../design/tokens';
 import type { CategoryColorName } from '../design/tokens';
 import type { CalendarScreenProps, GroupBuy } from '../types';
+import { useTheme } from '../context/ThemeContext';
+import type { ColorPalette } from '../context/ThemeContext';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -126,6 +128,7 @@ function categoryForIndex(index: number): CategoryColorName {
 function CalendarHeader({
   year,
   month,
+  colors,
   onPrevMonth,
   onNextMonth,
   onToday,
@@ -134,6 +137,7 @@ function CalendarHeader({
 }: {
   year: number;
   month: number;
+  colors: ColorPalette;
   onPrevMonth: () => void;
   onNextMonth: () => void;
   onToday: () => void;
@@ -141,14 +145,15 @@ function CalendarHeader({
   onToggleFilter: () => void;
 }) {
   const label = `${year}년 ${month + 1}월`;
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
-    <View style={styles.headerRow}>
+    <View style={s.headerRow}>
       {/* Left: 오늘 button */}
       <Pressable
         accessibilityLabel="오늘로 이동"
         accessibilityRole="button"
         onPress={onToday}
-        style={styles.todayButton}
+        style={s.todayButton}
       >
         <SText variant="body" style={{ color: colors.textInverse, fontSize: 14, fontWeight: '800' }}>
           오늘
@@ -156,12 +161,12 @@ function CalendarHeader({
       </Pressable>
 
       {/* Center: navigation arrows + title */}
-      <View style={styles.headerNavGroup}>
+      <View style={s.headerNavGroup}>
         <Pressable
           accessibilityLabel="이전 달"
           accessibilityRole="button"
           onPress={onPrevMonth}
-          style={styles.navArrow}
+          style={s.navArrow}
         >
           <SText variant="body" style={{ fontSize: 16 }}>◀</SText>
         </Pressable>
@@ -172,7 +177,7 @@ function CalendarHeader({
           accessibilityLabel="다음 달"
           accessibilityRole="button"
           onPress={onNextMonth}
-          style={styles.navArrow}
+          style={s.navArrow}
         >
           <SText variant="body" style={{ fontSize: 16 }}>▶</SText>
         </Pressable>
@@ -185,7 +190,7 @@ function CalendarHeader({
         accessibilityState={{ checked: showFollowedOnly }}
         onPress={onToggleFilter}
         style={[
-          styles.filterChip,
+          s.filterChip,
           {
             backgroundColor: showFollowedOnly ? colors.primary : 'transparent',
             borderColor: showFollowedOnly ? colors.primary : colors.border,
@@ -206,11 +211,12 @@ function CalendarHeader({
   );
 }
 
-function WeekdayHeader() {
+function WeekdayHeader({ colors }: { colors: ColorPalette }) {
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
-    <View style={styles.weekdayRow}>
+    <View style={s.weekdayRow}>
       {WEEKDAY_LABELS.map((label) => (
-        <View key={label} style={styles.weekdayCell}>
+        <View key={label} style={s.weekdayCell}>
           <SText variant="caption" style={[{ fontWeight: '700' }, label === '토' || label === '일' ? { color: colors.textSecondary } : undefined]}>
             {label}
           </SText>
@@ -224,6 +230,7 @@ function DayCell({
   day,
   isCurrentMonth,
   date,
+  colors,
   hasGroupBuys,
   isSelected,
   isTodayDate,
@@ -232,21 +239,23 @@ function DayCell({
   day: number;
   isCurrentMonth: boolean;
   date: Date;
+  colors: ColorPalette;
   hasGroupBuys: boolean;
   isSelected: boolean;
   isTodayDate: boolean;
   onSelect: (date: Date) => void;
 }) {
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
     <Pressable
       accessibilityLabel={`${day}일${isTodayDate ? ' (오늘)' : ''}`}
       accessibilityRole="button"
       onPress={() => onSelect(date)}
       style={[
-        styles.dayCell,
-        !isCurrentMonth && styles.dayCellOtherMonth,
-        isTodayDate && styles.dayCellToday,
-        isSelected && styles.dayCellSelected,
+        s.dayCell,
+        !isCurrentMonth && s.dayCellOtherMonth,
+        isTodayDate && s.dayCellToday,
+        isSelected && s.dayCellSelected,
       ]}
     >
       <SText
@@ -263,12 +272,12 @@ function DayCell({
       {hasGroupBuys ? (
         <View
           style={[
-            styles.dot,
-            isSelected && styles.dotSelected,
+            s.dot,
+            isSelected && s.dotSelected,
           ]}
         />
       ) : (
-        <View style={styles.dotSpacer} />
+        <View style={s.dotSpacer} />
       )}
     </Pressable>
   );
@@ -279,6 +288,8 @@ function DayCell({
 export function CalendarScreen({ navigation, route }: CalendarScreenProps) {
   const { width: screenWidth } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
 
   const initialParam = route.params?.initialDate;
   const initialDate = initialParam ? new Date(initialParam) : new Date();
@@ -379,12 +390,13 @@ export function CalendarScreen({ navigation, route }: CalendarScreenProps) {
   ).current;
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
-      <View style={styles.container}>
+    <SafeAreaView edges={['top', 'bottom']} style={s.safeArea}>
+      <View style={s.container}>
         {/* Top: Header with navigation + filter integrated */}
         <CalendarHeader
           year={currentYear}
           month={currentMonth}
+          colors={colors}
           onPrevMonth={goToPrevMonth}
           onNextMonth={goToNextMonth}
           onToday={goToToday}
@@ -393,17 +405,18 @@ export function CalendarScreen({ navigation, route }: CalendarScreenProps) {
         />
 
         {/* Middle: Calendar grid with swipe */}
-        <View {...panResponder.panHandlers} style={styles.calendarWrapper}>
-          <WeekdayHeader />
-          <View style={styles.gridContainer}>
+        <View {...panResponder.panHandlers} style={s.calendarWrapper}>
+          <WeekdayHeader colors={colors} />
+          <View style={s.gridContainer}>
             {grid.map((week, wi) => (
-              <View key={wi} style={styles.weekRow}>
+              <View key={wi} style={s.weekRow}>
                 {week.map((cell) => (
                   <DayCell
                     key={formatDateKey(cell.date)}
                     day={cell.day}
                     isCurrentMonth={cell.isCurrentMonth}
                     date={cell.date}
+                    colors={colors}
                     hasGroupBuys={allDateKeysWithBuys.has(formatDateKey(cell.date))}
                     isSelected={isSameDay(cell.date, selectedDate)}
                     isTodayDate={isToday(cell.date)}
@@ -416,7 +429,7 @@ export function CalendarScreen({ navigation, route }: CalendarScreenProps) {
         </View>
 
         {/* Bottom: Selected date's group buys */}
-        <View style={styles.dealsHeader}>
+        <View style={s.dealsHeader}>
           <SText variant="cardTitle" style={{ fontSize: 17, fontWeight: '800' }}>
             {selectedDateKey === formatDateKey(today)
               ? '오늘의 공구'
@@ -428,13 +441,13 @@ export function CalendarScreen({ navigation, route }: CalendarScreenProps) {
         </View>
 
         {isFetching && groupBuys.length === 0 ? (
-          <ActivityIndicator color={colors.primary} style={styles.loading} />
+          <ActivityIndicator color={colors.primary} style={s.loading} />
         ) : selectedDateGroupBuys.length > 0 ? (
           <ScrollView
-            contentContainerStyle={styles.dealsGrid}
+            contentContainerStyle={s.dealsGrid}
             showsVerticalScrollIndicator={false}
           >
-            <View style={styles.dealsGridInner}>
+            <View style={s.dealsGridInner}>
               {selectedDateGroupBuys.map((item, index) => (
                 <DealCard
                   key={item.id}
@@ -446,7 +459,7 @@ export function CalendarScreen({ navigation, route }: CalendarScreenProps) {
             </View>
           </ScrollView>
         ) : (
-          <View style={styles.emptyDeals}>
+          <View style={s.emptyDeals}>
             <SText variant="subtitle" style={{ color: colors.textPrimary, fontWeight: '700', marginBottom: spacing.xs }}>
               {showFollowedOnly ? '팔로잉 중인 인플루언서의 공구가 없어요' : '이 날짜의 공구가 없어요'}
             </SText>
@@ -464,142 +477,143 @@ export function CalendarScreen({ navigation, route }: CalendarScreenProps) {
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: colors.bg },
-  container: { flex: 1, paddingHorizontal: spacing.lg },
+function makeStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    safeArea: { flex: 1, backgroundColor: colors.bg },
+    container: { flex: 1, paddingHorizontal: spacing.lg },
 
-  // Header
-  headerRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.md,
-    marginTop: spacing.sm,
-  },
-  headerNavGroup: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  navArrow: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 44,
-    minWidth: 44,
-  },
-  todayButton: {
-    alignItems: 'center',
-    backgroundColor: colors.primary,
-    borderRadius: borderRadius.full,
-    justifyContent: 'center',
-    minHeight: 36,
-    paddingHorizontal: spacing.lg,
-  },
-  // Filter chip (integrated into headerRow)
-  filterChip: {
-    alignItems: 'center',
-    borderColor: colors.border,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-    justifyContent: 'center',
-    minHeight: 34,
-    paddingHorizontal: spacing.lg,
-  },
-  // Calendar grid
-  calendarWrapper: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: 24,
-    borderWidth: 1,
-    marginBottom: spacing.md,
-    padding: spacing.sm,
-  },
-  weekdayRow: {
-    flexDirection: 'row',
-    marginBottom: spacing.xs,
-  },
-  weekdayCell: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    minHeight: 32,
-  },
-  gridContainer: {
-    gap: spacing.xxs,
-  },
-  weekRow: {
-    flexDirection: 'row',
-  },
+    // Header
+    headerRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: spacing.md,
+      marginTop: spacing.sm,
+    },
+    headerNavGroup: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: spacing.md,
+    },
+    navArrow: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 44,
+      minWidth: 44,
+    },
+    todayButton: {
+      alignItems: 'center',
+      backgroundColor: colors.primary,
+      borderRadius: borderRadius.full,
+      justifyContent: 'center',
+      minHeight: 36,
+      paddingHorizontal: spacing.lg,
+    },
+    // Filter chip (integrated into headerRow)
+    filterChip: {
+      alignItems: 'center',
+      borderRadius: borderRadius.full,
+      borderWidth: 1,
+      justifyContent: 'center',
+      minHeight: 34,
+      paddingHorizontal: spacing.lg,
+    },
+    // Calendar grid
+    calendarWrapper: {
+      backgroundColor: colors.surface,
+      borderColor: colors.border,
+      borderRadius: 24,
+      borderWidth: 1,
+      marginBottom: spacing.md,
+      padding: spacing.sm,
+    },
+    weekdayRow: {
+      flexDirection: 'row',
+      marginBottom: spacing.xs,
+    },
+    weekdayCell: {
+      alignItems: 'center',
+      flex: 1,
+      justifyContent: 'center',
+      minHeight: 32,
+    },
+    gridContainer: {
+      gap: spacing.xxs,
+    },
+    weekRow: {
+      flexDirection: 'row',
+    },
 
-  // Day cell
-  dayCell: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    minHeight: DAY_CELL_SIZE,
-    paddingVertical: spacing.xxs,
-  },
-  dayCellOtherMonth: {
-    opacity: 0.4,
-  },
-  dayCellToday: {
-    borderColor: colors.ctaPurple,
-    borderRadius: borderRadius.full,
-    borderWidth: 1.5,
-  },
-  dayCellSelected: {
-    backgroundColor: colors.ctaPurple,
-    borderRadius: borderRadius.full,
-    borderWidth: 0,
-  },
+    // Day cell
+    dayCell: {
+      alignItems: 'center',
+      flex: 1,
+      justifyContent: 'center',
+      minHeight: DAY_CELL_SIZE,
+      paddingVertical: spacing.xxs,
+    },
+    dayCellOtherMonth: {
+      opacity: 0.4,
+    },
+    dayCellToday: {
+      borderColor: colors.ctaPurple,
+      borderRadius: borderRadius.full,
+      borderWidth: 1.5,
+    },
+    dayCellSelected: {
+      backgroundColor: colors.ctaPurple,
+      borderRadius: borderRadius.full,
+      borderWidth: 0,
+    },
 
-  // Dot indicator
-  dot: {
-    backgroundColor: colors.primary,
-    borderRadius: DOT_SIZE / 2,
-    height: DOT_SIZE,
-    marginTop: 2,
-    width: DOT_SIZE,
-  },
-  dotSelected: {
-    backgroundColor: colors.ctaPurpleText,
-  },
-  dotSpacer: {
-    height: DOT_SIZE + 2,
-    marginTop: 2,
-  },
+    // Dot indicator
+    dot: {
+      backgroundColor: colors.primary,
+      borderRadius: DOT_SIZE / 2,
+      height: DOT_SIZE,
+      marginTop: 2,
+      width: DOT_SIZE,
+    },
+    dotSelected: {
+      backgroundColor: colors.ctaPurpleText,
+    },
+    dotSpacer: {
+      height: DOT_SIZE + 2,
+      marginTop: 2,
+    },
 
-  // Deals section
-  dealsHeader: {
-    alignItems: 'center',
-    borderTopColor: colors.divider,
-    borderTopWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.md,
-    paddingTop: spacing.md,
-  },
-  dealsGrid: {
-    paddingBottom: spacing['2xl'],
-  },
-  dealsGridInner: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-  },
+    // Deals section
+    dealsHeader: {
+      alignItems: 'center',
+      borderTopColor: colors.divider,
+      borderTopWidth: 1,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: spacing.md,
+      paddingTop: spacing.md,
+    },
+    dealsGrid: {
+      paddingBottom: spacing['2xl'],
+    },
+    dealsGridInner: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.md,
+    },
 
-  // Loading
-  loading: {
-    marginTop: spacing['3xl'],
-  },
+    // Loading
+    loading: {
+      marginTop: spacing['3xl'],
+    },
 
-  // Empty state
-  emptyDeals: {
-    alignItems: 'center',
-    borderColor: colors.border,
-    borderRadius: borderRadius.xl,
-    borderWidth: 1,
-    marginTop: spacing.md,
-    padding: spacing['2xl'],
-  },
-});
+    // Empty state
+    emptyDeals: {
+      alignItems: 'center',
+      borderColor: colors.border,
+      borderRadius: borderRadius.xl,
+      borderWidth: 1,
+      marginTop: spacing.md,
+      padding: spacing['2xl'],
+    },
+  });
+}

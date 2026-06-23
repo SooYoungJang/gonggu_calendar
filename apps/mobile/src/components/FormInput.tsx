@@ -1,7 +1,10 @@
+import { useMemo } from 'react';
 import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
 import { SText } from './ui/SText';
-import { borderRadius, colors, spacing } from '../design/tokens';
+import { borderRadius, spacing } from '../design/tokens';
+import { useTheme } from '../context/ThemeContext';
+import type { ColorPalette } from '../context/ThemeContext';
 
 type FormInputProps = TextInputProps & {
   label: string;
@@ -10,57 +13,62 @@ type FormInputProps = TextInputProps & {
 };
 
 export function FormInput({ label, multiline = false, style, error, ...props }: FormInputProps) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
+
   return (
-    <View style={styles.inputGroup}>
-      <SText variant="label" style={styles.label}>{label}</SText>
+    <View style={s.inputGroup}>
+      <SText variant="label" style={s.label}>{label}</SText>
       <TextInput
         multiline={multiline}
         placeholderTextColor={colors.textTertiary}
         style={[
-          styles.input,
-          multiline && styles.textArea,
-          error && styles.inputError,
+          s.input,
+          multiline && s.textArea,
+          error && s.inputError,
           style,
         ]}
         {...props}
       />
       {error ? (
-        <SText variant="caption" style={styles.errorText}>{error}</SText>
+        <SText variant="caption" style={s.errorText}>{error}</SText>
       ) : null}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  inputGroup: {
-    marginBottom: spacing.md,
-  },
-  label: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    fontWeight: '600',
-    marginBottom: spacing.xs,
-  },
-  input: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    color: colors.textPrimary,
-    fontSize: 14,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 10,
-  },
-  inputError: {
-    borderColor: colors.error,
-  },
-  errorText: {
-    color: colors.error,
-    fontSize: 12,
-    marginTop: spacing.xs,
-  },
-  textArea: {
-    minHeight: 88,
-    textAlignVertical: 'top',
-  },
-});
+function makeStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    inputGroup: {
+      marginBottom: spacing.md,
+    },
+    label: {
+      color: colors.textSecondary,
+      fontSize: 13,
+      fontWeight: '600',
+      marginBottom: spacing.xs,
+    },
+    input: {
+      backgroundColor: colors.surface,
+      borderColor: colors.border,
+      borderRadius: borderRadius.lg,
+      borderWidth: 1,
+      color: colors.textPrimary,
+      fontSize: 14,
+      paddingHorizontal: spacing.md,
+      paddingVertical: 10,
+    },
+    inputError: {
+      borderColor: colors.error,
+    },
+    errorText: {
+      color: colors.error,
+      fontSize: 12,
+      marginTop: spacing.xs,
+    },
+    textArea: {
+      minHeight: 88,
+      textAlignVertical: 'top',
+    },
+  });
+}

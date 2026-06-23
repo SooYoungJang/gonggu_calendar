@@ -14,7 +14,8 @@ import { InfluencerGroupBuysScreen } from './screens/InfluencerGroupBuysScreen';
 import { DetailScreen } from './screens/DetailScreen';
 import { StoreScreen } from './screens/StoreScreen';
 import { SubmitScreen } from './screens/SubmitScreen';
-import { colors, shadows, spacing } from './design/tokens';
+import { spacing } from './design/tokens';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 
 type RootStackWithTabs = RootStackParamList & {
   MainTabs: NavigatorScreenParams<MainTabParamList> | undefined;
@@ -26,10 +27,11 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 const TAB_BAR_HEIGHT = 72;
 
 function PlaceholderScreen({ title, subtitle }: { title: string; subtitle: string }) {
+  const { colors } = useTheme();
   return (
-    <View style={styles.placeholderScreen}>
-      <Text style={styles.placeholderTitle}>{title}</Text>
-      <Text style={styles.placeholderSubtitle}>{subtitle}</Text>
+    <View style={[styles.placeholderScreen, { backgroundColor: colors.bg }]}>
+      <Text style={[styles.placeholderTitle, { color: colors.textPrimary }]}>{title}</Text>
+      <Text style={[styles.placeholderSubtitle, { color: colors.textSecondary }]}>{subtitle}</Text>
     </View>
   );
 }
@@ -79,6 +81,7 @@ function MainTabs() {
   const tabBarMarginHorizontal = isNarrow ? Math.max(spacing.sm, spacing.lg - 6) : spacing.lg;
   const tabBarBottomOffset = Math.max(insets.bottom, spacing.sm);
   const submitTabMarginHorizontal = isNarrow ? spacing.xxs : spacing.xs;
+  const { colors, shadows } = useTheme();
 
   return (
     <Tab.Navigator
@@ -92,7 +95,13 @@ function MainTabs() {
         ],
         tabBarAccessibilityLabel: `${tabLabel(route.name)} 탭`,
         tabBarIcon: ({ focused }) => (
-          <Text style={[styles.tabIcon, focused && styles.tabIconFocused, route.name === 'Submit' && styles.submitTabIcon]}>
+          <Text
+            style={[
+              styles.tabIcon,
+              { color: focused ? colors.primary : colors.textSecondary },
+              route.name === 'Submit' && { color: colors.ctaPurpleText },
+            ]}
+          >
             {tabIcon(route.name)}
           </Text>
         ),
@@ -103,7 +112,17 @@ function MainTabs() {
           { fontSize: 11, fontWeight: '700' },
           route.name === 'Submit' && { color: colors.ctaPurpleText },
         ],
-        tabBarStyle: [styles.tabBar, { bottom: tabBarBottomOffset, marginHorizontal: tabBarMarginHorizontal }],
+        tabBarStyle: [
+          styles.tabBar,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            bottom: tabBarBottomOffset,
+            marginHorizontal: tabBarMarginHorizontal,
+            ...shadows.md,
+          },
+        ],
+        tabBarIconStyle: route.name === 'Submit' ? { backgroundColor: colors.ctaPurple, borderRadius: 28, minHeight: 56 } : undefined,
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
@@ -122,23 +141,25 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
-        <NavigationContainer>
-          <Stack.Navigator
-            initialRouteName={
-              Platform.OS === 'web' && typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')
-                ? 'Admin'
-                : 'MainTabs'
-            }
-            screenOptions={{ headerShown: false }}
-          >
-            <Stack.Screen name="MainTabs" component={MainTabs} />
-            <Stack.Screen name="CalendarScreen" component={CalendarScreen} />
-            <Stack.Screen name="Detail" component={DetailScreen} />
-            <Stack.Screen name="FeedDetail" component={FeedDetailScreen} />
-            <Stack.Screen name="InfluencerGroupBuys" component={InfluencerGroupBuysScreen} />
-            <Stack.Screen name="Admin" component={AdminScreen} />
-          </Stack.Navigator>
-        </NavigationContainer>
+        <ThemeProvider>
+          <NavigationContainer>
+            <Stack.Navigator
+              initialRouteName={
+                Platform.OS === 'web' && typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')
+                  ? 'Admin'
+                  : 'MainTabs'
+              }
+              screenOptions={{ headerShown: false }}
+            >
+              <Stack.Screen name="MainTabs" component={MainTabs} />
+              <Stack.Screen name="CalendarScreen" component={CalendarScreen} />
+              <Stack.Screen name="Detail" component={DetailScreen} />
+              <Stack.Screen name="FeedDetail" component={FeedDetailScreen} />
+              <Stack.Screen name="InfluencerGroupBuys" component={InfluencerGroupBuysScreen} />
+              <Stack.Screen name="Admin" component={AdminScreen} />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </ThemeProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
   );
@@ -147,33 +168,27 @@ export default function App() {
 const styles = StyleSheet.create({
   placeholderScreen: {
     alignItems: 'center',
-    backgroundColor: colors.bg,
     flex: 1,
     justifyContent: 'center',
     padding: spacing['2xl'],
   },
   placeholderTitle: {
-    color: colors.textPrimary,
     fontSize: 24,
     fontWeight: '800',
     marginBottom: spacing.sm,
   },
   placeholderSubtitle: {
-    color: colors.textSecondary,
     fontSize: 14,
     lineHeight: 22,
     textAlign: 'center',
   },
   tabBar: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
     borderRadius: 30,
     borderTopWidth: 0,
     height: TAB_BAR_HEIGHT,
     paddingBottom: spacing.sm,
     paddingTop: spacing.sm,
     position: 'absolute',
-    ...shadows.md,
   },
   tabButton: {
     alignItems: 'center',
@@ -182,21 +197,12 @@ const styles = StyleSheet.create({
     minHeight: 52,
   },
   submitTabButton: {
-    backgroundColor: colors.ctaPurple,
     borderRadius: 28,
     marginHorizontal: spacing.xs,
     minHeight: 56,
   },
   tabIcon: {
-    color: colors.textSecondary,
     fontSize: 18,
     fontWeight: '800',
-  },
-  tabIconFocused: {
-    color: colors.primary,
-  },
-  submitTabIcon: {
-    color: colors.ctaPurpleText,
-    fontSize: 24,
   },
 });

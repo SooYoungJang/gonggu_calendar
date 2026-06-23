@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { ActivityIndicator, Image, Linking, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
@@ -6,7 +7,9 @@ import { fetchFeedPost } from '../api';
 import { AppButton } from '../components/AppButton';
 import { InstagramCard } from '../components/InstagramCard';
 import { SText } from '../components/ui/SText';
-import { borderRadius, colors, spacing } from '../design/tokens';
+import { borderRadius, spacing } from '../design/tokens';
+import { useTheme } from '../context/ThemeContext';
+import type { ColorPalette } from '../context/ThemeContext';
 import type { FeedDetailScreenProps } from '../types';
 
 function formatDateRange(openDate: string | null, closeDate: string | null): {
@@ -37,67 +40,72 @@ function formatDateRange(openDate: string | null, closeDate: string | null): {
   return { label: range, isExpired: false };
 }
 
+function LoadingView({ s, colors }: { s: any; colors: ColorPalette }) {
+  return (
+    <SafeAreaView edges={['bottom', 'top']} style={s.safeArea}>
+      <View style={s.centered}>
+        <ActivityIndicator color={colors.primary} size="large" />
+      </View>
+    </SafeAreaView>
+  );
+}
+
+function ErrorView({ s, navigation }: { s: any; navigation: any }) {
+  return (
+    <SafeAreaView edges={['bottom', 'top']} style={s.safeArea}>
+      <View style={s.centered}>
+        <SText variant="subtitle" style={{ fontSize: 16, marginBottom: spacing.lg }}>
+          피드를 불러올 수 없습니다.
+        </SText>
+        <AppButton variant="secondary" onPress={() => navigation.goBack()}>
+          뒤로 가기
+        </AppButton>
+      </View>
+    </SafeAreaView>
+  );
+}
+
 export function FeedDetailScreen({ route, navigation }: FeedDetailScreenProps) {
   const { feedId } = route.params;
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
 
   const { data: feed, isLoading, isError } = useQuery({
     queryKey: ['feed-post', feedId],
     queryFn: () => fetchFeedPost(feedId),
   });
 
-  if (isLoading) {
-    return (
-      <SafeAreaView edges={['bottom', 'top']} style={styles.safeArea}>
-        <View style={styles.centered}>
-          <ActivityIndicator color={colors.primary} size="large" />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (isError || !feed) {
-    return (
-      <SafeAreaView edges={['bottom', 'top']} style={styles.safeArea}>
-        <View style={styles.centered}>
-          <SText variant="subtitle" style={{ fontSize: 16, marginBottom: spacing.lg }}>
-            피드를 불러올 수 없습니다.
-          </SText>
-          <AppButton variant="secondary" onPress={() => navigation.goBack()}>
-            뒤로 가기
-          </AppButton>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  if (isLoading) return <LoadingView s={s} colors={colors} />;
+  if (isError || !feed) return <ErrorView s={s} navigation={navigation} />;
 
   const isImage = feed.mediaType === 'IMAGE' || (!feed.mediaType && feed.mediaUrl);
   const isVideo = feed.mediaType === 'VIDEO';
   const dateInfo = formatDateRange(feed.openDate, feed.closeDate);
 
   return (
-    <SafeAreaView edges={['bottom', 'top']} style={styles.safeArea}>
+    <SafeAreaView edges={['bottom', 'top']} style={s.safeArea}>
       <ScrollView
         bounces={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={s.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {/* ── Media Section ── */}
         {feed.mediaUrl ? (
-          <View style={styles.mediaContainer}>
+          <View style={s.mediaContainer}>
             {isImage ? (
               <Image
                 source={{ uri: feed.mediaUrl }}
-                style={styles.mediaImage}
+                style={s.mediaImage}
                 resizeMode="contain"
               />
             ) : null}
             {isVideo ? (
-              <View style={styles.videoPlaceholder}>
+              <View style={s.videoPlaceholder}>
                 <SText variant="body" style={{ fontSize: 48, color: '#fff', marginBottom: spacing.sm }}>▶</SText>
                 <SText variant="caption" style={{ fontSize: 14 }}>영상</SText>
               </View>
             ) : null}
-            <View style={styles.mediaTypeBadge}>
+            <View style={s.mediaTypeBadge}>
               <SText variant="caption" style={{ fontSize: 11, fontWeight: '700', color: '#fff', letterSpacing: 1 }}>
                 {isVideo ? 'VIDEO' : 'IMAGE'}
               </SText>
@@ -106,7 +114,7 @@ export function FeedDetailScreen({ route, navigation }: FeedDetailScreenProps) {
         ) : null}
 
         {/* ── Content Card ── */}
-        <View style={styles.contentSection}>
+        <View style={s.contentSection}>
           <InstagramCard>
             {/* Account Name */}
             {feed.accountName ? (
@@ -123,14 +131,14 @@ export function FeedDetailScreen({ route, navigation }: FeedDetailScreenProps) {
             ) : null}
 
             {/* Date Range */}
-            <View style={styles.dateRow}>
+            <View style={s.dateRow}>
               <SText variant="label" style={{ marginRight: spacing.md, width: 48 }}>일정</SText>
-              <View style={styles.dateValueRow}>
+              <View style={s.dateValueRow}>
                 <SText variant="body" style={[{ fontSize: 14 }, dateInfo.isExpired && { color: colors.error, textDecorationLine: 'line-through' }]}>
                   {dateInfo.label}
                 </SText>
                 {dateInfo.isExpired ? (
-                  <View style={styles.expiredBadge}>
+                  <View style={s.expiredBadge}>
                     <SText variant="caption" style={{ fontSize: 11, fontWeight: '700', color: colors.error }}>마감</SText>
                   </View>
                 ) : null}
@@ -140,7 +148,7 @@ export function FeedDetailScreen({ route, navigation }: FeedDetailScreenProps) {
             {/* CTA Button */}
             {feed.linkUrl ? (
               <AppButton
-                style={styles.ctaButton}
+                style={s.ctaButton}
                 variant="accent"
                 onPress={() => {
                   const url = feed.linkUrl;
@@ -159,64 +167,66 @@ export function FeedDetailScreen({ route, navigation }: FeedDetailScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: colors.bg },
-  centered: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    padding: spacing['2xl'],
-  },
-  scrollContent: { paddingBottom: spacing['4xl'] },
-  /* ── Media ── */
-  mediaContainer: {
-    backgroundColor: '#000',
-    position: 'relative',
-    width: '100%',
-  },
-  mediaImage: {
-    aspectRatio: 1,
-    width: '100%',
-  },
-  videoPlaceholder: {
-    alignItems: 'center',
-    aspectRatio: 16 / 9,
-    backgroundColor: '#1a1a1a',
-    justifyContent: 'center',
-  },
-  mediaTypeBadge: {
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    borderRadius: borderRadius.sm,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 3,
-    position: 'absolute',
-    right: spacing.sm,
-    top: spacing.sm,
-  },
-  /* ── Content ── */
-  contentSection: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-  },
-  dateRow: {
-    borderTopColor: colors.divider,
-    borderTopWidth: 1,
-    flexDirection: 'row',
-    paddingTop: spacing.md,
-  },
-  dateValueRow: {
-    alignItems: 'center',
-    flex: 1,
-    flexDirection: 'row',
-  },
-  expiredBadge: {
-    backgroundColor: colors.errorBg,
-    borderRadius: borderRadius.full,
-    marginLeft: spacing.sm,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-  },
-  ctaButton: {
-    marginTop: spacing.lg,
-  },
-});
+function makeStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    safeArea: { flex: 1, backgroundColor: colors.bg },
+    centered: {
+      alignItems: 'center',
+      flex: 1,
+      justifyContent: 'center',
+      padding: spacing['2xl'],
+    },
+    scrollContent: { paddingBottom: spacing['4xl'] },
+    /* ── Media ── */
+    mediaContainer: {
+      backgroundColor: '#000',
+      position: 'relative',
+      width: '100%',
+    },
+    mediaImage: {
+      aspectRatio: 1,
+      width: '100%',
+    },
+    videoPlaceholder: {
+      alignItems: 'center',
+      aspectRatio: 16 / 9,
+      backgroundColor: '#1a1a1a',
+      justifyContent: 'center',
+    },
+    mediaTypeBadge: {
+      backgroundColor: 'rgba(0,0,0,0.6)',
+      borderRadius: borderRadius.sm,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 3,
+      position: 'absolute',
+      right: spacing.sm,
+      top: spacing.sm,
+    },
+    /* ── Content ── */
+    contentSection: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.lg,
+    },
+    dateRow: {
+      borderTopColor: colors.divider,
+      borderTopWidth: 1,
+      flexDirection: 'row',
+      paddingTop: spacing.md,
+    },
+    dateValueRow: {
+      alignItems: 'center',
+      flex: 1,
+      flexDirection: 'row',
+    },
+    expiredBadge: {
+      backgroundColor: colors.errorBg,
+      borderRadius: borderRadius.full,
+      marginLeft: spacing.sm,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 2,
+    },
+    ctaButton: {
+      marginTop: spacing.lg,
+    },
+  });
+}

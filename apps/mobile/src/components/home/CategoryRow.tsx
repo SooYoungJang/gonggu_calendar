@@ -1,7 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SText } from '../../components/ui/SText';
 
-import { borderRadius, categoryColors, colors, spacing } from '../../design/tokens';
+import { borderRadius, categoryColors, spacing } from '../../design/tokens';
 import type { CategoryColorName } from '../../design/tokens';
 
 export type CategoryItem = {

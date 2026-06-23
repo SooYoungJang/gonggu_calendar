@@ -4,7 +4,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { RankingCategoryChips, RankingTabs, SellerRankingList } from '../components/ranking';
 import { SText } from '../components/ui/SText';
-import { borderRadius, colors, spacing } from '../design/tokens';
+import { borderRadius, spacing } from '../design/tokens';
 import { MOCK_RANKINGS } from '../features/ranking/rankingFixtures';
 import {
   RANKING_CATEGORIES,
@@ -18,6 +18,8 @@ import {
 } from '../features/ranking/types';
 import { useSellerRankings } from '../features/ranking/useSellerRankings';
 import type { StoreScreenProps } from '../types';
+import { useTheme } from '../context/ThemeContext';
+import type { ColorPalette } from '../context/ThemeContext';
 
 // Space reserved for the floating absolute-positioned tab bar:
 // 70pt bar height + spacing.lg margin + safe area bottom + extra breathing room
@@ -27,6 +29,8 @@ const FLOATING_TAB_RESERVED_HEIGHT = TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_MARGIN;
 
 export function StoreScreen({ navigation }: StoreScreenProps) {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const [activeTab, setActiveTab] = useState<RankingTab>('ranking');
   const [selectedCategory, setSelectedCategory] = useState<RankingCategory>('all');
   const [period, setPeriod] = useState<RankingPeriod>('weekly');
@@ -88,26 +92,26 @@ export function StoreScreen({ navigation }: StoreScreenProps) {
   }, []);
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
-      <View style={styles.header}>
-        <View style={styles.titleRow}>
+    <SafeAreaView edges={['top', 'bottom']} style={s.safeArea}>
+      <View style={s.header}>
+        <View style={s.titleRow}>
           <View>
             <SText variant="eyebrow">스토어 랭킹</SText>
             <SText variant="title" style={{ fontWeight: '900', letterSpacing: -0.6 }}>
               쇼핑몰 랭킹
             </SText>
           </View>
-          <View style={styles.headerActions}>
-            <Pressable accessibilityLabel="랭킹 검색" accessibilityRole="button" style={styles.iconButton}>
+          <View style={s.headerActions}>
+            <Pressable accessibilityLabel="랭킹 검색" accessibilityRole="button" style={s.iconButton}>
               <SText variant="body" style={{ fontSize: 16, fontWeight: '900', color: colors.textPrimary }}>⌕</SText>
             </Pressable>
-            <Pressable accessibilityLabel="랭킹 알림" accessibilityRole="button" style={styles.iconButton}>
+            <Pressable accessibilityLabel="랭킹 알림" accessibilityRole="button" style={s.iconButton}>
               <SText variant="body" style={{ fontSize: 16, fontWeight: '900', color: colors.textPrimary }}>♡</SText>
             </Pressable>
           </View>
         </View>
 
-        <View style={styles.searchPreview} accessibilityLabel="브랜드명, 제품명, 셀러명으로 검색">
+        <View style={s.searchPreview} accessibilityLabel="브랜드명, 제품명, 셀러명으로 검색">
           <SText variant="body" style={{ fontSize: 14, fontWeight: '900', color: colors.textTertiary }}>⌕</SText>
           <SText variant="label" style={{ fontSize: 14, flex: 1 }}>브랜드명, 제품명, 셀러명으로 검색</SText>
         </View>
@@ -120,8 +124,8 @@ export function StoreScreen({ navigation }: StoreScreenProps) {
         />
       </View>
 
-      <View style={styles.filterSection}>
-        <View style={styles.periodRow}>
+      <View style={s.filterSection}>
+        <View style={s.periodRow}>
           {(['today', 'weekly', 'monthly'] as const).map((nextPeriod) => {
             const selected = nextPeriod === period;
             return (
@@ -131,7 +135,7 @@ export function StoreScreen({ navigation }: StoreScreenProps) {
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
                 onPress={() => setPeriod(nextPeriod)}
-                style={[styles.periodChip, selected && styles.selectedPeriodChip]}
+                style={[s.periodChip, selected && s.selectedPeriodChip]}
               >
                 <SText variant="caption" style={[{ fontWeight: '800', color: colors.textSecondary, includeFontPadding: false }, selected && { color: colors.primary }]}>
                   {RANKING_PERIOD_LABELS[nextPeriod]}
@@ -150,7 +154,7 @@ export function StoreScreen({ navigation }: StoreScreenProps) {
         />
       </View>
 
-      <View style={styles.listContainer}>
+      <View style={s.listContainer}>
         <SellerRankingList
           state={patchedRankingState}
           bottomPadding={bottomPadding}
@@ -163,73 +167,75 @@ export function StoreScreen({ navigation }: StoreScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  filterSection: {
-    gap: spacing.sm,
-    paddingBottom: spacing.sm,
-  },
-  header: {
-    backgroundColor: colors.bg,
-    gap: spacing.md,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  iconButton: {
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-    height: 38,
-    justifyContent: 'center',
-    width: 38,
-  },
-  listContainer: {
-    flex: 1,
-    paddingHorizontal: spacing.lg,
-  },
-  periodChip: {
-    alignItems: 'center',
-    borderColor: colors.border,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-    justifyContent: 'center',
-    height: 32,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 0,
-  },
-  periodRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-  },
-  safeArea: {
-    backgroundColor: colors.bg,
-    flex: 1,
-  },
-  searchPreview: {
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: borderRadius.xl,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: spacing.sm,
-    minHeight: 46,
-    paddingHorizontal: spacing.md,
-  },
-  selectedPeriodChip: {
-    backgroundColor: colors.primaryBg,
-    borderColor: colors.primaryLight,
-  },
-  titleRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-});
+function makeStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    filterSection: {
+      gap: spacing.sm,
+      paddingBottom: spacing.sm,
+    },
+    header: {
+      backgroundColor: colors.bg,
+      gap: spacing.md,
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.md,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+    },
+    iconButton: {
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderColor: colors.border,
+      borderRadius: borderRadius.full,
+      borderWidth: 1,
+      height: 38,
+      justifyContent: 'center',
+      width: 38,
+    },
+    listContainer: {
+      flex: 1,
+      paddingHorizontal: spacing.lg,
+    },
+    periodChip: {
+      alignItems: 'center',
+      borderColor: colors.border,
+      borderRadius: borderRadius.full,
+      borderWidth: 1,
+      justifyContent: 'center',
+      height: 32,
+      paddingHorizontal: spacing.md,
+      paddingVertical: 0,
+    },
+    periodRow: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      paddingHorizontal: spacing.lg,
+    },
+    safeArea: {
+      backgroundColor: colors.bg,
+      flex: 1,
+    },
+    searchPreview: {
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderColor: colors.border,
+      borderRadius: borderRadius.xl,
+      borderWidth: 1,
+      flexDirection: 'row',
+      gap: spacing.sm,
+      minHeight: 46,
+      paddingHorizontal: spacing.md,
+    },
+    selectedPeriodChip: {
+      backgroundColor: colors.primaryBg,
+      borderColor: colors.primaryLight,
+    },
+    titleRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+  });
+}

@@ -48,6 +48,37 @@ vi.mock('react-native-safe-area-context', () => {
   };
 });
 
+vi.mock('../context/ThemeContext', () => ({
+  useTheme: () => ({
+    isDark: false,
+    themeMode: 'system',
+    setThemeMode: () => {},
+    toggleTheme: () => {},
+    colors: {
+      bg: '#FFFFFF',
+      surface: '#F8F9FA',
+      surfaceHover: '#F0F1F3',
+      primary: '#007AFF',
+      primaryBg: '#E8F0FE',
+      textPrimary: '#1A1A2E',
+      textSecondary: '#4A4A5A',
+      textTertiary: '#8E8E98',
+      textInverse: '#FFFFFF',
+      noticeText: '#333333',
+      warningBg: '#FFF8E1',
+      error: '#FF3B30',
+      errorBg: '#FFEBEE',
+      border: '#E5E5EA',
+      borderLight: '#F0F0F5',
+      shadow: '#000000',
+      divider: '#E0E0E0',
+      ctaPurple: '#6C63FF',
+      ctaPurpleText: '#FFFFFF',
+    } as any,
+    shadows: {} as any,
+  }),
+}));
+
 function dateStr(daysFromNow: number): string {
   const d = new Date();
   d.setDate(d.getDate() + daysFromNow);

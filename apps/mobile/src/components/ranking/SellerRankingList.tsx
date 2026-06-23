@@ -1,10 +1,13 @@
+import { useMemo } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 
 import { SText } from '../ui/SText';
 
-import { colors, spacing } from '../../design/tokens';
+import { spacing } from '../../design/tokens';
 import type { RankingLoadState, RankingThumbnail, SellerRanking } from '../../features/ranking/types';
 import { SellerRankingRow } from './SellerRankingRow';
+import { useTheme } from '../../context/ThemeContext';
+import type { ColorPalette } from '../../context/ThemeContext';
 
 export interface SellerRankingListProps {
   state: RankingLoadState;
@@ -27,9 +30,12 @@ export function SellerRankingList({
   onPressThumbnail,
   onToggleFollow,
 }: SellerRankingListProps) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
+
   if (state.status === 'loading' && !state.data) {
     return (
-      <View style={styles.statusContainer}>
+      <View style={s.statusContainer}>
         <SText variant="body" style={{ fontWeight: '700', textAlign: 'center' }}>랭킹을 불러오는 중…</SText>
       </View>
     );
@@ -37,7 +43,7 @@ export function SellerRankingList({
 
   if (state.status === 'error') {
     return (
-      <View style={styles.statusContainer}>
+      <View style={s.statusContainer}>
         <SText variant="body" style={{ color: colors.error, fontWeight: '700', textAlign: 'center' }}>{state.message}</SText>
         {state.retry ? (
           <SText
@@ -56,7 +62,7 @@ export function SellerRankingList({
 
   if (state.status === 'empty') {
     return (
-      <View style={styles.statusContainer}>
+      <View style={s.statusContainer}>
         <SText variant="body" style={{ fontWeight: '700', textAlign: 'center' }}>{state.message}</SText>
         {state.action ? (
           <SText
@@ -93,22 +99,27 @@ export function SellerRankingList({
           onToggleFollow={onToggleFollow ?? (() => {})}
         />
       )}
-      style={styles.list}
+      style={s.list}
     />
   );
 }
 
 const styles = StyleSheet.create({
-  list: {
-    backgroundColor: colors.bg,
-  },
   separator: {
     height: spacing.sm,
   },
-  statusContainer: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: spacing['2xl'],
-  },
 });
+
+function makeStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    list: {
+      backgroundColor: colors.bg,
+    },
+    statusContainer: {
+      alignItems: 'center',
+      flex: 1,
+      justifyContent: 'center',
+      paddingHorizontal: spacing['2xl'],
+    },
+  });
+}

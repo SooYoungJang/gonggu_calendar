@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -5,16 +6,20 @@ import { AppButton } from '../components/AppButton';
 import { InfoRow } from '../components/InfoRow';
 import { InstagramCard } from '../components/InstagramCard';
 import { ScreenHeader } from '../components/ScreenHeader';
-import { colors, borderRadius, spacing, typography } from '../design/tokens';
+import { borderRadius, spacing } from '../design/tokens';
+import { useTheme } from '../context/ThemeContext';
+import type { ColorPalette } from '../context/ThemeContext';
 import type { DetailScreenProps } from '../types';
 import { formatEndDate } from '../utils';
 
 export function DetailScreen({ route }: DetailScreenProps) {
   const { groupBuy } = route.params;
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
 
   return (
-    <SafeAreaView edges={['bottom', 'top']} style={styles.safeArea}>
-      <View className="flex-1 px-4" style={styles.container}>
+    <SafeAreaView edges={['bottom', 'top']} style={s.safeArea}>
+      <View style={s.container}>
         <InstagramCard>
           <ScreenHeader
             eyebrow={`@${groupBuy.rawPost.influencer.instagramUsername}`}
@@ -40,7 +45,9 @@ export function DetailScreen({ route }: DetailScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: colors.bg },
-  container: { flex: 1, paddingTop: spacing.lg },
-});
+function makeStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    safeArea: { flex: 1, backgroundColor: colors.bg },
+    container: { flex: 1, paddingTop: spacing.lg },
+  });
+}

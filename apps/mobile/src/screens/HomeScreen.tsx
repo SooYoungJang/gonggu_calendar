@@ -22,8 +22,10 @@ import { SearchResultsPanel } from '../components/home/SearchResultsPanel';
 import { SubmitPrompt } from '../components/home/SubmitPrompt';
 import { ThisWeekDeals } from '../components/home/ThisWeekDeals';
 import { WeeklyCalendarStrip } from '../components/home/WeeklyCalendarStrip';
-import { borderRadius, colors, spacing, typography } from '../design/tokens';
+import { borderRadius, spacing } from '../design/tokens';
+import { useTheme } from '../context/ThemeContext';
 import type { FeedPost, GroupBuy, HomeScreenProps, Influencer } from '../types';
+import type { ColorPalette } from '../context/ThemeContext';
 
 type HomeAction = () => void;
 
@@ -95,22 +97,24 @@ export function HomeScreenContent({
   onRetryFeed,
 }: HomeScreenContentProps) {
   const showSearchResults = searchQuery.trim().length > 0;
+  const { colors, isDark } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" />
-      <View style={styles.container}>
+    <SafeAreaView edges={['top', 'bottom']} style={s.safeArea}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+      <View style={s.container}>
         <ScrollView
           refreshControl={<RefreshControl refreshing={isFetching} onRefresh={onRefresh} tintColor={colors.primary} />}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={s.listContent}
         >
-          <View style={styles.content}>
+          <View style={s.content}>
             <HomeHeader onOpenBookmarks={onOpenBookmarks} onOpenNotifications={onOpenNotifications} />
             <FeedSection feedPosts={feedPosts} onPressFeed={onPressFeed} isLoading={feedsLoading} isError={feedsError} onRetry={onRetryFeed} />
             {isError ? (
-              <View style={styles.notice}>
-                <SText variant="caption" style={styles.noticeText}>로컬 API가 꺼져 있어 샘플 데이터를 표시 중입니다.</SText>
+              <View style={s.notice}>
+                <SText variant="caption" style={s.noticeText}>로컬 API가 꺼져 있어 샘플 데이터를 표시 중입니다.</SText>
               </View>
             ) : null}
             <SearchBar value={searchQuery} onChangeText={onChangeSearchQuery} onClear={onClearSearchQuery} />
@@ -151,11 +155,6 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
     staleTime: 0,
   });
 
-  // DEBUG: log feed state
-  console.log('[CEO DEBUG] feedsData:', JSON.stringify(feedsData));
-  console.log('[CEO DEBUG] feedsLoading:', feedsLoading, 'feedsError:', feedsError);
-  console.log('[CEO DEBUG] feedPosts:', feedsData?.items?.length ?? 0);
-
   const groupBuys = data?.length ? data : fallbackGroupBuys;
   const influencers = influencersData?.length ? influencersData : getFallbackInfluencers(groupBuys);
   const feedPosts = feedsData?.items ?? [];
@@ -194,11 +193,13 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: colors.bg },
-  container: { flex: 1, backgroundColor: colors.bg },
-  content: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm },
-  listContent: { paddingBottom: 120 },
-  notice: { backgroundColor: colors.warningBg, borderRadius: borderRadius.sm, marginBottom: spacing.md, padding: spacing.md },
-  noticeText: { color: colors.noticeText, fontSize: 12, textAlign: 'center' },
-});
+function makeStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    safeArea: { flex: 1, backgroundColor: colors.bg },
+    container: { flex: 1, backgroundColor: colors.bg },
+    content: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm },
+    listContent: { paddingBottom: 120 },
+    notice: { backgroundColor: colors.warningBg, borderRadius: borderRadius.sm, marginBottom: spacing.md, padding: spacing.md },
+    noticeText: { color: colors.noticeText, fontSize: 12, textAlign: 'center' },
+  });
+}

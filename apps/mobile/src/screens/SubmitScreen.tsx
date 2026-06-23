@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -19,9 +19,11 @@ import { InstagramPreview } from '../components/InstagramPreview';
 import { SText } from '../components/ui/SText';
 import { UrlInputStatus } from '../components/UrlInputStatus';
 import { useHikerApi } from '../hooks/useHikerApi';
-import { borderRadius, colors, spacing } from '../design/tokens';
+import { borderRadius, spacing } from '../design/tokens';
 import type { SubmitScreenProps } from '../types';
 import { isValidOptionalUrl, normalizeOptional } from '../utils';
+import { useTheme } from '../context/ThemeContext';
+import type { ColorPalette } from '../context/ThemeContext';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -35,6 +37,9 @@ interface Feedback {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function SubmitScreen({ navigation }: SubmitScreenProps) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
+
   // Form state
   const [instagramUrl, setInstagramUrl] = useState('');
   const [productName, setProductName] = useState('');
@@ -137,46 +142,46 @@ export function SubmitScreen({ navigation }: SubmitScreenProps) {
   // ─── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView edges={['top']} style={styles.safeArea}>
+    <SafeAreaView edges={['top']} style={s.safeArea}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.flex}
+        style={s.flex}
       >
         <ScrollView
           ref={scrollRef}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={s.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           {/* ── Header ─────────────────────────────────────── */}
-          <SText variant="eyebrow" style={styles.eyebrow}>
+          <SText variant="eyebrow" style={s.eyebrow}>
             공구 제보하기
           </SText>
-          <SText variant="title" style={styles.title}>
+          <SText variant="title" style={s.title}>
             발견한 공구를 알려주세요
           </SText>
-          <SText variant="subtitle" style={styles.subtitle}>
+          <SText variant="subtitle" style={s.subtitle}>
             인스타그램 게시물 URL만 입력하면 이미지와 정보를 자동으로 불러옵니다
           </SText>
 
           {/* ── Feedback banner ────────────────────────────── */}
           {feedback ? (
-            <View style={[styles.feedbackBanner, styles[`feedback_${feedback.kind}`]]}>
-              <SText variant="caption" style={[styles.feedbackText, styles[`feedbackText_${feedback.kind}`]]}>
+            <View style={[s.feedbackBanner, s[`feedback_${feedback.kind}`]]}>
+              <SText variant="caption" style={[s.feedbackText, s[`feedbackText_${feedback.kind}`]]}>
                 {feedback.message}
               </SText>
             </View>
           ) : null}
 
           {/* ── Instagram URL — Hero input ─────────────────── */}
-          <View style={styles.urlSection}>
-            <View style={styles.urlLabelRow}>
-              <SText variant="label" style={styles.urlLabel}>인스타그램 게시물 URL</SText>
-              <SText variant="caption" style={styles.requiredBadge}>필수</SText>
+          <View style={s.urlSection}>
+            <View style={s.urlLabelRow}>
+              <SText variant="label" style={s.urlLabel}>인스타그램 게시물 URL</SText>
+              <SText variant="caption" style={s.requiredBadge}>필수</SText>
             </View>
-            <View style={[styles.urlInputWrapper, hikerStatus === 'loading' && styles.urlInputLoading]}>
-              <View style={styles.urlIcon}>
-                <SText variant="caption" style={styles.urlIconText}>📸</SText>
+            <View style={[s.urlInputWrapper, hikerStatus === 'loading' && s.urlInputLoading]}>
+              <View style={s.urlIcon}>
+                <SText variant="caption" style={s.urlIconText}>📸</SText>
               </View>
               <TextInput
                 value={instagramUrl}
@@ -186,7 +191,7 @@ export function SubmitScreen({ navigation }: SubmitScreenProps) {
                 }}
                 placeholder="https://www.instagram.com/p/..."
                 placeholderTextColor={colors.textTertiary}
-                style={styles.urlInput}
+                style={s.urlInput}
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardType="url"
@@ -205,8 +210,8 @@ export function SubmitScreen({ navigation }: SubmitScreenProps) {
           />
 
           {/* ── Remaining fields (compact) ─────────────────── */}
-          <View style={styles.fieldsSection}>
-            <SText variant="eyebrow" style={styles.sectionLabel}>
+          <View style={s.fieldsSection}>
+            <SText variant="eyebrow" style={s.sectionLabel}>
               추가 정보
             </SText>
 
@@ -243,25 +248,25 @@ export function SubmitScreen({ navigation }: SubmitScreenProps) {
           </View>
 
           {/* ── Action area ────────────────────────────────── */}
-          <View style={styles.actionArea}>
+          <View style={s.actionArea}>
             <AppButton
               disabled={isSubmitting}
               onPress={() => void handleSubmit()}
-              style={styles.submitButton}
+              style={s.submitButton}
               variant="primary"
             >
               {isSubmitting ? '제출 중...' : '공구 제보하기'}
             </AppButton>
             {isSubmitting ? (
-              <ActivityIndicator size="small" color={colors.primary} style={styles.spinner} />
+              <ActivityIndicator size="small" color={colors.ctaPurple} style={s.spinner} />
             ) : null}
 
             <Pressable
               onPress={() => navigation.navigate('Home')}
-              style={styles.cancelButton}
+              style={s.cancelButton}
               accessibilityRole="button"
             >
-              <SText variant="body" style={styles.cancelText}>
+              <SText variant="body" style={s.cancelText}>
                 취소하고 돌아가기
               </SText>
             </Pressable>
@@ -274,151 +279,153 @@ export function SubmitScreen({ navigation }: SubmitScreenProps) {
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  flex: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: spacing.lg,
-    paddingBottom: spacing['4xl'],
-  },
+function makeStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    flex: {
+      flex: 1,
+    },
+    scrollContent: {
+      padding: spacing.lg,
+      paddingBottom: spacing['4xl'],
+    },
 
-  // Header
-  eyebrow: {
-    marginBottom: spacing.xs,
-    color: colors.accent,
-    letterSpacing: 0.5,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    lineHeight: 20,
-    marginBottom: spacing['2xl'],
-  },
+    // Header
+    eyebrow: {
+      marginBottom: spacing.xs,
+      color: colors.ctaPurple,
+      letterSpacing: 0.5,
+    },
+    title: {
+      fontSize: 26,
+      fontWeight: '700',
+      color: colors.textPrimary,
+      marginBottom: spacing.xs,
+    },
+    subtitle: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      lineHeight: 20,
+      marginBottom: spacing['2xl'],
+    },
 
-  // Feedback banner
-  feedbackBanner: {
-    borderRadius: borderRadius.md,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.md,
-  },
-  feedback_info: {
-    backgroundColor: colors.primaryBg,
-  },
-  feedback_success: {
-    backgroundColor: colors.successBg,
-  },
-  feedback_error: {
-    backgroundColor: colors.errorBg,
-  },
-  feedbackText: {
-    fontSize: 13,
-    textAlign: 'center',
-    lineHeight: 18,
-  },
-  feedbackText_info: {
-    color: colors.primary,
-  },
-  feedbackText_success: {
-    color: colors.success,
-  },
-  feedbackText_error: {
-    color: colors.error,
-  },
+    // Feedback banner
+    feedbackBanner: {
+      borderRadius: borderRadius.md,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+      marginBottom: spacing.md,
+    },
+    feedback_info: {
+      backgroundColor: colors.ctaPurpleBg,
+    },
+    feedback_success: {
+      backgroundColor: colors.successBg,
+    },
+    feedback_error: {
+      backgroundColor: colors.errorBg,
+    },
+    feedbackText: {
+      fontSize: 13,
+      textAlign: 'center',
+      lineHeight: 18,
+    },
+    feedbackText_info: {
+      color: colors.ctaPurple,
+    },
+    feedbackText_success: {
+      color: colors.success,
+    },
+    feedbackText_error: {
+      color: colors.error,
+    },
 
-  // Instagram URL — hero input
-  urlSection: {
-    marginBottom: spacing.sm,
-  },
-  urlLabelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  urlLabel: {
-    color: colors.textPrimary,
-    fontSize: 15,
-    marginRight: spacing.sm,
-  },
-  requiredBadge: {
-    color: colors.accent,
-    backgroundColor: colors.accentBg,
-    paddingHorizontal: spacing.xs,
-    paddingVertical: 2,
-    borderRadius: borderRadius.sm,
-    overflow: 'hidden',
-    fontWeight: '600',
-    fontSize: 11,
-  },
-  urlInputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderColor: colors.accentBg,
-    borderRadius: borderRadius.lg,
-    paddingHorizontal: spacing.md,
-  },
-  urlInputLoading: {
-    borderColor: colors.primary,
-  },
-  urlIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: colors.accentBg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.sm,
-  },
-  urlIconText: {
-    fontSize: 14,
-  },
-  urlInput: {
-    flex: 1,
-    fontSize: 14,
-    color: colors.textPrimary,
-    paddingVertical: 12,
-  },
+    // Instagram URL — hero input
+    urlSection: {
+      marginBottom: spacing.sm,
+    },
+    urlLabelRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: spacing.sm,
+    },
+    urlLabel: {
+      color: colors.textPrimary,
+      fontSize: 15,
+      marginRight: spacing.sm,
+    },
+    requiredBadge: {
+      color: colors.ctaPurple,
+      backgroundColor: colors.ctaPurpleBg,
+      paddingHorizontal: spacing.xs,
+      paddingVertical: 2,
+      borderRadius: borderRadius.sm,
+      overflow: 'hidden',
+      fontWeight: '600',
+      fontSize: 11,
+    },
+    urlInputWrapper: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderWidth: 1.5,
+      borderColor: colors.ctaPurpleBg,
+      borderRadius: borderRadius.lg,
+      paddingHorizontal: spacing.md,
+    },
+    urlInputLoading: {
+      borderColor: colors.ctaPurple,
+    },
+    urlIcon: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: colors.ctaPurpleBg,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: spacing.sm,
+    },
+    urlIconText: {
+      fontSize: 14,
+    },
+    urlInput: {
+      flex: 1,
+      fontSize: 14,
+      color: colors.textPrimary,
+      paddingVertical: 12,
+    },
 
-  // Fields section
-  fieldsSection: {
-    marginBottom: spacing.xl,
-  },
-  sectionLabel: {
-    color: colors.textTertiary,
-    letterSpacing: 0.8,
-    marginBottom: spacing.md,
-    fontSize: 11,
-  },
+    // Fields section
+    fieldsSection: {
+      marginBottom: spacing.xl,
+    },
+    sectionLabel: {
+      color: colors.textTertiary,
+      letterSpacing: 0.8,
+      marginBottom: spacing.md,
+      fontSize: 11,
+    },
 
-  // Action area
-  actionArea: {
-    gap: spacing.md,
-  },
-  submitButton: {
-    paddingVertical: 14,
-  },
-  cancelButton: {
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-  },
-  cancelText: {
-    color: colors.textTertiary,
-    fontSize: 13,
-  },
-  spinner: {
-    marginTop: spacing.xs,
-  },
-});
+    // Action area
+    actionArea: {
+      gap: spacing.md,
+    },
+    submitButton: {
+      paddingVertical: 14,
+    },
+    cancelButton: {
+      alignItems: 'center',
+      paddingVertical: spacing.sm,
+    },
+    cancelText: {
+      color: colors.textTertiary,
+      fontSize: 13,
+    },
+    spinner: {
+      marginTop: spacing.xs,
+    },
+  });
+}

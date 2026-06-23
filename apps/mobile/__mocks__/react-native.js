@@ -43,3 +43,8 @@ module.exports = {
   View: passthrough('View'),
   useWindowDimensions: function() { return { width: 390, height: 844 }; },
 };
+
+// Dark mode test helpers — stored on the module itself to avoid var hoisting issues
+module.exports.__colorScheme = 'light';
+module.exports.useColorScheme = function() { return module.exports.__colorScheme; };
+module.exports.__setColorScheme = function(s) { module.exports.__colorScheme = s; };

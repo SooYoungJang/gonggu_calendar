@@ -2,10 +2,12 @@ import { useMemo } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SText } from '../../components/ui/SText';
 
-import { borderRadius, colors, spacing, typography } from '../../design/tokens';
+import { borderRadius, spacing, typography } from '../../design/tokens';
 import type { GroupBuy } from '../../types';
 import { DealCard } from '../DealCard';
 import { categoryForIndex } from './DealCardGrid';
+import { useTheme } from '../../context/ThemeContext';
+import type { ColorPalette } from '../../context/ThemeContext';
 
 type ExpiringSoonSectionProps = {
   groupBuys: GroupBuy[];
@@ -21,6 +23,9 @@ function isExpiringSoon(endDate: string | null): boolean {
 }
 
 export function ExpiringSoonSection({ groupBuys, onPressDeal }: ExpiringSoonSectionProps) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
+
   const expiringItems = useMemo(
     () =>
       groupBuys
@@ -33,47 +38,49 @@ export function ExpiringSoonSection({ groupBuys, onPressDeal }: ExpiringSoonSect
     [groupBuys],
   );
   return (
-    <View style={styles.section}>
-      <View style={styles.header}>
-        <SText variant="cardTitle">마감임박 공구</SText>
-        <SText variant="cardBrand">전체보기</SText>
+    <View style={s.section}>
+      <View style={s.header}>
+        <SText variant="cardTitle" style={s.title}>마감임박 공구</SText>
+        <SText variant="cardBrand" style={s.action}>전체보기</SText>
       </View>
       {expiringItems.length > 0 ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.scroll}>
           {expiringItems.map((item, index) => (
-            <View key={item.id} style={styles.card}>
+            <View key={item.id} style={s.card}>
               <DealCard item={item} category={categoryForIndex(index)} onPress={() => onPressDeal(item)} />
             </View>
           ))}
         </ScrollView>
       ) : (
-        <View style={styles.empty}>
-          <SText variant="body">마감임박 공구가 없습니다</SText>
+        <View style={s.empty}>
+          <SText variant="body" style={s.emptyText}>마감임박 공구가 없습니다</SText>
         </View>
       )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  section: { marginBottom: spacing.xl },
-  header: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.md,
-  },
-  title: { color: colors.textPrimary, fontSize: 20, fontWeight: '800' },
-  action: { color: colors.textLink, fontSize: 13, fontWeight: '700' },
-  scroll: { gap: spacing.md, paddingRight: spacing.lg },
-  card: { width: 120, minHeight: 120 },
-  empty: {
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: borderRadius.xl,
-    borderWidth: 1,
-    padding: spacing.lg,
-  },
-  emptyText: { ...typography.body, textAlign: 'center' },
-});
+function makeStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    section: { marginBottom: spacing.xl },
+    header: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: spacing.md,
+    },
+    title: { color: colors.textPrimary, fontSize: 20, fontWeight: '800' },
+    action: { color: colors.textLink, fontSize: 13, fontWeight: '700' },
+    scroll: { gap: spacing.md, paddingRight: spacing.lg },
+    card: { width: 120, minHeight: 120 },
+    empty: {
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderColor: colors.border,
+      borderRadius: borderRadius.xl,
+      borderWidth: 1,
+      padding: spacing.lg,
+    },
+    emptyText: { ...typography.body, textAlign: 'center' },
+  });
+}

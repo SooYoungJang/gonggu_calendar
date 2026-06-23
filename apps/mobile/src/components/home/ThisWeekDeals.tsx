@@ -1,10 +1,12 @@
 import { useMemo } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SText } from '../../components/ui/SText';
-import { borderRadius, colors, spacing, typography } from '../../design/tokens';
+import { borderRadius, spacing, typography } from '../../design/tokens';
 import type { GroupBuy } from '../../types';
 import { DealCard } from '../DealCard';
 import { categoryForIndex } from './DealCardGrid';
+import { useTheme } from '../../context/ThemeContext';
+import type { ColorPalette } from '../../context/ThemeContext';
 
 type ThisWeekDealsProps = {
   groupBuys: GroupBuy[];
@@ -27,37 +29,41 @@ function isInThisWeek(endDate: string | null): boolean {
 }
 
 export function ThisWeekDeals({ groupBuys, onPressDeal }: ThisWeekDealsProps) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const thisWeekItems = useMemo(() => groupBuys.filter((item) => isInThisWeek(item.endDate)), [groupBuys]);
   return (
-    <View style={styles.section}>
+    <View style={s.section}>
       {thisWeekItems.length > 0 ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.scroll}>
           {thisWeekItems.map((item, index) => (
-            <View key={item.id} style={styles.card}>
+            <View key={item.id} style={s.card}>
               <DealCard item={item} category={categoryForIndex(index)} onPress={() => onPressDeal(item)} />
             </View>
           ))}
         </ScrollView>
       ) : (
-        <View style={styles.empty}>
-          <SText variant="body" style={styles.emptyText}>이번주 공구가 없습니다</SText>
+        <View style={s.empty}>
+          <SText variant="body" style={s.emptyText}>이번주 공구가 없습니다</SText>
         </View>
       )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  section: { marginBottom: spacing.xl },
-  scroll: { gap: spacing.md, paddingRight: spacing.lg },
-  card: { width: 120, minHeight: 160 },
-  empty: {
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: borderRadius.xl,
-    borderWidth: 1,
-    padding: spacing.lg,
-  },
-  emptyText: { ...typography.body, textAlign: 'center' },
-});
+function makeStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    section: { marginBottom: spacing.xl },
+    scroll: { gap: spacing.md, paddingRight: spacing.lg },
+    card: { width: 120, minHeight: 160 },
+    empty: {
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderColor: colors.border,
+      borderRadius: borderRadius.xl,
+      borderWidth: 1,
+      padding: spacing.lg,
+    },
+    emptyText: { ...typography.body, textAlign: 'center' },
+  });
+}

@@ -1,14 +1,17 @@
+import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { SText } from '../ui/SText';
 
-import { borderRadius, categoryColors, colors, spacing } from '../../design/tokens';
+import { borderRadius, categoryColors, spacing } from '../../design/tokens';
 import {
   RANKING_CATEGORY_LABELS,
   RANKING_SORT_CHIPS,
   type RankingCategory,
   type RankingSort,
 } from '../../features/ranking/types';
+import { useTheme } from '../../context/ThemeContext';
+import type { ColorPalette } from '../../context/ThemeContext';
 
 export interface RankingCategoryChipsProps {
   value: RankingCategory;
@@ -18,7 +21,7 @@ export interface RankingCategoryChipsProps {
   onChangeSort: (next: RankingSort) => void;
 }
 
-function getCategoryPalette(category: RankingCategory) {
+function getCategoryPalette(colors: ColorPalette, category: RankingCategory) {
   if (category === 'all') {
     return { bg: colors.primaryBg, text: colors.primary, border: colors.primaryLight };
   }
@@ -27,12 +30,15 @@ function getCategoryPalette(category: RankingCategory) {
 }
 
 export function RankingCategoryChips({ value, categories, sort, onChange, onChangeSort }: RankingCategoryChipsProps) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View style={{ gap: spacing.sm }}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chipRow}>
         {categories.map((category) => {
           const selected = category === value;
-          const palette = getCategoryPalette(category);
+          const palette = getCategoryPalette(colors, category);
 
           return (
             <Pressable
@@ -42,7 +48,7 @@ export function RankingCategoryChips({ value, categories, sort, onChange, onChan
               accessibilityState={{ selected }}
               onPress={() => onChange(category)}
               style={[
-                styles.categoryChip,
+                s.categoryChip,
                 {
                   backgroundColor: selected ? palette.bg : colors.surface,
                   borderColor: selected ? palette.border : colors.border,
@@ -57,7 +63,7 @@ export function RankingCategoryChips({ value, categories, sort, onChange, onChan
         })}
       </ScrollView>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.subChipRow}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.subChipRow}>
         {RANKING_SORT_CHIPS.map((chip) => {
           const selected = chip.key === sort;
 
@@ -68,7 +74,7 @@ export function RankingCategoryChips({ value, categories, sort, onChange, onChan
               accessibilityRole="button"
               accessibilityState={{ selected }}
               onPress={() => onChangeSort(chip.key)}
-              style={[styles.sortChip, selected && styles.selectedSortChip]}
+              style={[s.sortChip, selected && s.selectedSortChip]}
             >
               <SText variant="caption" style={[{ fontWeight: '800', includeFontPadding: false, color: colors.textSecondary }, selected && { color: colors.textInverse }]}>{chip.label}</SText>
             </Pressable>
@@ -79,36 +85,38 @@ export function RankingCategoryChips({ value, categories, sort, onChange, onChan
   );
 }
 
-const styles = StyleSheet.create({
-  categoryChip: {
-    alignItems: 'center',
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-    justifyContent: 'center',
-    height: 36,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 0,
-  },
-  chipRow: {
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-  },
-  selectedSortChip: {
-    backgroundColor: colors.textPrimary,
-    borderColor: colors.textPrimary,
-  },
-  sortChip: {
-    alignItems: 'center',
-    borderColor: colors.border,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-    justifyContent: 'center',
-    height: 32,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 0,
-  },
-  subChipRow: {
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-  },
-});
+function makeStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    categoryChip: {
+      alignItems: 'center',
+      borderRadius: borderRadius.full,
+      borderWidth: 1,
+      justifyContent: 'center',
+      height: 36,
+      paddingHorizontal: spacing.md,
+      paddingVertical: 0,
+    },
+    chipRow: {
+      gap: spacing.sm,
+      paddingHorizontal: spacing.lg,
+    },
+    selectedSortChip: {
+      backgroundColor: colors.textPrimary,
+      borderColor: colors.textPrimary,
+    },
+    sortChip: {
+      alignItems: 'center',
+      borderColor: colors.border,
+      borderRadius: borderRadius.full,
+      borderWidth: 1,
+      justifyContent: 'center',
+      height: 32,
+      paddingHorizontal: spacing.md,
+      paddingVertical: 0,
+    },
+    subChipRow: {
+      gap: spacing.sm,
+      paddingHorizontal: spacing.lg,
+    },
+  });
+}

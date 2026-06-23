@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AccessibilityInfo,
   Animated,
@@ -7,7 +7,9 @@ import {
 } from 'react-native';
 
 import { SText } from './ui/SText';
-import { colors, spacing } from '../design/tokens';
+import { spacing } from '../design/tokens';
+import { useTheme } from '../context/ThemeContext';
+import type { ColorPalette } from '../context/ThemeContext';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -23,7 +25,8 @@ const DOT_COUNT = 3;
 const DOT_SIZE = 6;
 const DOT_ANIM_MS = 600;
 
-function LoadingDots() {
+function LoadingDots({ colors }: { colors: ColorPalette }) {
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const [reducedMotion, setReducedMotion] = useState(false);
 
   // Create 3 Animated.Values, once per mount
@@ -75,11 +78,11 @@ function LoadingDots() {
   }, [reducedMotion]);
 
   return (
-    <View style={styles.loadingContainer}>
+    <View style={s.loadingContainer}>
       {opacities.map((opacity, i) => (
         <Animated.View
           key={i}
-          style={[styles.dot, { opacity: opacity as unknown as number }]}
+          style={[s.dot, { opacity: opacity as unknown as number }]}
         />
       ))}
     </View>
@@ -88,20 +91,22 @@ function LoadingDots() {
 
 // ─── Status Icon ─────────────────────────────────────────────────────────────
 
-function SuccessIcon() {
+function SuccessIcon({ colors }: { colors: ColorPalette }) {
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
-    <View style={[styles.iconContainer, styles.successContainer]}>
-      <SText variant="caption" style={styles.iconText}>
+    <View style={[s.iconContainer, s.successContainer]}>
+      <SText variant="caption" style={s.iconText}>
         {'\u2713'}
       </SText>
     </View>
   );
 }
 
-function ErrorIcon() {
+function ErrorIcon({ colors }: { colors: ColorPalette }) {
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return (
-    <View style={[styles.iconContainer, styles.errorContainer]}>
-      <SText variant="caption" style={styles.iconText}>
+    <View style={[s.iconContainer, s.errorContainer]}>
+      <SText variant="caption" style={s.iconText}>
         {'\u2715'}
       </SText>
     </View>
@@ -111,13 +116,15 @@ function ErrorIcon() {
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export function UrlInputStatus({ status }: UrlInputStatusProps) {
+  const { colors } = useTheme();
+
   switch (status) {
     case 'loading':
-      return <LoadingDots />;
+      return <LoadingDots colors={colors} />;
     case 'success':
-      return <SuccessIcon />;
+      return <SuccessIcon colors={colors} />;
     case 'error':
-      return <ErrorIcon />;
+      return <ErrorIcon colors={colors} />;
     case 'idle':
     default:
       return null;
@@ -126,37 +133,39 @@ export function UrlInputStatus({ status }: UrlInputStatusProps) {
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xxs,
-    marginLeft: spacing.sm,
-  },
-  dot: {
-    width: DOT_SIZE,
-    height: DOT_SIZE,
-    borderRadius: DOT_SIZE / 2,
-    backgroundColor: colors.ctaPurple,
-  },
-  iconContainer: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: spacing.sm,
-  },
-  successContainer: {
-    backgroundColor: colors.ctaPurple,
-  },
-  errorContainer: {
-    backgroundColor: colors.error,
-  },
-  iconText: {
-    color: colors.textInverse,
-    fontSize: 14,
-    fontWeight: '700',
-    lineHeight: 16,
-  },
-});
+function makeStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    loadingContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xxs,
+      marginLeft: spacing.sm,
+    },
+    dot: {
+      width: DOT_SIZE,
+      height: DOT_SIZE,
+      borderRadius: DOT_SIZE / 2,
+      backgroundColor: colors.ctaPurple,
+    },
+    iconContainer: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginLeft: spacing.sm,
+    },
+    successContainer: {
+      backgroundColor: colors.ctaPurple,
+    },
+    errorContainer: {
+      backgroundColor: colors.error,
+    },
+    iconText: {
+      color: colors.textInverse,
+      fontSize: 14,
+      fontWeight: '700',
+      lineHeight: 16,
+    },
+  });
+}

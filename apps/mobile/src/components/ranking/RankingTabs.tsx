@@ -1,9 +1,12 @@
+import { useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { SText } from '../ui/SText';
 
-import { borderRadius, colors, spacing } from '../../design/tokens';
+import { borderRadius, spacing } from '../../design/tokens';
 import type { RankingTab } from '../../features/ranking/types';
+import { useTheme } from '../../context/ThemeContext';
+import type { ColorPalette } from '../../context/ThemeContext';
 
 export interface RankingTabsProps {
   value: RankingTab;
@@ -18,10 +21,12 @@ const TABS: readonly { key: RankingTab; label: string; countKey: 'rankingCount' 
 ] as const;
 
 export function RankingTabs({ value, rankingCount, followingCount, onChange }: RankingTabsProps) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const counts = { rankingCount, followingCount };
 
   return (
-    <View style={styles.container} accessibilityRole="tablist">
+    <View style={s.container} accessibilityRole="tablist">
       {TABS.map((tab) => {
         const selected = tab.key === value;
         const count = counts[tab.countKey];
@@ -33,7 +38,7 @@ export function RankingTabs({ value, rankingCount, followingCount, onChange }: R
             accessibilityRole="tab"
             accessibilityState={{ selected }}
             onPress={() => onChange(tab.key)}
-            style={[styles.tab, selected && styles.selectedTab]}
+            style={[s.tab, selected && s.selectedTab]}
           >
             <SText variant="label" style={[{ fontWeight: '800' }, selected && { color: colors.primary }]}>
               {tab.label}
@@ -46,23 +51,25 @@ export function RankingTabs({ value, rankingCount, followingCount, onChange }: R
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surfaceHover,
-    borderRadius: borderRadius.full,
-    flexDirection: 'row',
-    gap: spacing.xs,
-    padding: spacing.xs,
-  },
-  tab: {
-    alignItems: 'center',
-    borderRadius: borderRadius.full,
-    flex: 1,
-    justifyContent: 'center',
-    minHeight: 42,
-    paddingHorizontal: spacing.md,
-  },
-  selectedTab: {
-    backgroundColor: colors.surface,
-  },
-});
+function makeStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      backgroundColor: colors.surfaceHover,
+      borderRadius: borderRadius.full,
+      flexDirection: 'row',
+      gap: spacing.xs,
+      padding: spacing.xs,
+    },
+    tab: {
+      alignItems: 'center',
+      borderRadius: borderRadius.full,
+      flex: 1,
+      justifyContent: 'center',
+      minHeight: 42,
+      paddingHorizontal: spacing.md,
+    },
+    selectedTab: {
+      backgroundColor: colors.surface,
+    },
+  });
+}

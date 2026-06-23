@@ -1,6 +1,9 @@
+import { useMemo } from 'react';
 import { Text, type TextProps } from 'react-native';
 
 import { typography } from '../../design/tokens';
+import { useTheme } from '../../context/ThemeContext';
+import type { ColorPalette } from '../../context/ThemeContext';
 
 /**
  * SText variant names — maps to design system typography tokens.
@@ -31,21 +34,24 @@ export type STextVariant =
   | 'button';
 
 /**
- * Maps a variant name to its typography token from the design system.
+ * Build variant styles dynamically from the active theme palette.
+ * Non-color properties are inherited from the static typography tokens.
  */
-const VARIANT_STYLES: Record<STextVariant, object> = {
-  eyebrow: typography.eyebrow,
-  title: typography.title,
-  subtitle: typography.subtitle,
-  cardTitle: typography.cardTitle,
-  cardBrand: typography.cardBrand,
-  cardSummary: typography.cardSummary,
-  body: typography.body,
-  caption: typography.caption,
-  label: typography.label,
-  badge: typography.badge,
-  button: typography.button,
-};
+function makeVariantStyles(colors: ColorPalette): Record<STextVariant, object> {
+  return {
+    eyebrow: { ...typography.eyebrow, color: colors.primary },
+    title: { ...typography.title, color: colors.textPrimary },
+    subtitle: { ...typography.subtitle, color: colors.textSecondary },
+    cardTitle: { ...typography.cardTitle, color: colors.textPrimary },
+    cardBrand: { ...typography.cardBrand, color: colors.textSecondary },
+    cardSummary: { ...typography.cardSummary },
+    body: { ...typography.body, color: colors.textSecondary },
+    caption: { ...typography.caption, color: colors.textTertiary },
+    label: { ...typography.label, color: colors.textSecondary },
+    badge: { ...typography.badge, color: colors.badgeText },
+    button: { ...typography.button, color: colors.textInverse },
+  };
+}
 
 export interface STextProps extends TextProps {
   /** Design system typography variant */
@@ -56,8 +62,10 @@ export interface STextProps extends TextProps {
  * Design system text component.
  *
  * Wraps React Native `<Text>` with typography tokens from the design
- * system, selected via the `variant` prop. Custom `style` is merged
- * *after* the variant style so it can override token values.
+ * system, selected via the `variant` prop. Colors are resolved from
+ * the active theme so text automatically adapts to dark mode.
+ * Custom `style` is merged *after* the variant style so it can
+ * override token values.
  *
  * @example
  * ```tsx
@@ -68,5 +76,7 @@ export interface STextProps extends TextProps {
  * ```
  */
 export function SText({ variant, style, ...rest }: STextProps) {
-  return <Text style={[VARIANT_STYLES[variant], style]} {...rest} />;
+  const { colors } = useTheme();
+  const variantStyle = useMemo(() => makeVariantStyles(colors)[variant], [colors, variant]);
+  return <Text style={[variantStyle, style]} {...rest} />;
 }

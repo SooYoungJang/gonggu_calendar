@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GongGu Wish - 공구 제보하기</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #f0f0f0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .phone {
+    width: 393px;
+    height: 852px;
+    background: #F8F6F0;
+    border-radius: 44px;
+    overflow: hidden;
+    box-shadow: 0 20px 80px rgba(0,0,0,0.15);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Dynamic Island */
+  .dynamic-island {
+    width: 120px;
+    height: 34px;
+    background: #000;
+    border-radius: 20px;
+    margin: 10px auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+  }
+  .di-notch { display: none; }
+
+  /* Content */
+  .content {
+    flex: 1;
+    padding: 8px 24px;
+    overflow-y: auto;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    color: #9B59B6;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1A1A1A;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: #8E8E93;
+    line-height: 20px;
+    margin-bottom: 24px;
+  }
+
+  /* Feedback banner */
+  .feedback {
+    background: #F0F0FF;
+    border-radius: 12px;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .feedback-text {
+    font-size: 13px;
+    color: #6C63FF;
+    line-height: 18px;
+  }
+
+  /* URL Section */
+  .url-section {
+    margin-bottom: 8px;
+  }
+  .url-label-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 8px;
+  }
+  .url-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1A1A1A;
+  }
+  .required-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: #9B59B6;
+    background: #F3E8FF;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .url-input-wrapper {
+    display: flex;
+    align-items: center;
+    background: #FFFFFF;
+    border: 1.5px solid #F3E8FF;
+    border-radius: 16px;
+    padding: 0 16px;
+  }
+  .url-input-wrapper.loading {
+    border-color: #6C63FF;
+  }
+  .url-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 14px;
+    background: #F3E8FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    margin-right: 8px;
+  }
+  .url-input {
+    flex: 1;
+    font-size: 14px;
+    color: #1A1A1A;
+    padding: 13px 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+  }
+  .url-input::placeholder {
+    color: #C7C7CC;
+  }
+
+  /* Instagram Preview - Mock Mode */
+  .ig-preview {
+    margin: 12px 0;
+    background: #FFFFFF;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #F0F0F0;
+  }
+  .ig-preview-image {
+    width: 100%;
+    height: 200px;
+    background: #E8E8ED;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8E8E93;
+    font-size: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .ig-preview-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .ig-preview-image .placeholder-icon {
+    font-size: 48px;
+    opacity: 0.3;
+  }
+  .ig-preview-body {
+    padding: 12px 16px;
+  }
+  .ig-preview-user {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1A1A1A;
+    margin-bottom: 4px;
+  }
+  .ig-preview-caption {
+    font-size: 13px;
+    color: #8E8E93;
+    line-height: 18px;
+    margin-bottom: 8px;
+  }
+  .ig-preview-stats {
+    display: flex;
+    gap: 16px;
+  }
+  .ig-preview-stat {
+    font-size: 12px;
+    color: #C7C7CC;
+  }
+
+  /* Fields Section */
+  .fields-section {
+    margin: 20px 0;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #C7C7CC;
+    letter-spacing: 0.8px;
+    margin-bottom: 16px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+  .form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1A1A1A;
+    margin-bottom: 6px;
+  }
+  .form-input {
+    width: 100%;
+    background: #FFFFFF;
+    border: 1.5px solid #F0F0F0;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 14px;
+    color: #1A1A1A;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus {
+    border-color: #9B59B6;
+  }
+  .form-input::placeholder {
+    color: #C7C7CC;
+  }
+  .form-input.has-error {
+    border-color: #FF3B30;
+  }
+  .form-error {
+    font-size: 11px;
+    color: #FF3B30;
+    margin-top: 4px;
+  }
+
+  /* Action area */
+  .action-area {
+    margin-top: 8px;
+  }
+  .submit-btn {
+    width: 100%;
+    background: #7C3AED;
+    border-radius: 28px;
+    padding: 14px;
+    border: none;
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.2s;
+  }
+  .submit-btn:hover {
+    opacity: 0.9;
+  }
+  .submit-btn:disabled {
+    opacity: 0.5;
+  }
+  .cancel-btn {
+    display: block;
+    text-align: center;
+    padding: 12px;
+    color: #C7C7CC;
+    font-size: 13px;
+    text-decoration: none;
+    margin-top: 4px;
+  }
+
+  /* Tab Bar */
+  .tab-bar {
+    height: 72px;
+    background: #FFFFFF;
+    margin: 0 20px 20px;
+    border-radius: 36px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    gap: 4px;
+  }
+  .tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 52px;
+    border-radius: 28px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .tab-icon {
+    font-size: 18px;
+    font-weight: 800;
+    color: #8E8E93;
+    line-height: 1;
+  }
+  .tab-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #8E8E93;
+    margin-top: 2px;
+  }
+  .tab-item.active .tab-icon,
+  .tab-item.active .tab-label {
+    color: #7C3AED;
+  }
+  .tab-item.submit-tab {
+    background: #7C3AED;
+    height: 56px;
+  }
+  .tab-item.submit-tab .tab-icon {
+    color: #FFFFFF;
+    font-size: 24px;
+  }
+  .tab-item.submit-tab .tab-label {
+    color: #FFFFFF;
+  }
+
+  /* Status bar */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 28px 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1A1A1A;
+  }
+</style>
+</head>
+<body>
+<div class="phone">
+  <!-- Dynamic Island -->
+  <div class="dynamic-island"></div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span>3:22</span>
+    <span>📶 🔋</span>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+    <div class="eyebrow">공구 제보하기</div>
+    <div class="title">발견한 공구를 알려주세요</div>
+    <div class="subtitle">인스타그램 게시물 URL만 입력하면 이미지와 정보를 자동으로 불러옵니다</div>
+
+    <!-- Feedback -->
+    <div class="feedback">
+      <div class="feedback-text">인스타그램 URL을 입력하면 이미지를 자동으로 불러옵니다</div>
+    </div>
+
+    <!-- Instagram URL -->
+    <div class="url-section">
+      <div class="url-label-row">
+        <span class="url-label">인스타그램 게시물 URL</span>
+        <span class="required-badge">필수</span>
+      </div>
+      <div class="url-input-wrapper loading">
+        <div class="url-icon">📸</div>
+        <input class="url-input" type="text" placeholder="https://www.instagram.com/p/..." value="https://www.instagram.com/p/DGKxYZNvA/" readonly>
+        <span style="margin-left: 8px;">✅</span>
+      </div>
+    </div>
+
+    <!-- Instagram Preview - Mock Mode (Loaded) -->
+    <div class="ig-preview">
+      <div class="ig-preview-image">
+        <img src="https://picsum.photos/seed/mock_abc123/640/640" alt="Mock Instagram post preview">
+      </div>
+      <div class="ig-preview-body">
+        <div class="ig-preview-user">@mock_user_abc123</div>
+        <div class="ig-preview-caption">Mock Instagram post for https://www.instagram.com/p/DGKxYZNvA/</div>
+        <div class="ig-preview-stats">
+          <span class="ig-preview-stat">❤️ 542</span>
+          <span class="ig-preview-stat">💬 48</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Fields -->
+    <div class="fields-section">
+      <div class="section-label">추가 정보</div>
+
+      <div class="form-group">
+        <div class="form-label">제품명 *</div>
+        <input class="form-input" type="text" placeholder="예: 비건 선크림" value="비건 선크림" readonly>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">브랜드</div>
+        <input class="form-input" type="text" placeholder="예: 샘플뷰티">
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">구매 링크</div>
+        <input class="form-input" type="url" placeholder="https://...">
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">마감일</div>
+        <input class="form-input" type="text" placeholder="YYYY-MM-DD">
+      </div>
+    </div>
+
+    <!-- Action -->
+    <div class="action-area">
+      <button class="submit-btn">공구 제보하기</button>
+      <a class="cancel-btn" href="#">취소하고 돌아가기</a>
+    </div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <div class="tab-item">
+      <span class="tab-icon">⌂</span>
+      <span class="tab-label">홈</span>
+    </div>
+    <div class="tab-item">
+      <span class="tab-icon">⌕</span>
+      <span class="tab-label">랭킹</span>
+    </div>
+    <div class="tab-item submit-tab active">
+      <span class="tab-icon">+</span>
+      <span class="tab-label">Submit</span>
+    </div>
+    <div class="tab-item">
+      <span class="tab-icon">◌</span>
+      <span class="tab-label">커뮤니티</span>
+    </div>
+    <div class="tab-item">
+      <span class="tab-icon">☻</span>
+      <span class="tab-label">MY</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

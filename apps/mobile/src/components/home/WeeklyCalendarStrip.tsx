@@ -2,7 +2,9 @@ import { useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { SText } from '../../components/ui/SText';
-import { borderRadius, colors, spacing } from '../../design/tokens';
+import { borderRadius, spacing } from '../../design/tokens';
+import { useTheme } from '../../context/ThemeContext';
+import type { ColorPalette } from '../../context/ThemeContext';
 
 type WeeklyCalendarStripProps = {
   onPressCalendar: () => void;
@@ -23,27 +25,30 @@ function getWeekDays() {
 }
 
 export function WeeklyCalendarStrip({ onPressCalendar }: WeeklyCalendarStripProps) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const weekDays = useMemo(() => getWeekDays(), []);
+
   return (
-    <View style={styles.calendarSection}>
-      <View style={styles.calendarTitleRow}>
+    <View style={s.calendarSection}>
+      <View style={s.calendarTitleRow}>
         <SText variant="cardTitle">이번주 공구</SText>
         <Pressable
           accessibilityLabel="전체 캘린더 보기"
           accessibilityRole="button"
           onPress={onPressCalendar}
-          style={styles.calendarViewAll}
+          style={s.calendarViewAll}
         >
           <SText variant="cardBrand">전체보기</SText>
         </Pressable>
       </View>
-      <View style={styles.calendarStrip}>
+      <View style={s.calendarStrip}>
         {weekDays.map((day) => (
-          <View key={`${day.label}-${day.day}`} style={styles.calendarDay}>
+          <View key={`${day.label}-${day.day}`} style={s.calendarDay}>
             <SText variant="caption">
               {day.label}
             </SText>
-            <View style={[styles.calendarDateCircle, day.selected && styles.calendarDateCircleSelected]}>
+            <View style={[s.calendarDateCircle, day.selected && s.calendarDateCircleSelected]}>
               <SText variant="label">
                 {day.day}
               </SText>
@@ -55,51 +60,43 @@ export function WeeklyCalendarStrip({ onPressCalendar }: WeeklyCalendarStripProp
   );
 }
 
-const styles = StyleSheet.create({
-  calendarSection: { marginBottom: spacing.xl },
-  calendarTitleRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.md,
-  },
-  calendarTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: '800' },
-  calendarViewAll: {
-    alignItems: 'center',
-    alignSelf: 'center',
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    minHeight: 44,
-    paddingHorizontal: spacing.xs,
-  },
-  calendarViewAllText: {
-    color: colors.primary,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  calendarStrip: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: 24,
-    borderWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.xl,
-    padding: spacing.md,
-  },
-  calendarDay: { alignItems: 'center', minHeight: 58, minWidth: 38 },
-  calendarWeekLabel: { color: colors.textTertiary, fontSize: 12, fontWeight: '700', marginBottom: spacing.xs },
-  calendarWeekLabelSelected: { color: colors.ctaPurple },
-  calendarDateCircle: {
-    alignItems: 'center',
-    borderRadius: borderRadius.full,
-    justifyContent: 'center',
-    minHeight: 36,
-    minWidth: 36,
-  },
-  calendarDateCircleSelected: { backgroundColor: colors.ctaPurple },
-  calendarDateText: { color: colors.textPrimary, fontSize: 14, fontWeight: '700' },
-  calendarDateTextSelected: { color: colors.ctaPurpleText },
-});
+function makeStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    calendarSection: { marginBottom: spacing.xl },
+    calendarTitleRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: spacing.md,
+    },
+    calendarViewAll: {
+      alignItems: 'center',
+      alignSelf: 'center',
+      backgroundColor: 'transparent',
+      borderWidth: 0,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      minHeight: 44,
+      paddingHorizontal: spacing.xs,
+    },
+    calendarStrip: {
+      backgroundColor: colors.surface,
+      borderColor: colors.border,
+      borderRadius: 24,
+      borderWidth: 1,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: spacing.xl,
+      padding: spacing.md,
+    },
+    calendarDay: { alignItems: 'center', minHeight: 58, minWidth: 38 },
+    calendarDateCircle: {
+      alignItems: 'center',
+      borderRadius: borderRadius.full,
+      justifyContent: 'center',
+      minHeight: 36,
+      minWidth: 36,
+    },
+    calendarDateCircleSelected: { backgroundColor: colors.ctaPurple },
+  });
+}

@@ -1,7 +1,10 @@
+import { useMemo } from 'react';
 import { Pressable, StyleSheet, type GestureResponderEvent } from 'react-native';
 
 import { SText } from '../ui/SText';
-import { borderRadius, colors, rankingColors, spacing } from '../../design/tokens';
+import { borderRadius, rankingColors, spacing } from '../../design/tokens';
+import { useTheme } from '../../context/ThemeContext';
+import type { ColorPalette } from '../../context/ThemeContext';
 
 export interface FollowButtonProps {
   isFollowing: boolean;
@@ -11,6 +14,8 @@ export interface FollowButtonProps {
 }
 
 export function FollowButton({ isFollowing, sellerName, onFollow, onPress }: FollowButtonProps) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const palette = isFollowing ? rankingColors.following.active : rankingColors.following.inactive;
   const handlePress = (event: GestureResponderEvent) => {
     event.stopPropagation();
@@ -24,7 +29,7 @@ export function FollowButton({ isFollowing, sellerName, onFollow, onPress }: Fol
       accessibilityRole="button"
       onPress={handlePress}
       style={({ pressed }) => [
-        styles.button,
+        s.button,
         {
           backgroundColor: palette.bg,
           borderColor: isFollowing ? palette.bg : colors.border,
@@ -32,23 +37,25 @@ export function FollowButton({ isFollowing, sellerName, onFollow, onPress }: Fol
         },
       ]}
     >
-      <SText variant="badge" style={[styles.text, { color: palette.text }]}>{isFollowing ? '팔로잉' : '팔로우'}</SText>
+      <SText variant="badge" style={[s.text, { color: palette.text }]}>{isFollowing ? '팔로잉' : '팔로우'}</SText>
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
-  button: {
-    alignItems: 'center',
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-    justifyContent: 'center',
-    minHeight: 36,
-    minWidth: 62,
-    paddingHorizontal: spacing.sm,
-  },
-  text: {
-    fontSize: 12,
-    fontWeight: '800',
-  },
-});
+function makeStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    button: {
+      alignItems: 'center',
+      borderRadius: borderRadius.full,
+      borderWidth: 1,
+      justifyContent: 'center',
+      minHeight: 36,
+      minWidth: 62,
+      paddingHorizontal: spacing.sm,
+    },
+    text: {
+      fontSize: 12,
+      fontWeight: '800',
+    },
+  });
+}

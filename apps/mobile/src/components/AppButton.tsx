@@ -1,7 +1,10 @@
+import { useMemo } from 'react';
 import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { SText } from './ui/SText';
-import { borderRadius, colors, spacing } from '../design/tokens';
+import { borderRadius, spacing } from '../design/tokens';
+import { useTheme } from '../context/ThemeContext';
+import type { ColorPalette } from '../context/ThemeContext';
 
 type ButtonVariant = 'primary' | 'secondary' | 'accent';
 
@@ -20,55 +23,60 @@ export function AppButton({
   variant = 'primary',
   style,
 }: AppButtonProps) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <Pressable
       accessibilityRole="button"
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
-        styles.base,
-        styles[variant],
-        disabled && styles.disabled,
-        pressed && !disabled && styles.pressed,
+        s.base,
+        s[variant],
+        disabled && s.disabled,
+        pressed && !disabled && s.pressed,
         style,
       ]}
     >
-      <SText variant="button" style={[styles.text, variant === 'secondary' && styles.secondaryText]}>
+      <SText variant="button" style={[s.text, variant === 'secondary' && s.secondaryText]}>
         {children}
       </SText>
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
-  base: {
-    alignItems: 'center',
-    borderRadius: borderRadius.lg,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: 14,
-  },
-  primary: {
-    backgroundColor: colors.primary,
-  },
-  accent: {
-    backgroundColor: colors.accent,
-  },
-  secondary: {
-    backgroundColor: colors.borderLight,
-  },
-  text: {
-    color: colors.textInverse,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  secondaryText: {
-    color: colors.textSecondary,
-    fontSize: 14,
-  },
-  disabled: {
-    opacity: 0.55,
-  },
-  pressed: {
-    opacity: 0.82,
-  },
-});
+function makeStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    base: {
+      alignItems: 'center',
+      borderRadius: borderRadius.lg,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: 14,
+    },
+    primary: {
+      backgroundColor: colors.primary,
+    },
+    accent: {
+      backgroundColor: colors.accent,
+    },
+    secondary: {
+      backgroundColor: colors.borderLight,
+    },
+    text: {
+      color: colors.textInverse,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    secondaryText: {
+      color: colors.textSecondary,
+      fontSize: 14,
+    },
+    disabled: {
+      opacity: 0.55,
+    },
+    pressed: {
+      opacity: 0.82,
+    },
+  });
+}

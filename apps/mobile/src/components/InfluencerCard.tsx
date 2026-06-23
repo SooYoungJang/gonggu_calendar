@@ -1,9 +1,12 @@
+import { useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { SText } from './ui/SText';
 
-import { borderRadius, colors, shadows, spacing } from '../design/tokens';
+import { borderRadius, spacing } from '../design/tokens';
 import type { Influencer } from '../types';
+import { useTheme } from '../context/ThemeContext';
+import type { ColorPalette } from '../context/ThemeContext';
 
 type InfluencerCardProps = {
   influencer: Influencer;
@@ -11,68 +14,57 @@ type InfluencerCardProps = {
 };
 
 export function InfluencerCard({ influencer, onPress }: InfluencerCardProps) {
-  const username = influencer.instagramUsername.replace(/^@/, '');
-  const displayName = influencer.displayName?.trim() || '공동구매 인플루언서';
-  const initials = username.slice(0, 2).toUpperCase();
+  const { colors, shadows } = useTheme();
+  const s = useMemo(() => makeStyles(colors, shadows), [colors, shadows]);
 
   return (
     <Pressable
-      testID={`influencer-card-${influencer.id}`}
+      accessibilityRole="button"
+      accessibilityLabel={`${influencer.displayName ?? influencer.instagramUsername} 선택`}
       onPress={onPress}
-      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+      style={({ pressed }) => [s.card, pressed && s.pressed]}
     >
-      <View style={styles.avatar}>
-        <SText variant="cardBrand" style={{ color: colors.accent, fontWeight: '800' }}>{initials}</SText>
-      </View>
-
-      <View style={styles.info}>
-        <SText variant="subtitle" style={{ color: colors.textPrimary, fontWeight: '800', marginBottom: spacing.xxs }} numberOfLines={1}>
-          @{username}
-        </SText>
-        <SText variant="cardBrand" numberOfLines={1}>
-          {displayName}
+      <View style={s.avatar}>
+        <SText variant="cardTitle" style={s.avatarText}>
+          {(influencer.displayName ?? influencer.instagramUsername).slice(0, 2).toUpperCase()}
         </SText>
       </View>
-
-      <View style={styles.ctaPill}>
-        <SText variant="badge" style={{ fontSize: 11, fontWeight: '700' }}>공구 보기</SText>
+      <View style={s.info}>
+        <SText variant="cardTitle" style={s.displayName} numberOfLines={1}>
+          {influencer.displayName ?? `@${influencer.instagramUsername}`}
+        </SText>
+        <SText variant="caption" style={s.username}>@{influencer.instagramUsername}</SText>
       </View>
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: borderRadius.xl,
-    borderWidth: 1,
-    flexDirection: 'row',
-    marginBottom: spacing.sm,
-    padding: spacing.md,
-    ...shadows.sm,
-  },
-  pressed: {
-    opacity: 0.86,
-    transform: [{ scale: 0.995 }],
-  },
-  avatar: {
-    alignItems: 'center',
-    backgroundColor: colors.accentBg,
-    borderRadius: borderRadius.full,
-    height: 44,
-    justifyContent: 'center',
-    marginRight: spacing.md,
-    width: 44,
-  },
-  info: {
-    flex: 1,
-  },
-  ctaPill: {
-    backgroundColor: colors.badgeBg,
-    borderRadius: borderRadius.full,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-});
+function makeStyles(colors: ColorPalette, shadows: Record<'sm' | 'md' | 'lg', any>) {
+  return StyleSheet.create({
+    card: {
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderColor: colors.border,
+      borderRadius: borderRadius.xl,
+      borderWidth: 1,
+      flexDirection: 'row',
+      marginBottom: spacing.sm,
+      padding: spacing.md,
+      ...shadows.sm,
+    },
+    pressed: { opacity: 0.82 },
+    avatar: {
+      alignItems: 'center',
+      backgroundColor: colors.primaryBg,
+      borderRadius: borderRadius.full,
+      height: 44,
+      justifyContent: 'center',
+      marginRight: spacing.md,
+      width: 44,
+    },
+    avatarText: { color: colors.primary, fontSize: 18, fontWeight: '800' },
+    info: { flex: 1 },
+    displayName: { fontSize: 16, fontWeight: '700', marginBottom: 2 },
+    username: { fontSize: 12, fontWeight: '600' },
+  });
+}
