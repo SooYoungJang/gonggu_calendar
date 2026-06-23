@@ -16,6 +16,7 @@ import { RawPostsModule } from './raw-posts/raw-posts.module';
 import { SearchModule } from './search/search.module';
 import { SubmissionsModule } from './submissions/submissions.module';
 import { UsersModule } from './users/users.module';
+import { HikerApiModule } from './hiker-api/hiker-api.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { UsersModule } from './users/users.module';
     NotificationsModule,
     RankingModule,
     SubmissionsModule,
+    HikerApiModule,
   ],
 })
 export class AppModule {}
