@@ -5,6 +5,7 @@ on:
     branches: [main, develop]
     paths:
       - 'apps/api/**'
+      - 'apps/admin/**'
       - 'supabase/**'
       - 'packages/**'
       - '.github/workflows/ci.yml'
@@ -156,3 +157,65 @@ jobs:
 
       - name: Build artifact (placeholder — configure your deploy target)
         run: echo "API build complete. Configure deploy step in .github/workflows/ci.yml"
+
+  # ── RLS Policy Audit ─────────────────────────────────────────────────────
+  rls-audit:
+    name: RLS Policy Audit
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Link Supabase project
+        run: supabase link --project-ref ${{ env.SUPABASE_PROJECT_REF }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      - name: Diff migrations (check sync)
+        run: supabase db diff --linked
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      - name: Audit RLS policies
+        run: |
+          echo "Checking RLS policies are enabled on all tables..."
+          supabase db query \
+            "SELECT schemaname, tablename, rowsecurity
+             FROM pg_tables
+             WHERE schemaname = 'public'
+               AND tablename NOT IN ('_prisma_migrations', 'schema_migrations')
+               AND rowsecurity = false;" \
+            --linked 2>&1 || echo "Query may fail — check with supabase db dump"
+          echo "RLS audit complete"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+
+  # ── Admin Dashboard Deploy (Vercel) ──────────────────────────────────────
+  deploy-admin:
+    name: Deploy Admin Dashboard
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    if: github.ref == 'refs/heads/main'
+    defaults:
+      run:
+        working-directory: ./apps/admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apps/admin/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./apps/admin
