@@ -16,6 +16,7 @@ configurePostgrest(anonKey);
 configureSupabase(anonKey);
 
 import { AdminScreen } from './screens/AdminScreen';
+import { AuthScreen } from './screens/AuthScreen';
 import { CalendarScreen } from './screens/CalendarScreen';
 import { FeedDetailScreen } from './screens/FeedDetailScreen';
 import { HomeScreen } from './screens/HomeScreen';
@@ -163,6 +164,7 @@ export default function App() {
               <Stack.Screen name="CalendarScreen" component={CalendarScreen} />
               <Stack.Screen name="Detail" component={DetailScreen} />
               <Stack.Screen name="FeedDetail" component={FeedDetailScreen} />
+              <Stack.Screen name="Login" component={AuthScreen} />
               <Stack.Screen name="InfluencerGroupBuys" component={InfluencerGroupBuysScreen} />
               <Stack.Screen name="Admin" component={AdminScreen} />
             </Stack.Navigator>

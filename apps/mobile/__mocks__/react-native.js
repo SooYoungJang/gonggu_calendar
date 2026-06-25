@@ -8,7 +8,19 @@ function passthrough(type) {
 
 // Minimal Animated mock for testing
 var Animated = {
-  Value: function(val) { this._value = val; },
+  Value: function(val) {
+    this._value = val;
+    this._interpolation = null;
+    this.interpolate = function(config) {
+      var self = this;
+      self._interpolation = config;
+      return {
+        __getValue: function() {
+          return self._value;
+        },
+      };
+    };
+  },
   timing: function() { return { start: function(cb) { cb && cb(); } }; },
   loop: function() { return { start: function() {}, stop: function() {} }; },
   sequence: function() { return { start: function() {}, stop: function() {} }; },
@@ -20,6 +32,14 @@ var Animated = {
   Image: passthrough('Image'),
 };
 
+var Easing = {
+  inOut: function(fn) { return fn; },
+  sin: function(t) { return t; },
+  ease: null,
+  quad: null,
+  cubic: null,
+};
+
 var AccessibilityInfo = {
   isReduceMotionEnabled: function() { return Promise.resolve(false); },
 };
@@ -28,6 +48,7 @@ module.exports = {
   ActivityIndicator: passthrough('ActivityIndicator'),
   Alert: { alert: function() {} },
   Animated: Animated,
+  Easing: Easing,
   AccessibilityInfo: AccessibilityInfo,
   Dimensions: { get: function() { return { width: 390, height: 844 }; } },
   Image: passthrough('Image'),

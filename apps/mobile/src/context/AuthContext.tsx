@@ -22,8 +22,14 @@ export interface AuthContextValue {
   isLoading: boolean;
   /** Login with email and password */
   signIn: (email: string, password: string) => Promise<AuthError | null>;
-  /** Sign up with email and password */
+  /** Sign up with email, password, and optional metadata (nickname, etc.) */
   signUp: (email: string, password: string) => Promise<AuthError | null>;
+  /** Sign up with additional user metadata (nickname, etc.) */
+  signUpWithMetadata: (
+    email: string,
+    password: string,
+    metadata?: Record<string, unknown>,
+  ) => Promise<AuthError | null>;
   /** Log out the current user */
   signOut: () => Promise<void>;
 }
@@ -95,6 +101,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
+  const signUpWithMetadata = useCallback(
+    async (
+      email: string,
+      password: string,
+      metadata?: Record<string, unknown>,
+    ): Promise<AuthError | null> => {
+      const supabase = getSupabase();
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: metadata ? { data: metadata } : undefined,
+      });
+      return error;
+    },
+    [],
+  );
+
   const signOut = useCallback(async () => {
     const supabase = getSupabase();
     await supabase.auth.signOut();
@@ -108,9 +131,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isLoading,
       signIn,
       signUp,
+      signUpWithMetadata,
       signOut,
     }),
-    [user, session, isLoading, signIn, signUp, signOut],
+    [user, session, isLoading, signIn, signUp, signUpWithMetadata, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

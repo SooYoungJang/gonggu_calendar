@@ -11,6 +11,17 @@ vi.mock("react-native-reanimated", () => {
   return Reanimated;
 });
 
+vi.mock("@react-native-async-storage/async-storage", () => ({
+  default: {
+    getItem: vi.fn(() => Promise.resolve(null)),
+    setItem: vi.fn(() => Promise.resolve()),
+    removeItem: vi.fn(() => Promise.resolve()),
+  },
+  getItem: vi.fn(() => Promise.resolve(null)),
+  setItem: vi.fn(() => Promise.resolve()),
+  removeItem: vi.fn(() => Promise.resolve()),
+}));
+
 vi.mock("@react-navigation/native", async () => {
   const actualNav = await vi.importActual("@react-navigation/native");
   return {
