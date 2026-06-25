@@ -1,41 +1,29 @@
+/**
+ * @gonggu/mobile — API Layer
+ *
+ * Refactored for Supabase PostgREST:
+ * - Public data endpoints → PostgREST direct (GET /rest/v1/...)
+ * - Edge Function endpoints → POST /functions/v1/...
+ * - Admin CRUD → Edge Function (service_role)
+ * - postPublicJson → NestJS (kept for public insert without auth)
+ *
+ * All existing function signatures are preserved for consumer compatibility.
+ */
+
 import { Platform } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
 
 import type { FeedPost, FeedPostListResponse, GroupBuy, Influencer, InstagramMediaInfo, Submission } from './types';
 export { searchInfluencers } from './utils/search';
 
-// ─── API Error Types ─────────────────────────────────────────────────────────
+import { postgrestGet, callEdgeFunction } from './lib/postgrest-client';
+import { ApiError, type ApiValidationError } from './lib/api-types';
 
-export interface ApiValidationError {
-  field: string;
-  message: string;
-  code: string;
-}
+// ─── Re-export ApiError for consumers that import it ─────────────────────────
+export type { ApiValidationError } from './lib/api-types';
+export { ApiError } from './lib/api-types';
 
-export class ApiError extends Error {
-  constructor(
-    public readonly status: number,
-    message: string,
-    public readonly errors?: ApiValidationError[],
-  ) {
-    super(message);
-    this.name = 'ApiError';
-  }
+// ─── Ranking types (mobile-specific) ─────────────────────────────────────────
 
-  get isRateLimit(): boolean {
-    return this.status === 429;
-  }
-
-  get isValidationError(): boolean {
-    return this.status === 400 && Array.isArray(this.errors);
-  }
-
-  get isNetworkError(): boolean {
-    return this.status === 0;
-  }
-}
-
-/* ── Local types for fetchSellerRankings (avoids feature -> shared dependency) ── */
 export type RankingCategory =
   | 'all' | 'beauty' | 'fashion' | 'food' | 'lifestyle' | 'baby' | 'digital';
 export type RankingPeriod = 'today' | 'weekly' | 'monthly';
@@ -77,11 +65,15 @@ export type SellerRankingQuery = {
   sort: RankingSort;
 };
 
+// ─── NestJS URL (kept for postPublicJson) ────────────────────────────────────
+
 export const API_BASE_URL = Platform.select({
   android: 'http://10.0.2.2:3003/api/v1',
   ios: 'http://localhost:3003/api/v1',
   default: 'http://192.168.219.122:3003/api/v1',
-});
+}) as string;
+
+// ─── Sample Data ─────────────────────────────────────────────────────────────
 
 export const fallbackGroupBuys: GroupBuy[] = [
   {
@@ -166,188 +158,134 @@ export const fallbackGroupBuys: GroupBuy[] = [
   },
 ];
 
-export async function fetchGroupBuys() {
-  const response = await fetch(`${API_BASE_URL}/group-buys`);
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC DATA — PostgREST
+// ═══════════════════════════════════════════════════════════════════════════════
 
-  if (!response.ok) {
-    throw new Error('API unavailable');
-  }
-
-  return (await response.json()) as GroupBuy[];
+/**
+ * Fetch all group buys with raw post details.
+ * GET /rest/v1/group_buys?select=*,raw_post_id(*)
+ */
+export async function fetchGroupBuys(): Promise<GroupBuy[]> {
+  const { data } = await postgrestGet<GroupBuy[]>('group_buys?select=*,raw_post_id(*)');
+  return data;
 }
 
+/**
+ * Fetch paginated feed posts.
+ * GET /rest/v1/feed_posts + Range header + count=exact
+ */
 export async function fetchFeeds(page = 1, limit = 20): Promise<FeedPostListResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/feeds?page=${page}&limit=${limit}`);
-
-    if (!response.ok) {
-      const body = await response.text();
-      console.log('[Feed] HTTP error:', response.status, body.substring(0, 300));
-      throw new Error('Feeds API unavailable');
-    }
-
-    const data = (await response.json()) as FeedPostListResponse;
-    console.log('[Feed] success, items:', data?.items?.length);
-    return data;
+    const { data, meta } = await postgrestGet<FeedPost[]>('feed_posts', {
+      pagination: { page, limit },
+    });
+    return {
+      items: data,
+      meta: meta ?? { total: 0, page, limit, totalPages: 0 },
+    };
   } catch (error) {
     console.log('[Feed] fetch failed:', error instanceof Error ? error.message : String(error));
     throw error;
   }
 }
 
+/**
+ * Fetch a single feed post by ID.
+ * GET /rest/v1/feed_posts?id=eq.{id}
+ */
 export async function fetchFeedPost(id: string): Promise<FeedPost> {
-  const response = await fetch(`${API_BASE_URL}/feeds/${encodeURIComponent(id)}`);
-
-  if (!response.ok) {
-    throw new Error('Feed post API unavailable');
+  const { data } = await postgrestGet<FeedPost[]>('feed_posts', undefined);
+  const post = Array.isArray(data) ? data.find((p) => p.id === id) : undefined;
+  if (!post) {
+    throw new ApiError(404, 'Feed post not found');
   }
-
-  return (await response.json()) as FeedPost;
+  return post;
 }
 
+/**
+ * Fetch all influencers.
+ * GET /rest/v1/influencers
+ */
+export async function fetchInfluencers(): Promise<Influencer[]> {
+  const { data } = await postgrestGet<Influencer[]>('influencers');
+  return data;
+}
+
+/**
+ * Fetch group buys filtered by influencer username.
+ * Uses PostgREST with embedded filter on raw_post -> influencer.
+ */
+export async function fetchGroupBuysByInfluencer(instagramUsername: string): Promise<GroupBuy[]> {
+  const normalizedUsername = instagramUsername.replace(/^@/, '').toLowerCase();
+  const { data } = await postgrestGet<GroupBuy[]>(
+    `group_buys?select=*,raw_post_id(*)&raw_post_id.influencer.instagramUsername=eq.${normalizedUsername}`,
+  );
+  return data;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EDGE FUNCTIONS — callEdgeFunction
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Fetch seller rankings.
+ * POST /functions/v1/seller-rankings
+ */
 export async function fetchSellerRankings(query: SellerRankingQuery): Promise<SellerRanking[]> {
-  const params = new URLSearchParams({
-    tab: query.tab,
-    category: query.category,
-    period: query.period,
-    sort: query.sort,
-  });
-  const response = await fetch(`${API_BASE_URL}/ranking/sellers?${params}`);
-
-  if (!response.ok) {
-    throw new Error('Seller rankings API unavailable');
-  }
-
-  const body = (await response.json()) as { data: SellerRanking[] };
+  const body = await callEdgeFunction<{ data: SellerRanking[] }>('seller-rankings', query);
   return body.data;
 }
 
-export async function fetchInfluencers() {
-  const response = await fetch(`${API_BASE_URL}/influencers`);
-
-  if (!response.ok) {
-    throw new Error('Influencers API unavailable');
-  }
-
-  return (await response.json()) as Influencer[];
+/**
+ * Look up Instagram post metadata via HikerAPI Edge Function.
+ * POST /functions/v1/hiker-lookup
+ */
+export async function lookupInstagramUrl(url: string): Promise<InstagramMediaInfo> {
+  return callEdgeFunction<InstagramMediaInfo>('hiker-lookup', { url });
 }
 
-export async function fetchGroupBuysByInfluencer(instagramUsername: string) {
-  const normalizedUsername = instagramUsername.replace(/^@/, '').toLowerCase();
-  const groupBuys = await fetchGroupBuys();
+// ═══════════════════════════════════════════════════════════════════════════════
+// ADMIN — Edge Function (service_role)
+// ═══════════════════════════════════════════════════════════════════════════════
 
-  return groupBuys.filter(
-    (item) => item.rawPost.influencer.instagramUsername.replace(/^@/, '').toLowerCase() === normalizedUsername,
-  );
-}
-
-export async function getAuthToken(): Promise<string | null> {
-  try {
-    return await SecureStore.getItemAsync('gonggu.authToken');
-  } catch {
-    return null;
-  }
-}
-
-export async function setAuthToken(token: string): Promise<void> {
-  try {
-    await SecureStore.setItemAsync('gonggu.authToken', token);
-  } catch {
-    // ignore
-  }
-}
-
-export async function clearAuthToken(): Promise<void> {
-  try {
-    await SecureStore.deleteItemAsync('gonggu.authToken');
-  } catch {
-    // ignore
-  }
-}
-
-export function getAdminHeaders(): Record<string, string> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-
-  // Note: In actual implementation, this would be async and we'd need to handle it differently
-  // For now, we'll use a synchronous approach for web (localStorage) and async for native
-  if (Platform.OS === 'web') {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const token = (typeof window !== 'undefined' && window.localStorage?.getItem('gonggu.authToken')) as string | null;
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-    } catch {
-      // localStorage not available (e.g., SSR)
-    }
-  }
-
-  return headers;
+/**
+ * Fetch admin JSON data via admin-api Edge Function.
+ * POST /functions/v1/admin-api
+ */
+async function adminFetch<T>(path: string, method: string = 'GET', body?: unknown): Promise<T> {
+  return callEdgeFunction<T>('admin-api', { path, method, body });
 }
 
 export async function fetchAdminJson<T>(path: string) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: getAdminHeaders(),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Admin API failed: ${response.status}`);
-  }
-
-  return (await response.json()) as T;
+  return adminFetch<T>(path);
 }
 
 export async function fetchAdminSubmissions() {
   const statuses: Submission['status'][] = ['REVIEW_REQUIRED', 'APPROVED', 'REJECTED'];
-  const groups = await Promise.all(
-    statuses.map((status) => fetchAdminJson<Submission[]>(`/admin/submissions?status=${status}&limit=50`)),
-  );
-
+  const groups: Submission[][] = [];
+  for (const status of statuses) {
+    const result = await adminFetch<Submission[]>(`/submissions?status=${status}&limit=50`);
+    groups.push(result);
+  }
   return groups.flat();
 }
 
-export async function patchAdminJson<T>(path: string, body: unknown) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: 'PATCH',
-    headers: getAdminHeaders(),
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Admin API failed: ${response.status}`);
-  }
-
-  return (await response.json()) as T;
+export async function patchAdminJson<T>(path: string, payload: unknown) {
+  return adminFetch<T>(path, 'PATCH', payload);
 }
 
 export async function deleteAdminJson<T>(path: string) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: 'DELETE',
-    headers: getAdminHeaders(),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Admin API failed: ${response.status}`);
-  }
-
-  return (await response.json()) as T;
+  return adminFetch<T>(path, 'DELETE');
 }
 
-export async function postAdminJson<T>(path: string, body?: unknown) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: 'POST',
-    headers: getAdminHeaders(),
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  if (!response.ok) {
-    throw new Error(`Admin API failed: ${response.status}`);
-  }
-
-  return (await response.json()) as T;
+export async function postAdminJson<T>(path: string, payload?: unknown) {
+  return adminFetch<T>(path, 'POST', payload);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LEGACY: NestJS (kept for public submission — no anon insert via PostgREST)
+// ═══════════════════════════════════════════════════════════════════════════════
 
 export async function postPublicJson<T>(path: string, body: unknown) {
   let response: Response;
@@ -359,25 +297,23 @@ export async function postPublicJson<T>(path: string, body: unknown) {
       body: JSON.stringify(body),
     });
   } catch {
-    // Network error (fetch itself threw)
     throw new ApiError(0, '네트워크 연결을 확인해주세요.');
   }
 
   if (!response.ok) {
     const errorText = await response.text().catch(() => '');
 
-    // Try to parse structured error with validation details (400 from Zod pipe)
     if (response.status === 400) {
       try {
         const parsed = JSON.parse(errorText) as {
           message: string;
-          errors?: Array<{ field: string; message: string; code: string }>;
+          errors?: ApiValidationError[];
         };
         if (parsed.errors) {
           throw new ApiError(400, parsed.message || '입력값을 확인해주세요.', parsed.errors);
         }
       } catch {
-        // fall through to generic error below
+        // fall through
       }
     }
 
@@ -390,25 +326,4 @@ export async function postPublicJson<T>(path: string, body: unknown) {
   }
 
   return (await response.json()) as T;
-}
-
-/**
- * Look up Instagram post metadata via HikerAPI.
- * POST /api/v1/hiker-api/lookup
- *
- * Returns post image, caption, like count, username, and taken-at date.
- */
-export async function lookupInstagramUrl(url: string): Promise<InstagramMediaInfo> {
-  const response = await fetch(`${API_BASE_URL}/hiker-api/lookup`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text().catch(() => '');
-    throw new Error(errorText || `HikerAPI lookup failed: ${response.status}`);
-  }
-
-  return (await response.json()) as InstagramMediaInfo;
 }
