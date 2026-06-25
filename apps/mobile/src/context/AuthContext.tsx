@@ -1,0 +1,127 @@
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import type { AuthError, Session, User } from '@supabase/supabase-js';
+
+import { getSupabase } from '../lib/supabase';
+import { setAuthToken, clearAuthToken } from '../utils/auth';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export interface AuthContextValue {
+  /** Current authenticated user, or null if not logged in */
+  user: User | null;
+  /** Current Supabase session, or null if not logged in */
+  session: Session | null;
+  /** True while restoring session on mount */
+  isLoading: boolean;
+  /** Login with email and password */
+  signIn: (email: string, password: string) => Promise<AuthError | null>;
+  /** Sign up with email and password */
+  signUp: (email: string, password: string) => Promise<AuthError | null>;
+  /** Log out the current user */
+  signOut: () => Promise<void>;
+}
+
+// ─── Context ──────────────────────────────────────────────────────────────────
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+// ─── Provider ─────────────────────────────────────────────────────────────────
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Restore session on mount
+  useEffect(() => {
+    const supabase = getSupabase();
+
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      if (currentSession?.access_token) {
+        setAuthToken(currentSession.access_token).catch(() => {});
+      }
+      setIsLoading(false);
+    });
+
+    // Listen for auth state changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+
+      if (currentSession?.access_token) {
+        setAuthToken(currentSession.access_token).catch(() => {});
+      } else {
+        clearAuthToken().catch(() => {});
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const signIn = useCallback(
+    async (email: string, password: string): Promise<AuthError | null> => {
+      const supabase = getSupabase();
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      return error;
+    },
+    [],
+  );
+
+  const signUp = useCallback(
+    async (email: string, password: string): Promise<AuthError | null> => {
+      const supabase = getSupabase();
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      return error;
+    },
+    [],
+  );
+
+  const signOut = useCallback(async () => {
+    const supabase = getSupabase();
+    await supabase.auth.signOut();
+    await clearAuthToken();
+  }, []);
+
+  const value = useMemo<AuthContextValue>(
+    () => ({
+      user,
+      session,
+      isLoading,
+      signIn,
+      signUp,
+      signOut,
+    }),
+    [user, session, isLoading, signIn, signUp, signOut],
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+// ─── Hook ─────────────────────────────────────────────────────────────────────
+
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return ctx;
+}

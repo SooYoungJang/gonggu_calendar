@@ -6,16 +6,27 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { MainTabParamList, RootStackParamList } from './types';
+import { configurePostgrest } from './lib/postgrest-client';
+import { configureSupabase } from './lib/supabase';
+
+// Initialize PostgREST client with the Supabase anon key
+const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
+configurePostgrest(anonKey);
+// Initialize Supabase Auth client
+configureSupabase(anonKey);
+
 import { AdminScreen } from './screens/AdminScreen';
 import { CalendarScreen } from './screens/CalendarScreen';
 import { FeedDetailScreen } from './screens/FeedDetailScreen';
 import { HomeScreen } from './screens/HomeScreen';
 import { InfluencerGroupBuysScreen } from './screens/InfluencerGroupBuysScreen';
 import { DetailScreen } from './screens/DetailScreen';
+import { MyPageScreen } from './screens/MyPageScreen';
 import { StoreScreen } from './screens/StoreScreen';
 import { SubmitScreen } from './screens/SubmitScreen';
 import { spacing } from './design/tokens';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { AuthProvider } from './context/AuthContext';
 
 type RootStackWithTabs = RootStackParamList & {
   MainTabs: NavigatorScreenParams<MainTabParamList> | undefined;
@@ -38,10 +49,6 @@ function PlaceholderScreen({ title, subtitle }: { title: string; subtitle: strin
 
 function CommunityScreen() {
   return <PlaceholderScreen title="커뮤니티" subtitle="공구 제보와 후기를 모아볼 수 있는 공간입니다." />;
-}
-
-function MyPageScreen() {
-  return <PlaceholderScreen title="마이페이지" subtitle="저장한 공구와 알림 설정을 관리하세요." />;
 }
 
 function tabIcon(routeName: keyof MainTabParamList) {
@@ -142,7 +149,8 @@ export default function App() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <NavigationContainer>
+          <AuthProvider>
+            <NavigationContainer>
             <Stack.Navigator
               initialRouteName={
                 Platform.OS === 'web' && typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')
@@ -159,6 +167,7 @@ export default function App() {
               <Stack.Screen name="Admin" component={AdminScreen} />
             </Stack.Navigator>
           </NavigationContainer>
+          </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </SafeAreaProvider>

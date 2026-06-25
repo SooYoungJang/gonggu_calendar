@@ -18,7 +18,7 @@ import { mapPostgrestToApp } from '../utils/postgrest-mapper';
 // ─── Configuration ───────────────────────────────────────────────────────────
 
 const SUPABASE_URL = 'https://iosdoheblabfimkjnvfj.supabase.co';
-const REST_VERSION = '/rest/v1';
+const REST_VERSION = '/rest/v1/';
 export const API_BASE_URL = `${SUPABASE_URL}${REST_VERSION}`;
 
 // The anon key is configured at module init.

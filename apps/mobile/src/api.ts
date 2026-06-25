@@ -167,8 +167,25 @@ export const fallbackGroupBuys: GroupBuy[] = [
  * GET /rest/v1/group_buys?select=*,raw_post_id(*)
  */
 export async function fetchGroupBuys(): Promise<GroupBuy[]> {
-  const { data } = await postgrestGet<GroupBuy[]>('group_buys?select=*,raw_post_id(*)');
-  return data;
+  const { data } = await postgrestGet<any[]>('group_buys?select=*,raw_post_id(*,influencer_id(*))');
+  // PostgREST returns raw_post_id and influencer_id as nested objects.
+  // Transform to match the app's GroupBuy type which expects rawPost.influencer.instagramUsername.
+  return (data || []).map((item) => ({
+    id: item.id,
+    productName: item.productName ?? null,
+    brandName: item.brandName ?? null,
+    endDate: item.endDate ?? null,
+    purchaseUrl: item.purchaseUrl ?? null,
+    discountInfo: item.discountInfo ?? null,
+    summary: item.summary ?? null,
+    confidence: item.confidence ?? 0,
+    rawPost: {
+      postUrl: item.rawPostId?.postUrl ?? '',
+      influencer: {
+        instagramUsername: item.rawPostId?.influencerId?.instagramUsername ?? '',
+      },
+    },
+  })) as GroupBuy[];
 }
 
 /**
@@ -218,10 +235,25 @@ export async function fetchInfluencers(): Promise<Influencer[]> {
  */
 export async function fetchGroupBuysByInfluencer(instagramUsername: string): Promise<GroupBuy[]> {
   const normalizedUsername = instagramUsername.replace(/^@/, '').toLowerCase();
-  const { data } = await postgrestGet<GroupBuy[]>(
-    `group_buys?select=*,raw_post_id(*)&raw_post_id.influencer.instagramUsername=eq.${normalizedUsername}`,
+  const { data } = await postgrestGet<any[]>(
+    `group_buys?select=*,raw_post_id(*,influencer_id(*))&raw_post_id.influencer_id.instagram_username=eq.${normalizedUsername}`,
   );
-  return data;
+  return (data || []).map((item) => ({
+    id: item.id,
+    productName: item.productName ?? null,
+    brandName: item.brandName ?? null,
+    endDate: item.endDate ?? null,
+    purchaseUrl: item.purchaseUrl ?? null,
+    discountInfo: item.discountInfo ?? null,
+    summary: item.summary ?? null,
+    confidence: item.confidence ?? 0,
+    rawPost: {
+      postUrl: item.rawPostId?.postUrl ?? '',
+      influencer: {
+        instagramUsername: item.rawPostId?.influencerId?.instagramUsername ?? '',
+      },
+    },
+  })) as GroupBuy[];
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
