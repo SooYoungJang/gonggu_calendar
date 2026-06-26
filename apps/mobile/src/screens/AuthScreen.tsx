@@ -81,7 +81,6 @@ export function AuthScreen(_props: AuthScreenProps) {
   return (
     <View
       style={[styles.container, { backgroundColor: WARM_BG, paddingTop: insets.top }]}
-      accessible
       accessibilityLabel="공구위시 로그인 화면"
     >
       <KeyboardAvoidingView
@@ -128,7 +127,7 @@ function AuthTabs({ activeTab, onTabChange }: { activeTab: AuthTab; onTabChange:
   }, [onTabChange]);
 
   return (
-    <View style={styles.tabBar} accessible accessibilityLabel="인증 방식 선택">
+    <View style={styles.tabBar} accessibilityRole="tablist" accessibilityLabel="인증 방식 선택">
       <Pressable
         accessible
         accessibilityRole="tab"
@@ -244,7 +243,7 @@ function LoginPanel() {
   );
 
   return (
-    <View accessible accessibilityLabel="로그인">
+    <View accessibilityLabel="로그인">
       {/* Social Login — refined: no title */}
       <View style={styles.socialSection}>
         {SOCIAL_PROVIDERS.map((sp) => (
@@ -487,7 +486,7 @@ function SignupPanel() {
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <View accessible accessibilityLabel="회원가입">
+    <View accessibilityLabel="회원가입">
       {/* Step Progress */}
       <View
         style={styles.stepProgress}
