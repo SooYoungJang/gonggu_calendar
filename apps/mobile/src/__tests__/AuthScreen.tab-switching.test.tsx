@@ -127,8 +127,8 @@ describe('AuthScreen tab switching', () => {
   it('회원가입 탭 클릭 시 SignupPanel을 렌더링하고 로그인 탭으로 돌아올 수 있다', () => {
     const renderer = renderAuthScreen();
 
-    // Initial state: LoginPanel should render "간편 로그인"
-    expect(containsText(renderer, '간편 로그인')).toBe(true);
+    // Initial state: LoginPanel should render the email login divider.
+    expect(containsText(renderer, '또는 이메일 로그인')).toBe(true);
 
     // Press signup tab
     pressByAccessibilityLabel(renderer, '회원가입 탭');
@@ -140,6 +140,6 @@ describe('AuthScreen tab switching', () => {
     pressByAccessibilityLabel(renderer, '로그인 탭');
 
     // LoginPanel should render again
-    expect(containsText(renderer, '간편 로그인')).toBe(true);
+    expect(containsText(renderer, '또는 이메일 로그인')).toBe(true);
   });
 });
