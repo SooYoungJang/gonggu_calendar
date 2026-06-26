@@ -841,8 +841,8 @@ function FloatingLabelInput({
           accessibilityLabel={label}
           {...inputProps}
         />
-        <Pressable
-          onPress={() => inputRef.current?.focus()}
+        <View
+          pointerEvents="none"
           style={styles.flLabelTouchable}
         >
           <Text
@@ -857,7 +857,7 @@ function FloatingLabelInput({
           >
             {label}
           </Text>
-        </Pressable>
+        </View>
         {rightElement}
       </View>
       {error ? (
@@ -1254,7 +1254,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#4285F4',
   },
-
 
   // Social buttons
   socialBtn: {
