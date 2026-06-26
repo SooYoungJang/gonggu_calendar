@@ -816,6 +816,7 @@ function FloatingLabelInput({
 }: FloatingLabelInputProps) {
   const { colors } = useTheme();
   const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<TextInput>(null);
   const hasValue = typeof value === 'string' && value.length > 0;
   const isFloating = isFocused || hasValue;
 
@@ -831,7 +832,8 @@ function FloatingLabelInput({
 
   return (
     <View style={styles.flField}>
-      <View
+      <Pressable
+        onPress={() => inputRef.current?.focus()}
         style={[
           styles.flInputWrapper,
           { borderColor: colors.border, backgroundColor: '#ffffff' },
@@ -840,6 +842,17 @@ function FloatingLabelInput({
           hasValue && !error && styles.flInputSuccess,
         ]}
       >
+        <TextInput
+          ref={inputRef}
+          value={value}
+          placeholder=" "
+          style={[styles.flInput, { color: colors.textPrimary }, rightElement ? { paddingRight: 44 } : undefined, style]}
+          placeholderTextColor="transparent"
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          accessibilityLabel={label}
+          {...inputProps}
+        />
         <View
           pointerEvents="none"
           style={styles.flLabelTouchable}
@@ -858,7 +871,7 @@ function FloatingLabelInput({
           </Text>
         </View>
         {rightElement}
-      </View>
+      </Pressable>
       {error ? (
         <Text style={styles.flMsg}>{error}</Text>
       ) : (
