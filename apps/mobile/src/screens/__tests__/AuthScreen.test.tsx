@@ -146,13 +146,16 @@ describe('AuthScreen', () => {
     expect(findAllText(renderer, '비밀번호').length).toBeGreaterThan(0);
   });
 
-  it('does not wrap auth TextInputs in Pressable containers', () => {
+  it('wraps auth TextInputs in focusable Pressable containers', () => {
     const renderer = createTestRenderer();
     const pressablesWithInput = renderer.root.findAllByType(Pressable).filter(
       (pressable) => pressable.findAllByType(TextInput).length > 0,
     );
 
-    expect(pressablesWithInput).toHaveLength(0);
+    expect(pressablesWithInput.length).toBeGreaterThan(0);
+    pressablesWithInput.forEach((pressable) => {
+      expect(typeof pressable.props.onPress).toBe('function');
+    });
   });
 
   it('renders forgot password link', () => {
