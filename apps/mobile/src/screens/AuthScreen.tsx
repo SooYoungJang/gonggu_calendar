@@ -1,5 +1,12 @@
 /**
- * AuthScreen — Coral Wave Redesign
+ * AuthScreen — Coral Wave Redesign v2 (Refined)
+ *
+ * Refined Coral Wave design — balances brand identity with app consistency:
+ *  - Warm beige (#f5f0eb) background kept as brand signature
+ *  - Underline-style tabs (was segment control) for cleaner look
+ *  - Refined header icon with premium shadow
+ *  - Subtle wave decoration (reduced height, softer opacity)
+ *  - Rounded corners unified to 14px throughout
  *
  * Single-page Login / Signup screen with:
  *  - Tab switching (Login ↔ Signup)
@@ -238,9 +245,8 @@ function LoginPanel() {
 
   return (
     <View accessible accessibilityLabel="로그인">
-      {/* Social Login */}
+      {/* Social Login — refined: no title */}
       <View style={styles.socialSection}>
-        <Text style={styles.socialTitle}>간편 로그인</Text>
         {SOCIAL_PROVIDERS.map((sp) => (
           <SocialButton
             key={sp.provider}
@@ -957,32 +963,32 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 28,
-    paddingTop: 48,
+    paddingHorizontal: 24,
+    paddingTop: 40,
     paddingBottom: 0,
   },
 
-  // Header
+  // Header — refined coral wave
   header: {
     alignItems: 'center',
     marginBottom: 32,
   },
   headerIcon: {
-    width: 52,
-    height: 52,
+    width: 56,
+    height: 56,
     backgroundColor: CORAL,
-    borderRadius: 14,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 14,
     shadowColor: CORAL,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 8,
   },
   headerIconText: {
-    fontSize: 26,
+    fontSize: 28,
     color: '#ffffff',
   },
   appName: {
@@ -1004,53 +1010,37 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
 
-  // Tab bar
+  // Tab bar — refined underline style (coral wave v2)
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 4,
+    borderBottomWidth: 2,
+    borderBottomColor: '#e8e3de',
     marginBottom: 28,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 3,
-    elevation: 2,
   },
   tabBtn: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 14,
     alignItems: 'center',
-    borderRadius: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+    marginBottom: -2,
   },
   tabBtnActive: {
-    backgroundColor: CORAL,
-    shadowColor: CORAL,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 4,
+    borderBottomColor: CORAL,
   },
   tabBtnText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
     color: '#8c8681',
   },
   tabBtnTextActive: {
-    color: '#ffffff',
+    color: CORAL,
   },
 
-  // Social section
+  // Social section — refined (no title, cleaner)
   socialSection: {
     gap: 10,
     marginBottom: 20,
-  },
-  socialTitle: {
-    textAlign: 'center',
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#8c8681',
-    marginBottom: 4,
   },
 
   // Divider
@@ -1071,15 +1061,20 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
-  // CTA Button
+  // CTA Button — refined coral wave
   ctaBtn: {
     width: '100%',
     height: 54,
     backgroundColor: CORAL,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 4,
+    shadowColor: CORAL,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
   },
   ctaBtnText: {
     color: '#ffffff',
@@ -1101,7 +1096,7 @@ const styles = StyleSheet.create({
   flInputWrapper: {
     position: 'relative',
     borderWidth: 1.5,
-    borderRadius: 12,
+    borderRadius: 14,
     height: 56,
     justifyContent: 'center',
   },
@@ -1230,7 +1225,7 @@ const styles = StyleSheet.create({
   stepNavBtn: {
     flex: 1,
     height: 48,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1321,11 +1316,11 @@ const styles = StyleSheet.create({
     color: '#4285F4',
   },
 
-  // ── Wave ──
+  // ── Wave (refined — more subtle) ──
 
   waveContainer: {
-    height: 80,
-    marginHorizontal: -28,
+    height: 60,
+    marginHorizontal: -24,
     overflow: 'hidden',
     position: 'relative',
   },
@@ -1352,7 +1347,7 @@ const styles = StyleSheet.create({
   // Social buttons
   socialBtn: {
     height: 52,
-    borderRadius: 12,
+    borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
