@@ -146,6 +146,15 @@ describe('AuthScreen', () => {
     expect(findAllText(renderer, '비밀번호').length).toBeGreaterThan(0);
   });
 
+  it('does not wrap auth TextInputs in Pressable containers', () => {
+    const renderer = createTestRenderer();
+    const pressablesWithInput = renderer.root.findAllByType(Pressable).filter(
+      (pressable) => pressable.findAllByType(TextInput).length > 0,
+    );
+
+    expect(pressablesWithInput).toHaveLength(0);
+  });
+
   it('renders forgot password link', () => {
     const renderer = createTestRenderer();
     expect(findAllText(renderer, '비밀번호를 잊으셨나요?').length).toBeGreaterThan(0);

@@ -810,14 +810,24 @@ function FloatingLabelInput({
   error,
   rightElement,
   style,
+  onFocus,
+  onBlur,
   ...inputProps
 }: FloatingLabelInputProps) {
   const { colors } = useTheme();
-  const s = useMemo(() => makeStyles(colors), [colors]);
   const [isFocused, setIsFocused] = useState(false);
-  const inputRef = useRef<TextInput>(null);
   const hasValue = typeof value === 'string' && value.length > 0;
   const isFloating = isFocused || hasValue;
+
+  const handleFocus = useCallback((event: Parameters<NonNullable<TextInputProps['onFocus']>>[0]) => {
+    setIsFocused(true);
+    onFocus?.(event);
+  }, [onFocus]);
+
+  const handleBlur = useCallback((event: Parameters<NonNullable<TextInputProps['onBlur']>>[0]) => {
+    setIsFocused(false);
+    onBlur?.(event);
+  }, [onBlur]);
 
   return (
     <View style={styles.flField}>
@@ -830,17 +840,6 @@ function FloatingLabelInput({
           hasValue && !error && styles.flInputSuccess,
         ]}
       >
-        <TextInput
-          ref={inputRef}
-          value={value}
-          placeholder=" "
-          style={[styles.flInput, { color: colors.textPrimary }, rightElement ? { paddingRight: 44 } : undefined, style]}
-          placeholderTextColor="transparent"
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          accessibilityLabel={label}
-          {...inputProps}
-        />
         <View
           pointerEvents="none"
           style={styles.flLabelTouchable}
