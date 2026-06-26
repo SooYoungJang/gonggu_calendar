@@ -1,0 +1,23 @@
+appId: com.gonggu.wish
+---
+# GON-132 QA — Auth 뒤로가기 버튼 + Wave 제거
+- launchApp
+- tapOn: "MY"
+- assertVisible: "마이페이지"
+- assertVisible: "로그인이 필요합니다."
+- takeScreenshot: evidence/gon-132-01-mypage-before-auth
+- tapOn: "로그인"
+- assertVisible: "공구위시"
+- assertVisible: "뒤로가기"
+- assertVisible: "로그인 탭"
+- assertVisible: "이메일"
+- takeScreenshot: evidence/gon-132-02-auth-login-tab
+- tapOn: "회원가입 탭"
+- assertVisible: "기본 정보"
+- assertVisible: "비밀번호 확인"
+- assertVisible: "뒤로가기"
+- takeScreenshot: evidence/gon-132-03-auth-signup-tab
+- tapOn: "뒤로가기"
+- assertVisible: "마이페이지"
+- assertVisible: "로그인이 필요합니다."
+- takeScreenshot: evidence/gon-132-04-after-back
