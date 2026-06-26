@@ -1,0 +1,4 @@
+appId: com.gonggu.wish
+---
+- tapOn: "회원가입 탭"
+- takeScreenshot: evidence/gon-132-03-signup-tab-after-tap
