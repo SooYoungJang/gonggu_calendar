@@ -832,8 +832,7 @@ function FloatingLabelInput({
 
   return (
     <View style={styles.flField}>
-      <Pressable
-        onPress={() => inputRef.current?.focus()}
+      <View
         style={[
           styles.flInputWrapper,
           { borderColor: colors.border, backgroundColor: '#ffffff' },
@@ -871,7 +870,7 @@ function FloatingLabelInput({
           </Text>
         </View>
         {rightElement}
-      </Pressable>
+      </View>
       {error ? (
         <Text style={styles.flMsg}>{error}</Text>
       ) : (
