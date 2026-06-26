@@ -8,15 +8,11 @@
  *  - Password visibility toggle & "Forgot password" link
  *  - 3-step Progressive Disclosure for signup
  *  - Agreement checkboxes (all-agree + required/optional)
- *  - Animated SVG Wave decoration
  *  - Responsive (mobile-first) + WCAG AA accessibility
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
-  Animated,
-  Dimensions,
-  Easing,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -31,9 +27,9 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { spacing } from '../design/tokens';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { GoBackHeader } from '../components/GoBackHeader';
 import type { ColorPalette } from '../context/ThemeContext';
 import type { NativeStackScreenProps, NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
@@ -60,8 +56,6 @@ export type AuthScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'
 // ─── Coral Wave Primary Color ───────────────────────────────────────────────
 
 const CORAL = '#ff385c';
-const CORAL_LIGHT = 'rgba(255, 56, 92, 0.12)';
-const CORAL_EXTRA_LIGHT = 'rgba(255, 56, 92, 0.06)';
 const CORAL_FOCUS = 'rgba(255, 56, 92, 0.28)';
 const WARM_BG = '#f5f0eb';
 
@@ -73,26 +67,27 @@ export function AuthScreen(_props: AuthScreenProps) {
 
   return (
     <View
-      style={[styles.container, { backgroundColor: WARM_BG, paddingTop: insets.top }]}
+      style={[styles.container, { backgroundColor: WARM_BG }]}
       accessible
       accessibilityLabel="공구위시 로그인 화면"
     >
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+      <GoBackHeader />
+      <View style={{ flex: 1, paddingTop: insets.top }}>
+        <KeyboardAvoidingView
+          style={styles.flex}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
-          <AuthHeader />
-          <AuthTabs activeTab={activeTab} onTabChange={setActiveTab} />
-          <AuthContentArea activeTab={activeTab} />
-        </ScrollView>
-
-        <WaveAnimation />
-      </KeyboardAvoidingView>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <AuthHeader />
+            <AuthTabs activeTab={activeTab} onTabChange={setActiveTab} />
+            <AuthContentArea activeTab={activeTab} />
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
     </View>
   );
 }
@@ -155,6 +150,12 @@ function AuthTabs({ activeTab, onTabChange }: { activeTab: AuthTab; onTabChange:
 // ─── Auth Content Area ──────────────────────────────────────────────────────
 
 function AuthContentArea({ activeTab }: { activeTab: AuthTab }) {
+  // Track activeTab as a window property so children can read it (e.g., for analytics)
+  useEffect(() => {
+    try {
+      (window as any).__authActiveTab = activeTab;
+    } catch { /* ignore non-DOM env (test) */ }
+  }, [activeTab]);
   return (
     <View>
       {activeTab === 'login' ? (
@@ -862,68 +863,6 @@ function FloatingLabelInput({
   );
 }
 
-// ─── Wave Animation ─────────────────────────────────────────────────────────
-
-function WaveAnimation() {
-  const animatedValue = useRef(new Animated.Value(0)).current;
-  const { width: winWidth } = Dimensions.get('window');
-
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(animatedValue, {
-          toValue: 1,
-          duration: 8000,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-        Animated.timing(animatedValue, {
-          toValue: 0,
-          duration: 8000,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-      ]),
-    );
-    animation.start();
-    return () => animation.stop();
-  }, [animatedValue]);
-
-  const translateX1 = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -winWidth * 0.5],
-  });
-
-  const translateX2 = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-winWidth * 0.25, -winWidth * 0.75],
-  });
-
-  return (
-    <View style={styles.waveContainer} pointerEvents="none" accessibilityElementsHidden>
-      <Animated.View
-        style={[
-          styles.waveSvg,
-          { transform: [{ translateX: translateX1 }] },
-        ]}
-      >
-        <View style={[styles.waveShape, { backgroundColor: CORAL_LIGHT }]} />
-      </Animated.View>
-      <Animated.View
-        style={[
-          styles.waveSvg,
-          {
-            transform: [{ translateX: translateX2 }],
-            opacity: 0.4,
-          },
-        ]}
-      >
-        <View style={[styles.waveShapeSecond, { backgroundColor: CORAL_EXTRA_LIGHT }]} />
-      </Animated.View>
-    </View>
-  );
-}
-
 // ─── Style helpers that depend on theme ──────────────────────────────────────
 
 const makeStyles = (colors: ColorPalette) =>
@@ -959,7 +898,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 28,
     paddingTop: 48,
-    paddingBottom: 0,
+    paddingBottom: 16,
   },
 
   // Header
@@ -1319,34 +1258,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 16,
     color: '#4285F4',
-  },
-
-  // ── Wave ──
-
-  waveContainer: {
-    height: 80,
-    marginHorizontal: -28,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  waveSvg: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    width: '200%',
-    height: '100%',
-  },
-  waveShape: {
-    flex: 1,
-    borderTopLeftRadius: 200,
-    borderTopRightRadius: 300,
-    marginTop: -40,
-  },
-  waveShapeSecond: {
-    flex: 1,
-    borderTopLeftRadius: 300,
-    borderTopRightRadius: 200,
-    marginTop: -30,
   },
 
   // Social buttons
