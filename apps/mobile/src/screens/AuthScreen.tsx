@@ -844,32 +844,31 @@ function FloatingLabelInput({
           hasValue && !error && styles.flInputSuccess,
         ]}
       >
-        <View style={styles.flInputContent}>
-          <Text
-            style={[
-              styles.flLabel,
-              { color: colors.textTertiary },
-              isFocused && styles.flLabelFocused,
-              error && styles.flLabelError,
-              hasValue && !error && !isFocused && styles.flLabelSuccess,
-              !isFloating && styles.flLabelHidden,
-            ]}
-          >
-            {label}
-          </Text>
-          <TextInput
-            ref={inputRef}
-            value={value}
-            showSoftInputOnFocus={true}
-            placeholder={!isFloating ? label : ' '}
-            placeholderTextColor={!isFloating ? colors.textTertiary : 'transparent'}
-            style={[styles.flInput, { color: colors.textPrimary }, rightElement ? { paddingRight: 44 } : undefined, style]}
+        <Text
+          pointerEvents="none"
+          style={[
+            styles.flLabel,
+            { color: colors.textTertiary },
+            isFloating && styles.flLabelFloating,
+            isFocused && styles.flLabelFocused,
+            error && styles.flLabelError,
+            hasValue && !error && !isFocused && styles.flLabelSuccess,
+          ]}
+        >
+          {label}
+        </Text>
+        <TextInput
+          ref={inputRef}
+          value={value}
+          showSoftInputOnFocus={true}
+          placeholder=" "
+          style={[styles.flInput, { color: colors.textPrimary }, rightElement ? { paddingRight: 44 } : undefined, style]}
+            placeholderTextColor="transparent"
             onFocus={handleFocus}
             onBlur={handleBlur}
             accessibilityLabel={label}
             {...inputProps}
           />
-        </View>
         {rightElement}
       </View>
       {error ? (
@@ -1050,12 +1049,10 @@ const styles = StyleSheet.create({
   },
   flInputWrapper: {
     position: 'relative',
-    flexDirection: 'row',
-    alignItems: 'center',
     borderWidth: 1.5,
     borderRadius: 14,
-    minHeight: 56,
-    paddingHorizontal: 16,
+    height: 56,
+    justifyContent: 'center',
   },
   flInputFocused: {
     borderColor: CORAL,
@@ -1081,21 +1078,22 @@ const styles = StyleSheet.create({
   },
   flInput: {
     flex: 1,
-    padding: 0,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 6,
     fontSize: 15,
     fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
   },
-  flInputContent: {
-    flex: 1,
-    justifyContent: 'center',
-  },
   flLabel: {
+    position: 'absolute',
+    left: 16,
+    top: 18,
+    fontSize: 15,
+  },
+  flLabelFloating: {
+    top: 6,
     fontSize: 11,
     fontWeight: '600',
-    marginBottom: 1,
-  },
-  flLabelHidden: {
-    opacity: 0,
   },
   flLabelFocused: {
     color: CORAL,

@@ -146,23 +146,19 @@ describe('AuthScreen', () => {
     expect(findAllText(renderer, '비밀번호').length).toBeGreaterThan(0);
   });
 
-  it('renders floating labels without Pressable wrapper or absolute positioning', () => {
+  it('does not wrap auth TextInputs in Pressable (avoids focus loop)', () => {
     const renderer = createTestRenderer();
     const pressablesWithInput = renderer.root.findAllByType(Pressable).filter(
       (pressable) => pressable.findAllByType(TextInput).length > 0,
     );
-    const labels = renderer.root.findAllByType(Text).filter(
-      (text) => text.props.children === '이메일' || text.props.children === '비밀번호',
+    const pointerEventsLabels = renderer.root.findAllByType(Text).filter(
+      (text) => text.props.pointerEvents === 'none',
     );
 
-    // No Pressable wrapping TextInput (Pressable caused focus loop)
+    // No Pressable wrapping TextInput (Pressable caused focus loop on signup screen)
     expect(pressablesWithInput).toHaveLength(0);
-    // Labels rendered in normal flow (no position:absolute overlay blocking touches)
-    expect(labels.length).toBeGreaterThan(0);
-    // Labels have no pointerEvents=none (not blocking touches)
-    labels.forEach((l) => {
-      expect(l.props.pointerEvents).toBeUndefined();
-    });
+    // Label Text has pointerEvents="none" so it doesn't block touches
+    expect(pointerEventsLabels.length).toBeGreaterThan(0);
   });
 
   it('renders forgot password link', () => {
