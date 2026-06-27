@@ -268,19 +268,46 @@ Do not leave monitoring active after the CEO-created Linear main issue is `Done`
 
 ---
 
-## Git Completion Rule for CEO Main Issue
+## Git Workflow Rule for All Agents
 
-When the CEO-created Linear main issue reaches `Done`, complete the Git handoff for the finished workflow if the workflow involved code, configuration, or documentation changes.
+Every agent (Dev, Designer, QA, Critic) MUST follow this Git workflow before and during task execution.
 
-Steps:
+### Pre-Work: Branch Setup
 
-1. Commit all relevant work changes
-2. Ensure the work is merged into the `main` branch
-3. Push the updated `main` branch to the remote repository
+1. **Pull latest `main`**: Before starting any work, `git checkout main && git pull origin main`
+2. **Create feature/fix branch from latest main**: `git checkout -b {type}/{user}/gon-{issue}-{description}`
+   - Branch naming: `fix/`, `feat/`, `chore/`, `refactor/`, `test/` prefix
+   - 예: `fix/tturrr10/gon-139-fix-floatinglabelinput`
+3. Do all work on this branch — never commit directly to `main`
 
-Do not leave completed work only in a local branch.
+### During Work
 
-Do not mark the operational flow as fully complete unless the related work has been committed, merged into `main`, and pushed to the remote repository.
+- Commit messages follow conventional format:
+  ```
+  {type}: {한글 설명} (GON-{이슈번호})
+  ```
+- 예: `fix: FloatingLabelInput Pressable → View pointerEvents=none (GON-139)`
+- Push the branch regularly: `git push origin {branch-name}`
+
+### Completion: Pull Request
+
+When Dev/Designer work is done and QA + Critic have both passed:
+
+1. **Push the final committed branch** to remote
+2. **Open a Pull Request** targeting `main`:
+   ```
+   gh pr create --base main --head {branch-name} --title "{type}: {설명} (GON-{이슈번호})" --body "Closes GON-{이슈번호}"
+   ```
+3. **Do NOT merge directly** — the PR is the formal handoff point
+4. The CEO monitors the PR status and handles merge when all checks pass
+5. After merge, delete the feature branch
+
+### Rules
+
+- **Never commit directly to `main`** — always use a branch
+- **Always start from latest `main`** — `git pull origin main` before branching
+- **Never skip PR** — all completed work goes through a PR
+- If PR creation is blocked (no `gh` CLI, no permissions), escalate to the user in Korean
 
 If committing, merging, or pushing is blocked by conflicts, failing checks, missing permissions, or repository safety constraints, keep the Linear issue from being treated as fully completed and escalate the blocker in Korean.
 
