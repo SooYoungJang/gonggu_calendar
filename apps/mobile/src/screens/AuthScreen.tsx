@@ -75,7 +75,6 @@ export function AuthScreen(_props: AuthScreenProps) {
   return (
     <View
       style={[styles.container, { backgroundColor: WARM_BG }]}
-      accessible
       accessibilityLabel="공구위시 로그인 화면"
     >
       <GoBackHeader />
@@ -275,6 +274,7 @@ function LoginPanel() {
       <View>
         <FloatingLabelInput
           label="이메일"
+          testID="fl-input-email"
           value={email}
           onChangeText={(t) => { setEmail(t); setErrors((e) => ({ ...e, email: '' })); }}
           autoCapitalize="none"
@@ -286,6 +286,7 @@ function LoginPanel() {
         />
         <FloatingLabelInput
           label="비밀번호"
+          testID="fl-input-password"
           value={password}
           onChangeText={(t) => { setPassword(t); setErrors((e) => ({ ...e, password: '' })); }}
           secureTextEntry={!showPassword}
@@ -517,6 +518,7 @@ function SignupPanel() {
 
           <FloatingLabelInput
             label="이메일"
+            testID="signup-input-email"
             value={email}
             onChangeText={(t) => { setEmail(t); setStep1Errors((e) => ({ ...e, email: '' })); }}
             autoCapitalize="none"
@@ -528,6 +530,7 @@ function SignupPanel() {
           />
           <FloatingLabelInput
             label="비밀번호 (8자 이상, 영문+숫자 포함)"
+            testID="signup-input-password"
             value={password}
             onChangeText={(t) => { setPassword(t); setStep1Errors((e) => ({ ...e, password: '' })); }}
             secureTextEntry={!showPw}
@@ -552,6 +555,7 @@ function SignupPanel() {
           />
           <FloatingLabelInput
             label="비밀번호 확인"
+            testID="signup-input-confirm-password"
             value={confirmPassword}
             onChangeText={(t) => { setConfirmPassword(t); setStep1Errors((e) => ({ ...e, confirmPassword: '' })); }}
             secureTextEntry={!showConfirmPw}
@@ -598,6 +602,7 @@ function SignupPanel() {
 
           <FloatingLabelInput
             label="닉네임"
+            testID="signup-input-nickname"
             value={nickname}
             onChangeText={(t) => { setNickname(t); setStep2Errors((e) => ({ ...e, nickname: '' })); }}
             autoCapitalize="none"
@@ -607,6 +612,7 @@ function SignupPanel() {
           />
           <FloatingLabelInput
             label="휴대폰 번호 (선택)"
+            testID="signup-input-phone"
             value={phone}
             onChangeText={(t) => { setPhone(t); setStep2Errors((e) => ({ ...e, phone: '' })); }}
             autoCapitalize="none"
@@ -867,7 +873,9 @@ function FloatingLabelInput({
           placeholderTextColor="transparent"
           onFocus={handleFocus}
           onBlur={handleBlur}
+          accessible={true}
           accessibilityLabel={label}
+          accessibilityRole="text"
           {...inputProps}
         />
       </View>
