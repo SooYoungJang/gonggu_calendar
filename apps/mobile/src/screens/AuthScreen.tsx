@@ -833,6 +833,10 @@ function FloatingLabelInput({
     onBlur?.(event);
   }, [onBlur]);
 
+  const handlePress = useCallback(() => {
+    inputRef.current?.focus();
+  }, []);
+
   return (
     <View style={styles.flField}>
       <View
@@ -844,31 +848,37 @@ function FloatingLabelInput({
           hasValue && !error && styles.flInputSuccess,
         ]}
       >
-        <Text
-          pointerEvents="none"
-          style={[
-            styles.flLabel,
-            { color: colors.textTertiary },
-            isFloating && styles.flLabelFloating,
-            isFocused && styles.flLabelFocused,
-            error && styles.flLabelError,
-            hasValue && !error && !isFocused && styles.flLabelSuccess,
-          ]}
-        >
-          {label}
-        </Text>
-        <TextInput
-          ref={inputRef}
-          value={value}
-          showSoftInputOnFocus={true}
-          placeholder=" "
-          style={[styles.flInput, { color: colors.textPrimary }, rightElement ? { paddingRight: 44 } : undefined, style]}
+        <Pressable onPress={handlePress} style={{ flex: 1, justifyContent: 'center' }}>
+          <View
+            pointerEvents="none"
+            style={styles.flLabelTouchable}
+          >
+            <Text
+              style={[
+                styles.flLabel,
+                { color: colors.textTertiary },
+                isFloating && styles.flLabelFloating,
+                isFocused && styles.flLabelFocused,
+                error && styles.flLabelError,
+                hasValue && !error && !isFocused && styles.flLabelSuccess,
+              ]}
+            >
+              {label}
+            </Text>
+          </View>
+          <TextInput
+            ref={inputRef}
+            value={value}
+            showSoftInputOnFocus={true}
+            placeholder=" "
+            style={[styles.flInput, { color: colors.textPrimary }, rightElement ? { paddingRight: 44 } : undefined, style]}
             placeholderTextColor="transparent"
             onFocus={handleFocus}
             onBlur={handleBlur}
             accessibilityLabel={label}
             {...inputProps}
           />
+        </Pressable>
         {rightElement}
       </View>
       {error ? (
@@ -1083,6 +1093,14 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
     fontSize: 15,
     fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+  },
+  flLabelTouchable: {
+    position: 'absolute',
+    left: 16,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
   },
   flLabel: {
     position: 'absolute',
