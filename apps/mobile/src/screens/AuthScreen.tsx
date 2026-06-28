@@ -83,8 +83,8 @@ export function AuthScreen(_props: AuthScreenProps) {
           style={styles.flex}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           // Compensate for the safe-area padding applied to the parent so the
-          // avoider shifts content by exactly the keyboard height on iOS.
-          keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top : 0}
+          // avoider shifts content by exactly the keyboard height.
+          keyboardVerticalOffset={insets.top}
         >
           <ScrollView
             contentContainerStyle={styles.scrollContent}
