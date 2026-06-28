@@ -845,18 +845,19 @@ function FloatingLabelInput({
         ]}
       >
         <View style={{ flex: 1, position: 'relative' }}>
-          <Text
-            style={[
-              styles.flLabel,
-              { color: colors.textTertiary },
-              isFocused && styles.flLabelFocused,
-              error && styles.flLabelError,
-              hasValue && !error && !isFocused && styles.flLabelSuccess,
-              !isFloating && { opacity: 0 },
-            ]}
-          >
-            {label}
-          </Text>
+          {isFloating && (
+            <Text
+              style={[
+                styles.flLabel,
+                { color: colors.textTertiary },
+                isFocused && styles.flLabelFocused,
+                error && styles.flLabelError,
+                hasValue && !error && !isFocused && styles.flLabelSuccess,
+              ]}
+            >
+              {label}
+            </Text>
+          )}
           <TextInput
             ref={inputRef}
             value={value}
@@ -1055,7 +1056,7 @@ const styles = StyleSheet.create({
     height: 56,
     paddingHorizontal: 16,
     flexDirection: 'row',
-    alignItems: 'stretch',
+    alignItems: 'center',
   },
   flInputFocused: {
     borderColor: CORAL,

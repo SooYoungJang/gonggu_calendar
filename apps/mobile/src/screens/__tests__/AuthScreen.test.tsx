@@ -181,6 +181,16 @@ describe('AuthScreen', () => {
 
     expect(findAllText(renderer, '기본 정보').length).toBeGreaterThan(0);
     expect(findAllText(renderer, '공구위시 가입을 위한 기본 정보를 입력해주세요').length).toBeGreaterThan(0);
+
+    // Label floating labels appear only when the input has focus or value
+    const allInputs = renderer.root.findAllByType(TextInput);
+    const pwConfirmInput = allInputs.find((i) => i.props.accessibilityLabel === '비밀번호 확인');
+    expect(pwConfirmInput).toBeDefined();
+
+    act(() => {
+      pwConfirmInput!.props.onFocus();
+    });
+
     expect(findAllText(renderer, '비밀번호 확인').length).toBeGreaterThan(0);
   });
 
