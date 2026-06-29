@@ -1,5 +1,6 @@
+import React from 'react';
 import { Platform, StyleSheet, Text, useWindowDimensions, View, LogBox } from 'react-native';
-import { NavigationContainer, NavigatorScreenParams } from '@react-navigation/native';
+import { NavigationContainer, NavigatorScreenParams, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -146,6 +147,32 @@ function MainTabs() {
 // Suppress the known RN 0.83 Fabric text-warning (false positive)
 LogBox.ignoreLogs(['Text strings must be rendered within a <Text> component']);
 
+/**
+ * Wraps NavigationContainer with the current theme's background color
+ * so dark-mode screen transitions don't flash white.
+ */
+function ThemedNavigationContainer({ children }: { children: React.ReactNode }) {
+  const { colors, isDark } = useTheme();
+  const navTheme = React.useMemo(() => {
+    const base = isDark ? DarkTheme : DefaultTheme;
+    return {
+      ...base,
+      dark: isDark,
+      colors: {
+        ...base.colors,
+        primary: colors.primary,
+        background: colors.bg,
+        card: colors.surface,
+        text: colors.textPrimary,
+        border: colors.border,
+        notification: colors.accent,
+      },
+    };
+  }, [isDark, colors]);
+
+  return <NavigationContainer theme={navTheme}>{children}</NavigationContainer>;
+}
+
 export default function App() {
   return (
     <KeyboardProvider>
@@ -153,7 +180,7 @@ export default function App() {
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
             <AuthProvider>
-              <NavigationContainer>
+              <ThemedNavigationContainer>
               <Stack.Navigator
                 initialRouteName={
                   Platform.OS === 'web' && typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')
@@ -170,7 +197,7 @@ export default function App() {
                 <Stack.Screen name="InfluencerGroupBuys" component={InfluencerGroupBuysScreen} />
                 <Stack.Screen name="Admin" component={AdminScreen} />
               </Stack.Navigator>
-            </NavigationContainer>
+            </ThemedNavigationContainer>
             </AuthProvider>
           </ThemeProvider>
         </QueryClientProvider>
