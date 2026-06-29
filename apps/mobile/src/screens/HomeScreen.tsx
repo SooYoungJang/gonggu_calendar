@@ -115,7 +115,7 @@ export function HomeScreenContent({
             <FeedSection feedPosts={feedPosts} onPressFeed={onPressFeed} isLoading={feedsLoading} isError={feedsError} onRetry={onRetryFeed} />
             {isError ? (
               <View style={s.notice}>
-                <SText variant="caption" style={s.noticeText}>로컬 API가 꺼져 있어 샘플 데이터를 표시 중입니다.</SText>
+                <SText variant="caption" style={s.noticeText}>네트워크 연결 상태를 확인해주세요. (샘플 데이터를 표시 중입니다)</SText>
               </View>
             ) : null}
             <SearchBar value={searchQuery} onChangeText={onChangeSearchQuery} onClear={onClearSearchQuery} />

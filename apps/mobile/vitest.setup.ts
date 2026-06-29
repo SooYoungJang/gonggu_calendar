@@ -6,6 +6,8 @@ Object.defineProperty(global, "fetch", {
   writable: true,
 });
 
+(globalThis as any).__DEV__ = false;
+
 // ─── react-native mock ──────────────────────────────────────────────────────
 const passthrough = (type: string) =>
   ({ children, ...props }: { children?: React.ReactNode }) =>
@@ -36,6 +38,13 @@ vi.mock("react-native", () => {
       cubic: null,
     },
     Image: passthrough("Image"),
+    Keyboard: {
+      addListener: (event: any, cb: any) => {
+        if (!globalThis.__keyboardListeners) globalThis.__keyboardListeners = {};
+        globalThis.__keyboardListeners[event] = cb;
+        return { remove: vi.fn() };
+      },
+    },
     KeyboardAvoidingView: passthrough("KeyboardAvoidingView"),
     Platform: {
       OS: "ios",
@@ -93,6 +102,18 @@ vi.mock("@react-navigation/native", () => ({
 }));
 
 vi.mock("@react-navigation/native-stack", () => ({}));
+
+vi.mock("react-native-keyboard-controller", () => {
+  const passthrough = (type: string) =>
+    ({ children, ...props }: { children?: React.ReactNode }) =>
+      React.createElement(type, props, children);
+  return {
+    KeyboardAwareScrollView: passthrough("KeyboardAwareScrollView"),
+    KeyboardStickyView: passthrough("KeyboardStickyView"),
+    KeyboardProvider: ({ children }: { children?: React.ReactNode }) => React.createElement(React.Fragment, null, children),
+    KeyboardAvoidingView: passthrough("KeyboardAvoidingView"),
+  };
+});
 
 vi.mock("@tanstack/react-query", () => ({
   useQuery: vi.fn(() => ({

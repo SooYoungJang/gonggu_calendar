@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import type { MainTabParamList, RootStackParamList } from './types';
 import { configurePostgrest } from './lib/postgrest-client';
@@ -147,32 +148,34 @@ LogBox.ignoreLogs(['Text strings must be rendered within a <Text> component']);
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <AuthProvider>
-            <NavigationContainer>
-            <Stack.Navigator
-              initialRouteName={
-                Platform.OS === 'web' && typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')
-                  ? 'Admin'
-                  : 'MainTabs'
-              }
-              screenOptions={{ headerShown: false }}
-            >
-              <Stack.Screen name="MainTabs" component={MainTabs} />
-              <Stack.Screen name="CalendarScreen" component={CalendarScreen} />
-              <Stack.Screen name="Detail" component={DetailScreen} />
-              <Stack.Screen name="FeedDetail" component={FeedDetailScreen} />
-              <Stack.Screen name="Login" component={AuthScreen} />
-              <Stack.Screen name="InfluencerGroupBuys" component={InfluencerGroupBuysScreen} />
-              <Stack.Screen name="Admin" component={AdminScreen} />
-            </Stack.Navigator>
-          </NavigationContainer>
-          </AuthProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </SafeAreaProvider>
+    <KeyboardProvider>
+      <SafeAreaProvider>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider>
+            <AuthProvider>
+              <NavigationContainer>
+              <Stack.Navigator
+                initialRouteName={
+                  Platform.OS === 'web' && typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')
+                    ? 'Admin'
+                    : 'MainTabs'
+                }
+                screenOptions={{ headerShown: false }}
+              >
+                <Stack.Screen name="MainTabs" component={MainTabs} />
+                <Stack.Screen name="CalendarScreen" component={CalendarScreen} />
+                <Stack.Screen name="Detail" component={DetailScreen} />
+                <Stack.Screen name="FeedDetail" component={FeedDetailScreen} />
+                <Stack.Screen name="Login" component={AuthScreen} />
+                <Stack.Screen name="InfluencerGroupBuys" component={InfluencerGroupBuysScreen} />
+                <Stack.Screen name="Admin" component={AdminScreen} />
+              </Stack.Navigator>
+            </NavigationContainer>
+            </AuthProvider>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </SafeAreaProvider>
+    </KeyboardProvider>
   );
 }
 

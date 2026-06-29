@@ -2,6 +2,8 @@ import React from 'react';
 import TestRenderer, { act } from 'react-test-renderer';
 import { describe, expect, it, vi } from 'vitest';
 
+(globalThis as any).__DEV__ = false;
+
 vi.mock('react-native', () => {
   const ReactMock = require('react');
   const passthrough = (type: string) =>
@@ -24,6 +26,9 @@ vi.mock('react-native', () => {
     },
     Dimensions: { get: () => ({ width: 390, height: 844 }) },
     Easing: { inOut: vi.fn(() => vi.fn()), sin: vi.fn() },
+    Keyboard: {
+      addListener: vi.fn(() => ({ remove: vi.fn() })),
+    },
     KeyboardAvoidingView: passthrough('KeyboardAvoidingView'),
     Platform: { OS: 'ios', select: (obj: Record<string, unknown>) => obj.ios ?? obj.default },
     Pressable: ({ children, onPress, ...props }: any) =>
@@ -44,6 +49,19 @@ vi.mock('@react-navigation/native', () => ({
 }));
 
 vi.mock('@react-navigation/native-stack', () => ({}));
+
+vi.mock('react-native-keyboard-controller', () => {
+  const ReactMock = require('react');
+  const passthrough = (type: string) =>
+    ({ children, ...props }: { children?: React.ReactNode }) =>
+      ReactMock.createElement(type, props, children);
+  return {
+    KeyboardAwareScrollView: passthrough('KeyboardAwareScrollView'),
+    KeyboardStickyView: passthrough('KeyboardStickyView'),
+    KeyboardProvider: ({ children }: { children?: React.ReactNode }) => ReactMock.createElement(React.Fragment, null, children),
+    KeyboardAvoidingView: passthrough('KeyboardAvoidingView'),
+  };
+});
 
 vi.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
