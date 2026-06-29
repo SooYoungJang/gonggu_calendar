@@ -129,7 +129,7 @@ function flattenStyle(style: unknown): Record<string, unknown> {
   return Array.isArray(style) ? Object.assign({}, ...style.filter(Boolean)) : ((style as Record<string, unknown>) ?? {});
 }
 
-function renderHomeContent() {
+function renderHomeContent(props: Partial<React.ComponentProps<typeof HomeScreenContent>> = {}) {
   let renderer: TestRenderer.ReactTestRenderer;
   act(() => {
     renderer = TestRenderer.create(
@@ -155,6 +155,7 @@ function renderHomeContent() {
         feedsLoading={false}
         feedsError={false}
         onRetryFeed={vi.fn()}
+        {...props}
       />,
     );
   });
@@ -206,6 +207,14 @@ describe('HomeScreenContent redesign', () => {
     const text = flattenText(renderer!.toJSON());
     expect(text).toContain('이번주 공구');
     expect(text).toContain('전체');
+  });
+
+  it('shows network-notice fallback copy, not local-API copy', () => {
+    const renderer = renderHomeContent({ isError: true });
+    const text = flattenText(renderer!.toJSON());
+
+    expect(text).toContain('네트워크 연결 상태를 확인해주세요.');
+    expect(text).not.toContain('로컬 API');
   });
 });
 

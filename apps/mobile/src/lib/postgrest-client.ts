@@ -37,6 +37,16 @@ export function getAnonKey(): string {
   return _anonKey;
 }
 
+function buildUrl(path: string): string {
+  const url = new URL(path, API_BASE_URL);
+  // ponytail: React Native fetch is stricter than curl; encode PostgREST query selectors at the boundary.
+  return url.toString();
+}
+
+function safeKeyInfo(key: string) {
+  return { exists: key.length > 0, length: key.length, prefix: key.slice(0, 8) };
+}
+
 // ─── Pagination Helpers ──────────────────────────────────────────────────────
 
 /**
@@ -45,7 +55,7 @@ export function getAnonKey(): string {
 export function appPageToRange(page: number, limit: number): string {
   const start = (page - 1) * limit;
   const end = start + limit - 1;
-  return `items=${start}-${end}`;
+  return `${start}-${end}`;
 }
 
 /**
@@ -191,12 +201,33 @@ export async function postgrestFetch<T>(
     prefer: prefer ?? (pagination ? 'count=exact' : undefined),
   });
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const requestUrl = buildUrl(path);
+  const requestHeaders = { ...headers, ...options.headers };
+
+  console.log('[PostgREST] request', {
+    url: requestUrl,
     method,
-    headers: { ...headers, ...options.headers },
-    body: body ? JSON.stringify(body) : undefined,
-    signal,
+    apikey: safeKeyInfo(requestHeaders.apikey ?? ''),
+    hasAuthorization: Boolean(requestHeaders.Authorization),
   });
+
+  let response: Response;
+  try {
+    response = await fetch(requestUrl, {
+      method,
+      headers: requestHeaders,
+      body: body ? JSON.stringify(body) : undefined,
+      signal,
+    });
+  } catch (error) {
+    console.log('[PostgREST] fetch failed', {
+      url: requestUrl,
+      name: error instanceof Error ? error.name : typeof error,
+      message: error instanceof Error ? error.message : String(error),
+      cause: error instanceof Error ? (error as Error & { cause?: unknown }).cause : undefined,
+    });
+    throw error;
+  }
 
   // Parse pagination meta from Content-Range
   let meta: PaginationMeta | undefined;
