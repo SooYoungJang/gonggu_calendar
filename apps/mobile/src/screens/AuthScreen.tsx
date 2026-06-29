@@ -17,7 +17,7 @@
  *  - Agreement checkboxes (all-agree + required/optional)
  *  - Responsive (mobile-first) + WCAG AA accessibility
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Keyboard,
@@ -110,9 +110,13 @@ export function AuthScreen(_props: AuthScreenProps) {
   // because onBlur doesn't fire in that path. Upgrade: per-input tracking if needed.
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   useEffect(() => {
-    if (Platform.OS !== 'android') return;
-    const showSub = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
-    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, () => {
+      setKeyboardVisible(true);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
       setKeyboardVisible(false);
       setFocusedInputId(null);
     });
@@ -145,13 +149,41 @@ export function AuthScreen(_props: AuthScreenProps) {
   }, [keyboardVisible]);
 
   const isKeyboardVisible = focusedInputId !== null || keyboardVisible;
+
+  // ── Scroll-to-input for keyboard avoidance ─────────────────────────────
+  const scrollRef = useRef<ScrollView>(null);
+  const inputLayoutsRef = useRef<Record<string, { y: number; height: number }>>({});
+
+  const handleInputLayout = useCallback((inputId: string, y: number, height: number) => {
+    inputLayoutsRef.current[inputId] = { y, height };
+  }, []);
+
+  const scrollToInput = useCallback((inputId: string) => {
+    const layout = inputLayoutsRef.current[inputId];
+    if (!layout) return;
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({
+        y: Math.max(0, layout.y - 80),
+        animated: true,
+      });
+    });
+  }, []);
+
   const onInputFocus = useCallback((inputId: string) => {
     // ponytail: one focused id beats a counter; duplicate focus/blur cannot drift.
     setFocusedInputId((current) => nextFocusedInputId(current, { type: 'focus', inputId }));
-  }, []);
+    scrollToInput(inputId);
+  }, [scrollToInput]);
   const onInputBlur = useCallback((inputId: string) => {
     setFocusedInputId((current) => nextFocusedInputId(current, { type: 'blur', inputId }));
   }, []);
+
+  // Re-scroll when keyboard fully appears (Android stability)
+  useEffect(() => {
+    if (focusedInputId && keyboardVisible) {
+      scrollToInput(focusedInputId);
+    }
+  }, [keyboardVisible, focusedInputId, scrollToInput]);
 
   // ponytail: fallback config — covers the async gap before LoginPanel's
   // useEffect fires onActionBarChange. On the login tab the action is always
@@ -179,42 +211,42 @@ export function AuthScreen(_props: AuthScreenProps) {
       testID={`auth-screen-${authRuntimeMarker}`}
     >
       <GoBackHeader />
-      <View style={{ flex: 1, paddingTop: insets.top }}>
-        {Platform.OS === 'ios' ? (
-          /* iOS: existing KeyboardAvoidingView layout — buttons inside ScrollView */
-          <KeyboardAvoidingView
-            style={styles.flex}
-            behavior="padding"
-            keyboardVerticalOffset={insets.top}
+
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top : 0}
+      >
+        <View style={[styles.flex, { paddingTop: insets.top }]}>
+          <ScrollView
+            ref={scrollRef}
+            contentContainerStyle={[
+              styles.scrollContent,
+              isKeyboardVisible && styles.scrollContentKeyboardVisible,
+            ]}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
-            <ScrollView
-              contentContainerStyle={styles.scrollContent}
-              keyboardShouldPersistTaps="always"
-              showsVerticalScrollIndicator={false}
-            >
-              <AuthHeader />
-              <AuthTabs activeTab={activeTab} onTabChange={setActiveTab} />
-              <AuthContentArea activeTab={activeTab} />
-            </ScrollView>
-          </KeyboardAvoidingView>
-        ) : (
-          /* Android: ScrollView (no buttons) + fixed bottom action bar */
-          <View style={styles.flex}>
-            <ScrollView
-              contentContainerStyle={styles.scrollContent}
-              keyboardShouldPersistTaps="always"
-              showsVerticalScrollIndicator={false}
-            >
-              <AuthHeader />
-              <AuthTabs activeTab={activeTab} onTabChange={setActiveTab} />
-              <AuthContentArea activeTab={activeTab} onActionBarChange={setActionBar} hideActions={isKeyboardVisible} onInputFocus={onInputFocus} onInputBlur={onInputBlur} />
-            </ScrollView>
-            {resolvedActionBar && isKeyboardVisible && (
-              <ActionBarArea config={resolvedActionBar} />
-            )}
-          </View>
-        )}
-      </View>
+            <AuthHeader />
+            <AuthTabs activeTab={activeTab} onTabChange={setActiveTab} />
+            <AuthContentArea
+              activeTab={activeTab}
+              onActionBarChange={setActionBar}
+              hideActions={isKeyboardVisible}
+              onInputFocus={onInputFocus}
+              onInputBlur={onInputBlur}
+              onInputLayout={handleInputLayout}
+            />
+          </ScrollView>
+
+          {resolvedActionBar && isKeyboardVisible && (
+            <ActionBarArea
+              config={resolvedActionBar}
+              bottomInset={insets.bottom}
+            />
+          )}
+        </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -276,19 +308,20 @@ function AuthTabs({ activeTab, onTabChange }: { activeTab: AuthTab; onTabChange:
 
 // ─── Auth Content Area ──────────────────────────────────────────────────────
 
-function AuthContentArea({ activeTab, onActionBarChange, hideActions, onInputFocus, onInputBlur }: {
+function AuthContentArea({ activeTab, onActionBarChange, hideActions, onInputFocus, onInputBlur, onInputLayout }: {
   activeTab: AuthTab;
   onActionBarChange?: (config: ActionBarConfig) => void;
   hideActions?: boolean;
   onInputFocus?: (inputId: string) => void;
   onInputBlur?: (inputId: string) => void;
+  onInputLayout?: (inputId: string, y: number, height: number) => void;
 }) {
   return (
     <View>
       {activeTab === 'login' ? (
-        <LoginPanel onActionBarChange={onActionBarChange} hideActions={hideActions} onInputFocus={onInputFocus} onInputBlur={onInputBlur} />
+        <LoginPanel onActionBarChange={onActionBarChange} hideActions={hideActions} onInputFocus={onInputFocus} onInputBlur={onInputBlur} onInputLayout={onInputLayout} />
       ) : (
-        <SignupPanel onActionBarChange={onActionBarChange} hideActions={hideActions} onInputFocus={onInputFocus} onInputBlur={onInputBlur} />
+        <SignupPanel onActionBarChange={onActionBarChange} hideActions={hideActions} onInputFocus={onInputFocus} onInputBlur={onInputBlur} onInputLayout={onInputLayout} />
       )}
     </View>
   );
@@ -296,11 +329,12 @@ function AuthContentArea({ activeTab, onActionBarChange, hideActions, onInputFoc
 
 // ─── Login Panel ────────────────────────────────────────────────────────────
 
-function LoginPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur }: {
+function LoginPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur, onInputLayout }: {
   onActionBarChange?: (config: ActionBarConfig) => void;
   hideActions?: boolean;
   onInputFocus?: (inputId: string) => void;
   onInputBlur?: (inputId: string) => void;
+  onInputLayout?: (inputId: string, y: number, height: number) => void;
 }) {
   const { colors } = useTheme();
   const s = useMemo(() => makeStyles(colors), [colors]);
@@ -423,6 +457,7 @@ function LoginPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur 
           focusId="login-email"
           onAuthInputFocus={onInputFocus}
           onAuthInputBlur={onInputBlur}
+          onAuthInputLayout={onInputLayout}
         />
         <AuthInput
           label="비밀번호"
@@ -437,6 +472,7 @@ function LoginPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur 
           focusId="login-password"
           onAuthInputFocus={onInputFocus}
           onAuthInputBlur={onInputBlur}
+          onAuthInputLayout={onInputLayout}
           rightElement={
             <Pressable
               accessible
@@ -498,11 +534,12 @@ function LoginPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur 
 
 // ─── Signup Panel (3-Step Progressive Disclosure) ──────────────────────────
 
-function SignupPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur }: {
+function SignupPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur, onInputLayout }: {
   onActionBarChange?: (config: ActionBarConfig) => void;
   hideActions?: boolean;
   onInputFocus?: (inputId: string) => void;
   onInputBlur?: (inputId: string) => void;
+  onInputLayout?: (inputId: string, y: number, height: number) => void;
 }) {
   const { colors } = useTheme();
   const s = useMemo(() => makeStyles(colors), [colors]);
@@ -703,6 +740,7 @@ function SignupPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur
             focusId="signup-email"
             onAuthInputFocus={onInputFocus}
             onAuthInputBlur={onInputBlur}
+            onAuthInputLayout={onInputLayout}
           />
           <AuthInput
             label="비밀번호 (8자 이상, 영문+숫자 포함)"
@@ -717,6 +755,7 @@ function SignupPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur
             focusId="signup-password"
             onAuthInputFocus={onInputFocus}
             onAuthInputBlur={onInputBlur}
+            onAuthInputLayout={onInputLayout}
             rightElement={
               <Pressable
                 accessible
@@ -745,6 +784,7 @@ function SignupPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur
             focusId="signup-confirm-password"
             onAuthInputFocus={onInputFocus}
             onAuthInputBlur={onInputBlur}
+            onAuthInputLayout={onInputLayout}
             rightElement={
               <Pressable
                 accessible
@@ -796,6 +836,7 @@ function SignupPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur
             focusId="signup-nickname"
             onAuthInputFocus={onInputFocus}
             onAuthInputBlur={onInputBlur}
+            onAuthInputLayout={onInputLayout}
           />
           <AuthInput
             label="휴대폰 번호 (선택)"
@@ -811,6 +852,7 @@ function SignupPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur
             focusId="signup-phone"
             onAuthInputFocus={onInputFocus}
             onAuthInputBlur={onInputBlur}
+            onAuthInputLayout={onInputLayout}
           />
 
           {!hideActions && (
@@ -942,11 +984,14 @@ function SignupPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur
   );
 }
 
-// ─── Action Bar Area (Android only) ────────────────────────────────────────
+// ─── Action Bar Area ───────────────────────────────────────────────────────
 
-function ActionBarArea({ config }: { config: ActionBarConfig }) {
+function ActionBarArea({ config, bottomInset }: { config: ActionBarConfig; bottomInset: number }) {
   return (
-    <View style={styles.actionBarArea} testID="auth-action-bar">
+    <View
+      style={[styles.actionBarArea, { paddingBottom: Math.max(bottomInset, 10) }]}
+      testID="auth-action-bar"
+    >
       <View style={styles.actionBarInner}>
         {config.secondary && (
           <Pressable
@@ -1050,6 +1095,7 @@ type AuthInputProps = Omit<TextInputProps, 'onFocus' | 'onBlur'> & {
   focusId?: string;
   onAuthInputFocus?: (inputId: string) => void;
   onAuthInputBlur?: (inputId: string) => void;
+  onAuthInputLayout?: (inputId: string, y: number, height: number) => void;
 };
 
 function AuthInput({
@@ -1060,12 +1106,20 @@ function AuthInput({
   focusId,
   onAuthInputFocus,
   onAuthInputBlur,
+  onAuthInputLayout,
   ...inputProps
 }: AuthInputProps) {
   const { colors } = useTheme();
 
   return (
-    <View style={{ marginBottom: 4 }}>
+    <View
+      style={{ marginBottom: 4 }}
+      onLayout={(event) => {
+        if (!focusId || !onAuthInputLayout) return;
+        const { y, height } = event.nativeEvent.layout;
+        onAuthInputLayout(focusId, y, height);
+      }}
+    >
       <Text
         style={{
           color: colors.textSecondary,
@@ -1154,16 +1208,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 40,
     flexGrow: 1,
-    paddingBottom: 120,
+    paddingBottom: 40,
+  },
+  scrollContentKeyboardVisible: {
+    paddingBottom: 24,
   },
   actionBarArea: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
     backgroundColor: WARM_BG,
     paddingHorizontal: 24,
     paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#e8e3de',
   },
   actionBarInner: {
     flexDirection: 'row',
