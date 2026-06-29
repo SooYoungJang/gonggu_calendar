@@ -17,9 +17,10 @@
  *  - Agreement checkboxes (all-agree + required/optional)
  *  - Responsive (mobile-first) + WCAG AA accessibility
  */
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -60,6 +61,19 @@ type SignupStep = 1 | 2 | 3;
 
 export type AuthScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
+// ─── Action Bar Config ─────────────────────────────────────────────────────
+
+type ActionBarItem = {
+  text: string;
+  onPress: () => void;
+  disabled: boolean;
+};
+
+type ActionBarConfig = {
+  primary: ActionBarItem;
+  secondary?: ActionBarItem;
+};
+
 // ─── Coral Wave Primary Color ───────────────────────────────────────────────
 
 const CORAL = '#ff385c';
@@ -72,6 +86,31 @@ export function AuthScreen(_props: AuthScreenProps) {
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<AuthTab>('login');
 
+  // ── Keyboard tracking (Android only) ─────────────────────────────────
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [actionBar, setActionBar] = useState<ActionBarConfig | null>(null);
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardHeight(0);
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  // Reset action bar on tab switch; child panels re-report via onActionBarChange
+  useEffect(() => {
+    setActionBar(null);
+  }, [activeTab]);
+
+  const isKeyboardVisible = keyboardHeight > 0;
+
   return (
     <View
       style={[styles.container, { backgroundColor: WARM_BG }]}
@@ -79,23 +118,40 @@ export function AuthScreen(_props: AuthScreenProps) {
     >
       <GoBackHeader />
       <View style={{ flex: 1, paddingTop: insets.top }}>
-        <KeyboardAvoidingView
-          style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          // Compensate for the safe-area padding applied to the parent so the
-          // avoider shifts content by exactly the keyboard height.
-          keyboardVerticalOffset={insets.top}
-        >
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="always"
-            showsVerticalScrollIndicator={false}
+        {Platform.OS === 'ios' ? (
+          /* iOS: existing KeyboardAvoidingView layout — buttons inside ScrollView */
+          <KeyboardAvoidingView
+            style={styles.flex}
+            behavior="padding"
+            keyboardVerticalOffset={insets.top}
           >
-            <AuthHeader />
-            <AuthTabs activeTab={activeTab} onTabChange={setActiveTab} />
-            <AuthContentArea activeTab={activeTab} />
-          </ScrollView>
-        </KeyboardAvoidingView>
+            <ScrollView
+              contentContainerStyle={styles.scrollContent}
+              keyboardShouldPersistTaps="always"
+              showsVerticalScrollIndicator={false}
+            >
+              <AuthHeader />
+              <AuthTabs activeTab={activeTab} onTabChange={setActiveTab} />
+              <AuthContentArea activeTab={activeTab} />
+            </ScrollView>
+          </KeyboardAvoidingView>
+        ) : (
+          /* Android: ScrollView (no buttons) + fixed bottom action bar */
+          <View style={styles.flex}>
+            <ScrollView
+              contentContainerStyle={styles.scrollContent}
+              keyboardShouldPersistTaps="always"
+              showsVerticalScrollIndicator={false}
+            >
+              <AuthHeader />
+              <AuthTabs activeTab={activeTab} onTabChange={setActiveTab} />
+              <AuthContentArea activeTab={activeTab} onActionBarChange={setActionBar} hideActions={isKeyboardVisible} />
+            </ScrollView>
+            {actionBar && isKeyboardVisible && (
+              <ActionBarArea config={actionBar} bottomPadding={keyboardHeight} />
+            )}
+          </View>
+        )}
       </View>
     </View>
   );
@@ -158,13 +214,17 @@ function AuthTabs({ activeTab, onTabChange }: { activeTab: AuthTab; onTabChange:
 
 // ─── Auth Content Area ──────────────────────────────────────────────────────
 
-function AuthContentArea({ activeTab }: { activeTab: AuthTab }) {
+function AuthContentArea({ activeTab, onActionBarChange, hideActions }: {
+  activeTab: AuthTab;
+  onActionBarChange?: (config: ActionBarConfig) => void;
+  hideActions?: boolean;
+}) {
   return (
     <View>
       {activeTab === 'login' ? (
-        <LoginPanel />
+        <LoginPanel onActionBarChange={onActionBarChange} hideActions={hideActions} />
       ) : (
-        <SignupPanel />
+        <SignupPanel onActionBarChange={onActionBarChange} hideActions={hideActions} />
       )}
     </View>
   );
@@ -172,7 +232,10 @@ function AuthContentArea({ activeTab }: { activeTab: AuthTab }) {
 
 // ─── Login Panel ────────────────────────────────────────────────────────────
 
-function LoginPanel() {
+function LoginPanel({ onActionBarChange, hideActions }: {
+  onActionBarChange?: (config: ActionBarConfig) => void;
+  hideActions?: boolean;
+}) {
   const { colors } = useTheme();
   const s = useMemo(() => makeStyles(colors), [colors]);
   const { signIn, signInWithOAuth } = useAuth();
@@ -239,6 +302,17 @@ function LoginPanel() {
     },
     [signInWithOAuth],
   );
+
+  // ── Report action bar config ─────────────────────────────────────────
+  useEffect(() => {
+    onActionBarChange?.({
+      primary: {
+        text: submitting ? '로그인 중...' : '로그인',
+        onPress: handleLogin,
+        disabled: submitting,
+      },
+    });
+  }, [submitting, handleLogin, onActionBarChange]);
 
   return (
     <View accessibilityLabel="로그인">
@@ -326,6 +400,7 @@ function LoginPanel() {
           </Text>
         ) : null}
 
+        {!hideActions && (
         <Pressable
           accessible
           accessibilityRole="button"
@@ -343,6 +418,7 @@ function LoginPanel() {
             {submitting ? '로그인 중...' : '로그인'}
           </Text>
         </Pressable>
+        )}
       </View>
     </View>
   );
@@ -350,7 +426,10 @@ function LoginPanel() {
 
 // ─── Signup Panel (3-Step Progressive Disclosure) ──────────────────────────
 
-function SignupPanel() {
+function SignupPanel({ onActionBarChange, hideActions }: {
+  onActionBarChange?: (config: ActionBarConfig) => void;
+  hideActions?: boolean;
+}) {
   const { colors } = useTheme();
   const s = useMemo(() => makeStyles(colors), [colors]);
   const { signUp } = useAuth();
@@ -483,6 +562,29 @@ function SignupPanel() {
     }
   }, [email, password, agreements, signUp, navigation]);
 
+  // ── Report action bar config ─────────────────────────────────────────
+  useEffect(() => {
+    if (step === 1) {
+      onActionBarChange?.({
+        primary: { text: '다음', onPress: goToNextStep, disabled: submitting },
+      });
+    } else if (step === 2) {
+      onActionBarChange?.({
+        primary: { text: '다음', onPress: goToNextStep, disabled: submitting },
+        secondary: { text: '이전', onPress: () => goToPrevStep(1), disabled: submitting },
+      });
+    } else if (step === 3) {
+      onActionBarChange?.({
+        primary: {
+          text: submitting ? '가입 처리 중...' : '가입 완료',
+          onPress: handleCompleteSignup,
+          disabled: submitting,
+        },
+        secondary: { text: '이전', onPress: () => goToPrevStep(2), disabled: submitting },
+      });
+    }
+  }, [step, submitting, goToNextStep, goToPrevStep, handleCompleteSignup, onActionBarChange]);
+
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
@@ -576,6 +678,7 @@ function SignupPanel() {
             }
           />
 
+          {!hideActions && (
           <View style={styles.stepNav}>
             <Pressable
               accessible
@@ -588,6 +691,7 @@ function SignupPanel() {
               <Text style={styles.stepNavBtnPrimaryText}>다음</Text>
             </Pressable>
           </View>
+          )}
         </View>
       )}
 
@@ -620,6 +724,7 @@ function SignupPanel() {
             editable={!submitting}
           />
 
+          {!hideActions && (
           <View style={styles.stepNav}>
             <Pressable
               accessible
@@ -641,6 +746,7 @@ function SignupPanel() {
               <Text style={styles.stepNavBtnPrimaryText}>다음</Text>
             </Pressable>
           </View>
+          )}
         </View>
       )}
 
@@ -709,6 +815,7 @@ function SignupPanel() {
             </Text>
           ) : null}
 
+          {!hideActions && (
           <View style={styles.stepNav}>
             <Pressable
               accessible
@@ -739,8 +846,47 @@ function SignupPanel() {
               </Text>
             </Pressable>
           </View>
+          )}
         </View>
       )}
+    </View>
+  );
+}
+
+// ─── Action Bar Area (Android only) ────────────────────────────────────────
+
+function ActionBarArea({ config, bottomPadding }: { config: ActionBarConfig; bottomPadding: number }) {
+  return (
+    <View style={[styles.actionBarArea, { paddingBottom: bottomPadding }]}>
+      <View style={styles.actionBarInner}>
+        {config.secondary && (
+          <Pressable
+            accessible
+            accessibilityRole="button"
+            onPress={config.secondary.onPress}
+            disabled={config.secondary.disabled}
+            style={({ pressed }) => [styles.stepNavBtn, styles.stepNavBtnSecondary, pressed && styles.btnPressed]}
+          >
+            <Text style={styles.stepNavBtnSecondaryText}>{config.secondary.text}</Text>
+          </Pressable>
+        )}
+        <Pressable
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel={config.primary.text}
+          accessibilityState={{ disabled: config.primary.disabled }}
+          onPress={config.primary.onPress}
+          disabled={config.primary.disabled}
+          style={({ pressed }) => [
+            styles.ctaBtn,
+            config.secondary ? { flex: 2 } : { flex: 1 },
+            config.primary.disabled && styles.ctaBtnDisabled,
+            pressed && !config.primary.disabled && styles.ctaBtnPressed,
+          ]}
+        >
+          <Text style={styles.ctaBtnText}>{config.primary.text}</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -910,11 +1056,21 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 24,
     paddingTop: 40,
-    // Allow the content to scroll above the keyboard so focused inputs stay visible.
-    // flexGrow makes the scrollview fill the available height; the large bottom
-    // padding gives the ScrollView room to push inputs up above the keyboard.
     flexGrow: 1,
     paddingBottom: 120,
+  },
+  actionBarArea: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: WARM_BG,
+    paddingHorizontal: 24,
+    paddingTop: 10,
+  },
+  actionBarInner: {
+    flexDirection: 'row',
+    gap: 10,
   },
 
   // Header — refined coral wave
