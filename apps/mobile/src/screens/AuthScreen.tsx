@@ -98,10 +98,9 @@ export function AuthScreen(_props: AuthScreenProps) {
   const [focusedInputId, setFocusedInputId] = useState<string | null>(null);
   const [authRuntimeMarker] = useState(() => `gon-211-${Date.now()}`);
 
-  // Reset action bar/focus state on tab switch; child panels re-report via onActionBarChange.
+  // Reset focus state on tab switch; child panels own actionBar reporting.
   useEffect(() => {
     setFocusedInputId((current) => nextFocusedInputId(current, { type: 'reset' }));
-    setActionBar(null);
   }, [activeTab]);
 
   // ponytail: Keyboard events are the primary visibility signal on Android.
@@ -154,6 +153,25 @@ export function AuthScreen(_props: AuthScreenProps) {
     setFocusedInputId((current) => nextFocusedInputId(current, { type: 'blur', inputId }));
   }, []);
 
+  // ponytail: fallback config — covers the async gap before LoginPanel's
+  // useEffect fires onActionBarChange. On the login tab the action is always
+  // "로그인", so we can show a disabled placeholder instead of nothing.
+  // On signup the config depends on the current step so no fallback.
+  const resolvedActionBar: ActionBarConfig | null = useMemo(() => {
+    if (actionBar) return actionBar;
+    if (activeTab !== 'login' || !isKeyboardVisible) return null;
+    return { primary: { text: '로그인', onPress: () => {}, disabled: true } };
+  }, [actionBar, activeTab, isKeyboardVisible]);
+
+  // ponytail: GON-211 — tracking when actionBar is null but keyboard is visible
+  useEffect(() => {
+    if (typeof __DEV__ !== 'undefined' && __DEV__) {
+      if (isKeyboardVisible && !actionBar) {
+        console.warn('[AuthScreen] keyboard visible but actionBar null — fallback used');
+      }
+    }
+  }, [isKeyboardVisible, actionBar]);
+
   return (
     <View
       style={[styles.container, { backgroundColor: WARM_BG }]}
@@ -191,8 +209,8 @@ export function AuthScreen(_props: AuthScreenProps) {
               <AuthTabs activeTab={activeTab} onTabChange={setActiveTab} />
               <AuthContentArea activeTab={activeTab} onActionBarChange={setActionBar} hideActions={isKeyboardVisible} onInputFocus={onInputFocus} onInputBlur={onInputBlur} />
             </ScrollView>
-            {actionBar && isKeyboardVisible && (
-              <ActionBarArea config={actionBar} />
+            {resolvedActionBar && isKeyboardVisible && (
+              <ActionBarArea config={resolvedActionBar} />
             )}
           </View>
         )}

@@ -21,21 +21,24 @@ import { AuthProvider } from '../../context/AuthContext';
 
 // ─── Hoisted mocks (vi.hoisted ensures they're available when vi.mock factories run) ──
 
-const { mockNavigate, mockGoBack, mockSignInWithPassword, mockSignUp, mockSignInWithOAuth } = vi.hoisted(
-  () => ({
-    mockNavigate: vi.fn(),
-    mockGoBack: vi.fn(),
-    mockSignInWithPassword: vi.fn(),
-    mockSignUp: vi.fn(),
-    mockSignInWithOAuth: vi.fn(),
-  }),
+const { mockNavigate, mockGoBack, mockSignInWithPassword, mockSignUp, mockSignInWithOAuth, stableNavigation } = vi.hoisted(
+  () => {
+    const mockNavigate = vi.fn();
+    const mockGoBack = vi.fn();
+    const mockSignInWithPassword = vi.fn();
+    const mockSignUp = vi.fn();
+    const mockSignInWithOAuth = vi.fn();
+    // Use a stable object so useNavigation() returns the same reference
+    // every call. Without this, LoginPanel's handleLogin re-creates on
+    // every render, causing the useLayoutEffect/userEffect to re-fire
+    // and creating an infinite re-render loop inside act().
+    const stableNavigation = { navigate: mockNavigate, goBack: mockGoBack };
+    return { mockNavigate, mockGoBack, mockSignInWithPassword, mockSignUp, mockSignInWithOAuth, stableNavigation };
+  },
 );
 
 vi.mock('@react-navigation/native', () => ({
-  useNavigation: () => ({
-    navigate: mockNavigate,
-    goBack: mockGoBack,
-  }),
+  useNavigation: () => stableNavigation,
 }));
 
 vi.mock('expo-secure-store', () => ({
@@ -183,6 +186,30 @@ describe('AuthScreen', () => {
       expect(emailInput?.props.onBlur).toBeTypeOf('function');
       expect(pwInput?.props.onFocus).toBeTypeOf('function');
       expect(pwInput?.props.onBlur).toBeTypeOf('function');
+    } finally {
+      Platform.OS = prevOS;
+    }
+  });
+
+  it('Android 로그인 입력 focus 시 고정 action bar를 렌더링한다', () => {
+    const prevOS = Platform.OS;
+    Platform.OS = 'android';
+    try {
+      const renderer = createTestRenderer();
+      const emailInput = renderer.root.findAllByType(TextInput).find(
+        (i) => i.props.accessibilityLabel === '이메일',
+      );
+
+      expect(renderer.root.findAllByProps({ testID: 'auth-action-bar' })).toHaveLength(0);
+      expect(emailInput).toBeDefined();
+
+      act(() => {
+        emailInput!.props.onFocus();
+      });
+
+      const actionBar = renderer.root.findByProps({ testID: 'auth-action-bar' });
+      expect(actionBar.findByType(Pressable).props.accessibilityLabel).toBe('로그인');
+      expect(actionBar.findByType(Pressable).props.accessibilityState?.disabled).toBe(false);
     } finally {
       Platform.OS = prevOS;
     }
