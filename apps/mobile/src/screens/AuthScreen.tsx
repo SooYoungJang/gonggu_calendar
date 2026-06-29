@@ -21,7 +21,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Keyboard,
-  KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
@@ -32,6 +31,10 @@ import {
   type TextInputProps,
   type TextStyle,
 } from 'react-native';
+import {
+  KeyboardAwareScrollView,
+  KeyboardStickyView,
+} from 'react-native-keyboard-controller';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -109,14 +112,21 @@ export function AuthScreen(_props: AuthScreenProps) {
   // On keyboardDidHide (back button dismiss on Android) focusedInputId is cleared
   // because onBlur doesn't fire in that path. Upgrade: per-input tracking if needed.
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [actionBarHeight, setActionBarHeight] = useState(0);
   useEffect(() => {
-    if (Platform.OS !== 'android') return;
-    const showSub = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
+    const showSub = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+
     const hideSub = Keyboard.addListener('keyboardDidHide', () => {
       setKeyboardVisible(false);
       setFocusedInputId(null);
     });
-    return () => { showSub.remove(); hideSub.remove(); };
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
   }, []);
 
   useEffect(() => {
@@ -125,7 +135,7 @@ export function AuthScreen(_props: AuthScreenProps) {
     }
   }, [authRuntimeMarker]);
 
-  // ponytail: debug log for actionBar chain audit (LoginPanel → AuthScreen)
+  // ── Scroll-to-input for keyboard avoidance ─────────────────────────────
   useEffect(() => {
     if (typeof __DEV__ !== 'undefined' && __DEV__) {
       console.info(`[AuthScreen] actionBar: ${actionBar ? JSON.stringify({primary: actionBar.primary.text, secondary: actionBar.secondary?.text}) : 'null'}`);
@@ -144,13 +154,12 @@ export function AuthScreen(_props: AuthScreenProps) {
     }
   }, [keyboardVisible]);
 
-  const isKeyboardVisible = focusedInputId !== null || keyboardVisible;
+  const shouldShowStickyAction = focusedInputId !== null || keyboardVisible;
   const onInputFocus = useCallback((inputId: string) => {
-    // ponytail: one focused id beats a counter; duplicate focus/blur cannot drift.
-    setFocusedInputId((current) => nextFocusedInputId(current, { type: 'focus', inputId }));
+    setFocusedInputId(inputId);
   }, []);
   const onInputBlur = useCallback((inputId: string) => {
-    setFocusedInputId((current) => nextFocusedInputId(current, { type: 'blur', inputId }));
+    setFocusedInputId((current) => (current === inputId ? null : current));
   }, []);
 
   // ponytail: fallback config — covers the async gap before LoginPanel's
@@ -159,18 +168,18 @@ export function AuthScreen(_props: AuthScreenProps) {
   // On signup the config depends on the current step so no fallback.
   const resolvedActionBar: ActionBarConfig | null = useMemo(() => {
     if (actionBar) return actionBar;
-    if (activeTab !== 'login' || !isKeyboardVisible) return null;
+    if (activeTab !== 'login' || !shouldShowStickyAction) return null;
     return { primary: { text: '로그인', onPress: () => {}, disabled: true } };
-  }, [actionBar, activeTab, isKeyboardVisible]);
+  }, [actionBar, activeTab, shouldShowStickyAction]);
 
   // ponytail: GON-211 — tracking when actionBar is null but keyboard is visible
   useEffect(() => {
     if (typeof __DEV__ !== 'undefined' && __DEV__) {
-      if (isKeyboardVisible && !actionBar) {
+      if (shouldShowStickyAction && !actionBar) {
         console.warn('[AuthScreen] keyboard visible but actionBar null — fallback used');
       }
     }
-  }, [isKeyboardVisible, actionBar]);
+  }, [shouldShowStickyAction, actionBar]);
 
   return (
     <View
@@ -179,40 +188,40 @@ export function AuthScreen(_props: AuthScreenProps) {
       testID={`auth-screen-${authRuntimeMarker}`}
     >
       <GoBackHeader />
-      <View style={{ flex: 1, paddingTop: insets.top }}>
-        {Platform.OS === 'ios' ? (
-          /* iOS: existing KeyboardAvoidingView layout — buttons inside ScrollView */
-          <KeyboardAvoidingView
-            style={styles.flex}
-            behavior="padding"
-            keyboardVerticalOffset={insets.top}
+      <View style={[styles.flex, { paddingTop: insets.top }]}>
+        <KeyboardAwareScrollView
+          bottomOffset={actionBarHeight + 16}
+          contentContainerStyle={[
+            styles.scrollContent,
+            shouldShowStickyAction && styles.scrollContentKeyboardVisible,
+          ]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <AuthHeader />
+          <AuthTabs activeTab={activeTab} onTabChange={setActiveTab} />
+          <AuthContentArea
+            activeTab={activeTab}
+            onActionBarChange={setActionBar}
+            hideActions={shouldShowStickyAction}
+            onInputFocus={onInputFocus}
+            onInputBlur={onInputBlur}
+          />
+        </KeyboardAwareScrollView>
+
+        {resolvedActionBar && (
+          <KeyboardStickyView
+            enabled={shouldShowStickyAction}
+            offset={{ closed: 0, opened: 0 }}
           >
-            <ScrollView
-              contentContainerStyle={styles.scrollContent}
-              keyboardShouldPersistTaps="always"
-              showsVerticalScrollIndicator={false}
-            >
-              <AuthHeader />
-              <AuthTabs activeTab={activeTab} onTabChange={setActiveTab} />
-              <AuthContentArea activeTab={activeTab} />
-            </ScrollView>
-          </KeyboardAvoidingView>
-        ) : (
-          /* Android: ScrollView (no buttons) + fixed bottom action bar */
-          <View style={styles.flex}>
-            <ScrollView
-              contentContainerStyle={styles.scrollContent}
-              keyboardShouldPersistTaps="always"
-              showsVerticalScrollIndicator={false}
-            >
-              <AuthHeader />
-              <AuthTabs activeTab={activeTab} onTabChange={setActiveTab} />
-              <AuthContentArea activeTab={activeTab} onActionBarChange={setActionBar} hideActions={isKeyboardVisible} onInputFocus={onInputFocus} onInputBlur={onInputBlur} />
-            </ScrollView>
-            {resolvedActionBar && isKeyboardVisible && (
-              <ActionBarArea config={resolvedActionBar} />
-            )}
-          </View>
+            {shouldShowStickyAction ? (
+              <ActionBarArea
+                config={resolvedActionBar}
+                bottomInset={insets.bottom}
+                onLayoutHeight={setActionBarHeight}
+              />
+            ) : null}
+          </KeyboardStickyView>
         )}
       </View>
     </View>
@@ -944,9 +953,26 @@ function SignupPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur
 
 // ─── Action Bar Area (Android only) ────────────────────────────────────────
 
-function ActionBarArea({ config }: { config: ActionBarConfig }) {
+function ActionBarArea({
+  config,
+  bottomInset,
+  onLayoutHeight,
+}: {
+  config: ActionBarConfig;
+  bottomInset: number;
+  onLayoutHeight?: (height: number) => void;
+}) {
   return (
-    <View style={styles.actionBarArea} testID="auth-action-bar">
+    <View
+      style={[
+        styles.actionBarArea,
+        { paddingBottom: Math.max(bottomInset, 10) },
+      ]}
+      testID="auth-action-bar"
+      onLayout={(event) => {
+        onLayoutHeight?.(event.nativeEvent.layout.height);
+      }}
+    >
       <View style={styles.actionBarInner}>
         {config.secondary && (
           <Pressable
@@ -1156,14 +1182,15 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 120,
   },
+  scrollContentKeyboardVisible: {
+    paddingBottom: 24,
+  },
   actionBarArea: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
     backgroundColor: WARM_BG,
     paddingHorizontal: 24,
     paddingTop: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#e8e3de',
   },
   actionBarInner: {
     flexDirection: 'row',
