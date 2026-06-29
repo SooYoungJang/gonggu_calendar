@@ -148,7 +148,7 @@ export function AuthScreen(_props: AuthScreenProps) {
               <AuthContentArea activeTab={activeTab} onActionBarChange={setActionBar} hideActions={isKeyboardVisible} />
             </ScrollView>
             {actionBar && isKeyboardVisible && (
-              <ActionBarArea config={actionBar} bottomPadding={keyboardHeight} />
+              <ActionBarArea config={actionBar} />
             )}
           </View>
         )}
@@ -855,9 +855,9 @@ function SignupPanel({ onActionBarChange, hideActions }: {
 
 // ─── Action Bar Area (Android only) ────────────────────────────────────────
 
-function ActionBarArea({ config, bottomPadding }: { config: ActionBarConfig; bottomPadding: number }) {
+function ActionBarArea({ config }: { config: ActionBarConfig }) {
   return (
-    <View style={[styles.actionBarArea, { paddingBottom: bottomPadding }]}>
+    <View style={styles.actionBarArea}>
       <View style={styles.actionBarInner}>
         {config.secondary && (
           <Pressable
