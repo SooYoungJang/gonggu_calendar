@@ -1,5 +1,7 @@
+import React, { useEffect } from 'react';
 import { Platform, StyleSheet, Text, useWindowDimensions, View, LogBox } from 'react-native';
-import { NavigationContainer, NavigatorScreenParams } from '@react-navigation/native';
+import * as SystemUI from 'expo-system-ui';
+import { NavigationContainer, NavigatorScreenParams, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -146,6 +148,69 @@ function MainTabs() {
 // Suppress the known RN 0.83 Fabric text-warning (false positive)
 LogBox.ignoreLogs(['Text strings must be rendered within a <Text> component']);
 
+/**
+ * Wraps NavigationContainer with the current theme's background color
+ * so dark-mode screen transitions don't flash white.
+ */
+function ThemedNavigationContainer({ children }: { children: React.ReactNode }) {
+  const { colors, isDark } = useTheme();
+  const bg = colors.bg;
+
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(bg);
+  }, [bg]);
+
+  const navTheme = React.useMemo(() => {
+    const base = isDark ? DarkTheme : DefaultTheme;
+    return {
+      ...base,
+      dark: isDark,
+      colors: {
+        ...base.colors,
+        primary: colors.primary,
+        background: bg,
+        card: colors.surface,
+        text: colors.textPrimary,
+        border: colors.border,
+        notification: colors.accent,
+      },
+    };
+  }, [isDark, colors, bg]);
+
+  return (
+    <View style={{ flex: 1, backgroundColor: bg }}>
+      <NavigationContainer theme={navTheme}>{children}</NavigationContainer>
+    </View>
+  );
+}
+
+function ThemedStackNavigator() {
+  const { colors } = useTheme();
+  return (
+    <Stack.Navigator
+      initialRouteName={
+        Platform.OS === 'web' && typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')
+          ? 'Admin'
+          : 'MainTabs'
+      }
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: colors.bg },
+        headerStyle: { backgroundColor: colors.bg },
+        headerShadowVisible: false,
+      }}
+    >
+      <Stack.Screen name="MainTabs" component={MainTabs} />
+      <Stack.Screen name="CalendarScreen" component={CalendarScreen} />
+      <Stack.Screen name="Detail" component={DetailScreen} />
+      <Stack.Screen name="FeedDetail" component={FeedDetailScreen} />
+      <Stack.Screen name="Login" component={AuthScreen} />
+      <Stack.Screen name="InfluencerGroupBuys" component={InfluencerGroupBuysScreen} />
+      <Stack.Screen name="Admin" component={AdminScreen} />
+    </Stack.Navigator>
+  );
+}
+
 export default function App() {
   return (
     <KeyboardProvider>
@@ -153,24 +218,9 @@ export default function App() {
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
             <AuthProvider>
-              <NavigationContainer>
-              <Stack.Navigator
-                initialRouteName={
-                  Platform.OS === 'web' && typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')
-                    ? 'Admin'
-                    : 'MainTabs'
-                }
-                screenOptions={{ headerShown: false }}
-              >
-                <Stack.Screen name="MainTabs" component={MainTabs} />
-                <Stack.Screen name="CalendarScreen" component={CalendarScreen} />
-                <Stack.Screen name="Detail" component={DetailScreen} />
-                <Stack.Screen name="FeedDetail" component={FeedDetailScreen} />
-                <Stack.Screen name="Login" component={AuthScreen} />
-                <Stack.Screen name="InfluencerGroupBuys" component={InfluencerGroupBuysScreen} />
-                <Stack.Screen name="Admin" component={AdminScreen} />
-              </Stack.Navigator>
-            </NavigationContainer>
+              <ThemedNavigationContainer>
+                <ThemedStackNavigator />
+              </ThemedNavigationContainer>
             </AuthProvider>
           </ThemeProvider>
         </QueryClientProvider>
