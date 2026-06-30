@@ -18,7 +18,7 @@ type FeedSectionProps = {
   onRetry?: () => void;
 };
 
-function FeedCard({ item, onPress, s, colors }: { item: FeedPost; onPress: () => void; s: any; colors: ColorPalette }) {
+function FeedCard({ item, onPress, s }: { item: FeedPost; onPress: () => void; s: any }) {
   const ogImage = item.ogImage ?? item.thumbnailUrl;
   const title = item.ogTitle ?? item.caption ?? '';
   const description = item.ogDescription ?? '';
@@ -39,6 +39,12 @@ function FeedCard({ item, onPress, s, colors }: { item: FeedPost; onPress: () =>
             <SText variant="body" style={s.placeholderIcon}>📷</SText>
           </View>
         )}
+        <View style={s.feedMetaPill}>
+          <SText variant="caption" style={s.feedMetaText}>{accountName.slice(0, 1).toUpperCase()}</SText>
+        </View>
+        <View style={s.chatBubble}>
+          <SText variant="caption" style={s.chatBubbleText}>••</SText>
+        </View>
       </View>
       <View style={s.cardBody}>
         <SText variant="cardBrand" numberOfLines={2} style={s.caption}>
@@ -127,7 +133,7 @@ export function FeedSection({ feedPosts, onPressFeed, isLoading, isError, onRetr
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.scrollContent}>
         {feedPosts.map((item) => (
-          <FeedCard key={item.id} item={item} onPress={() => onPressFeed(item)} s={s} colors={colors} />
+          <FeedCard key={item.id} item={item} onPress={() => onPressFeed(item)} s={s} />
         ))}
       </ScrollView>
     </View>
@@ -156,24 +162,19 @@ function makeStyles(colors: ColorPalette) {
       marginLeft: spacing.sm,
       width: 8,
     },
-    scrollContent: {
-      gap: spacing.md,
-      paddingRight: spacing.lg,
-    },
+    scrollContent: { gap: spacing.sm, paddingRight: spacing.lg },
     card: {
-      backgroundColor: colors.surface,
-      borderRadius: borderRadius.xl,
-      overflow: 'hidden',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.1,
-      shadowRadius: 2,
-      width: 148,
+      backgroundColor: 'transparent',
+      borderRadius: borderRadius.md,
+      minHeight: 44,
+      width: 116,
     },
     thumbnailContainer: {
       backgroundColor: colors.primaryBg,
-      height: 148,
+      borderRadius: borderRadius.md,
+      height: 116,
       overflow: 'hidden',
+      position: 'relative',
     },
     thumbnail: {
       height: '100%',
@@ -189,14 +190,14 @@ function makeStyles(colors: ColorPalette) {
       fontSize: 32,
     },
     cardBody: {
-      padding: spacing.sm,
+      paddingTop: spacing.xs,
     },
     caption: {
       ...typography.cardBrand,
       color: colors.textPrimary,
-      fontSize: 13,
+      fontSize: 12,
       fontWeight: '600',
-      lineHeight: 18,
+      lineHeight: 17,
       marginBottom: 2,
     },
     description: {
@@ -210,6 +211,32 @@ function makeStyles(colors: ColorPalette) {
       color: colors.textTertiary,
       fontSize: 11,
     },
+    feedMetaPill: {
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderColor: colors.borderLight,
+      borderRadius: borderRadius.full,
+      borderWidth: 1,
+      height: 22,
+      justifyContent: 'center',
+      left: spacing.xs,
+      position: 'absolute',
+      top: spacing.xs,
+      width: 22,
+    },
+    feedMetaText: { color: colors.primary, fontSize: 10, fontWeight: '800' },
+    chatBubble: {
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.full,
+      height: 24,
+      justifyContent: 'center',
+      position: 'absolute',
+      right: spacing.xs,
+      top: spacing.xs,
+      width: 24,
+    },
+    chatBubbleText: { color: colors.textSecondary, fontSize: 10, fontWeight: '900', lineHeight: 12 },
     statusContainer: {
       alignItems: 'center',
       backgroundColor: colors.surface,

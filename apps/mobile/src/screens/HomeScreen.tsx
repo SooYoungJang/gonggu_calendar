@@ -97,8 +97,8 @@ export function HomeScreenContent({
   onRetryFeed,
 }: HomeScreenContentProps) {
   const showSearchResults = searchQuery.trim().length > 0;
-  const { colors, isDark } = useTheme();
-  const s = useMemo(() => makeStyles(colors), [colors]);
+  const { colors, isDark, shadows } = useTheme();
+  const s = useMemo(() => makeStyles(colors, shadows), [colors, shadows]);
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={s.safeArea}>
@@ -121,7 +121,7 @@ export function HomeScreenContent({
             <SearchBar value={searchQuery} onChangeText={onChangeSearchQuery} onClear={onClearSearchQuery} />
             {showSearchResults ? <SearchResultsPanel results={searchResults} onPressInfluencer={onPressInfluencer} /> : null}
             {isFetching && groupBuys.length === 0 ? <ActivityIndicator color={colors.primary} /> : null}
-            <MonthlyBannerCarousel groupBuys={groupBuys} onPressDeal={onPressDeal} />
+            <MonthlyBannerCarousel groupBuys={groupBuys} feedPosts={feedPosts} onPressDeal={onPressDeal} />
             <CategoryRow onPressCategory={onPressCategory} />
             <WeeklyCalendarStrip onPressCalendar={onPressCalendar} />
             <ThisWeekDeals groupBuys={groupBuys} onPressDeal={onPressDeal} />
@@ -194,13 +194,26 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
   );
 }
 
-function makeStyles(colors: ColorPalette) {
+function makeStyles(colors: ColorPalette, shadows: Record<'sm' | 'md' | 'lg', any>) {
   return StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: colors.bg },
     container: { flex: 1, backgroundColor: colors.bg },
-    content: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm },
-    listContent: { paddingBottom: 120 },
-    notice: { backgroundColor: colors.warningBg, borderRadius: borderRadius.sm, marginBottom: spacing.md, padding: spacing.md },
+    content: {
+      backgroundColor: colors.surface,
+      borderColor: colors.borderLight,
+      borderRadius: borderRadius['3xl'],
+      borderWidth: StyleSheet.hairlineWidth,
+      paddingBottom: spacing['2xl'],
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing['2xl'],
+      ...shadows.md,
+    },
+    listContent: {
+      paddingBottom: 132,
+      paddingHorizontal: spacing.sm,
+      paddingTop: spacing.xs,
+    },
+    notice: { backgroundColor: colors.warningBg, borderRadius: borderRadius.md, marginBottom: spacing.md, padding: spacing.md },
     noticeText: { color: colors.noticeText, fontSize: 12, textAlign: 'center' },
   });
 }
