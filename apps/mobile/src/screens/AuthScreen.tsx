@@ -1450,7 +1450,7 @@ function AuthInput({
           alignItems: 'center',
           backgroundColor: isDark ? colors.surface : '#ffffff',
           borderWidth: 1.5,
-          borderColor: error ? '#d93f4c' : colors.border,
+          borderColor: error ? colors.error : colors.border,
           borderRadius: 14,
           height: 52,
           paddingHorizontal: 16,
@@ -1476,7 +1476,7 @@ function AuthInput({
         {rightElement}
       </View>
       {error ? (
-        <Text style={{ fontSize: 12, color: '#d93f4c', marginTop: 4, paddingLeft: 4 }}>
+        <Text style={{ fontSize: 12, color: colors.error, marginTop: 4, paddingLeft: 4 }}>
           {error}
         </Text>
       ) : (
