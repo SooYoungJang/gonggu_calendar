@@ -27,6 +27,7 @@ vi.mock('react-native', () => {
         ListHeaderComponent,
         ...(data ?? []).map((item: unknown, index: number) => renderItem({ item, index })),
       ),
+    Image: passthrough('Image'),
     ImageBackground: passthrough('ImageBackground'),
     Pressable: ({ children, onPress, style, testID, accessibilityLabel, accessibilityRole }: any) =>
       ReactMock.createElement('Pressable', { onPress, style, testID, accessibilityLabel, accessibilityRole }, children),

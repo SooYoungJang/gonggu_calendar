@@ -1,8 +1,11 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useMemo } from 'react';
+import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { SText } from '../../components/ui/SText';
 
-import { borderRadius, categoryColors, spacing } from '../../design/tokens';
+import { borderRadius, spacing } from '../../design/tokens';
 import type { CategoryColorName } from '../../design/tokens';
+import { useTheme } from '../../context/ThemeContext';
+import type { ColorPalette } from '../../context/ThemeContext';
 
 export type CategoryItem = {
   key: CategoryColorName;
@@ -21,20 +24,27 @@ export const CATEGORIES: CategoryItem[] = [
 
 type CategoryIconProps = {
   item: CategoryItem;
+  index: number;
   onPress: (category: CategoryColorName) => void;
+  s: ReturnType<typeof makeStyles>;
+  colors: ColorPalette;
 };
 
-function CategoryIcon({ item, onPress }: CategoryIconProps) {
-  const token = categoryColors[item.key];
+function CategoryIcon({ item, index, onPress, s, colors }: CategoryIconProps) {
+  const palette = [
+    { bg: colors.surfaceHover, text: colors.textPrimary, border: colors.surfaceHover },
+    { bg: colors.borderLight, text: colors.textSecondary, border: colors.borderLight },
+    { bg: colors.primaryBg, text: colors.primary, border: colors.primaryBg },
+  ][index % 3];
+
   return (
     <Pressable
       accessibilityLabel={`${item.label} 카테고리 보기`}
       accessibilityRole="button"
       onPress={() => onPress(item.key)}
-      style={[styles.categoryItem, { backgroundColor: token.bg, borderColor: token.border }]}
+      style={[s.categoryItem, { backgroundColor: palette.bg, borderColor: palette.border }]}
     >
-      <SText variant="body" style={[styles.categoryGlyph, { color: token.text }]}>{item.icon}</SText>
-      <SText variant="caption" style={[styles.categoryLabel, { color: token.text }]}>{item.label}</SText>
+      <SText variant="caption" style={[s.categoryLabel, { color: palette.text }]}>{item.label}</SText>
     </Pressable>
   );
 }
@@ -44,28 +54,32 @@ type CategoryRowProps = {
 };
 
 export function CategoryRow({ onPressCategory }: CategoryRowProps) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(), []);
+
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryRow}>
-      {CATEGORIES.map((item) => (
-        <CategoryIcon key={item.key} item={item} onPress={onPressCategory} />
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.categoryRow}>
+      {CATEGORIES.map((item, index) => (
+        <CategoryIcon key={item.key} item={item} index={index} onPress={onPressCategory} s={s} colors={colors} />
       ))}
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  categoryRow: { gap: spacing.sm, marginBottom: spacing.xl, paddingRight: spacing.lg },
-  categoryItem: {
-    alignItems: 'center',
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: spacing.xs,
-    justifyContent: 'center',
-    minHeight: 44,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  categoryGlyph: { fontWeight: '800' },
-  categoryLabel: { fontWeight: '700' },
-});
+function makeStyles() {
+  return StyleSheet.create({
+    categoryRow: { gap: spacing.sm, marginBottom: spacing.xl, paddingRight: spacing.lg },
+    categoryItem: {
+      alignItems: 'center',
+      borderRadius: borderRadius.full,
+      borderWidth: 1,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      minHeight: 46,
+      minWidth: 96,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+    },
+    categoryLabel: { fontSize: 15, fontWeight: '800' },
+  });
+}

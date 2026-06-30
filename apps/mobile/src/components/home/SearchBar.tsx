@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput } from 'react-native';
 
 import { SText } from '../../components/ui/SText';
 import { borderRadius, spacing } from '../../design/tokens';
@@ -35,9 +35,9 @@ export function SearchBar({ value, onChangeText, onClear }: SearchBarProps) {
         showSoftInputOnFocus={true}
       />
       {value ? (
-        <View style={s.clearButton}>
+        <Pressable accessibilityLabel="검색어 지우기" accessibilityRole="button" onPress={onClear} style={s.clearButton}>
           <SText variant="body" style={s.clearButtonText}>×</SText>
-        </View>
+        </Pressable>
       ) : null}
     </Pressable>
   );
@@ -47,17 +47,17 @@ function makeStyles(colors: ColorPalette, shadows: Record<'sm' | 'md' | 'lg', an
   return StyleSheet.create({
     searchBar: {
       alignItems: 'center',
-      backgroundColor: colors.surface,
-      borderColor: colors.border,
+      backgroundColor: colors.bg,
+      borderColor: colors.borderLight,
       borderRadius: borderRadius.full,
-      borderWidth: 1,
+      borderWidth: 0,
       flexDirection: 'row',
-      marginBottom: spacing.lg,
+      marginBottom: spacing['2xl'],
       paddingHorizontal: spacing.lg,
-      minHeight: 48,
-      ...shadows.sm,
+      minHeight: 54,
+      ...shadows.md,
     },
-    searchIcon: { color: colors.textSecondary, fontSize: 18, marginRight: spacing.sm },
+    searchIcon: { color: colors.textTertiary, fontSize: 22, marginRight: spacing.sm },
     searchInput: { color: colors.textPrimary, flex: 1, fontSize: 15, minHeight: 44, padding: 0 },
     clearButton: { alignItems: 'center', justifyContent: 'center', minHeight: 44, minWidth: 44 },
     clearButtonText: { color: colors.textSecondary, fontSize: 22 },

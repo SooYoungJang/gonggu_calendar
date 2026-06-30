@@ -252,6 +252,10 @@ export const borderRadius = {
   lg: mobileRadius('lg'),
   /** 16px — cards */
   xl: mobileRadius('xl'),
+  /** 24px — large panels */
+  '2xl': mobileRadius('2xl'),
+  /** 28px — premium banner radius */
+  '3xl': mobileRadius('3xl'),
   /** 999px — pills, badges */
   full: mobileRadius('full'),
 } as const;

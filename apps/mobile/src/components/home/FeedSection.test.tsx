@@ -25,6 +25,26 @@ vi.mock('react-native', () => {
   };
 });
 
+vi.mock('../../context/ThemeContext', () => ({
+  useTheme: () => ({
+    colors: {
+      bg: '#F5F0EB',
+      surface: '#FFFFFF',
+      surfaceHover: '#E8E3DE',
+      primary: '#FF7F66',
+      primaryBg: '#FFF3ED',
+      textPrimary: '#191714',
+      textSecondary: '#6E6258',
+      textTertiary: '#A99B8F',
+      textInverse: '#FFFFFF',
+      border: '#DDD4CC',
+      borderLight: '#EEE7E0',
+      error: '#D84949',
+      errorBg: '#FFEAEA',
+    },
+  }),
+}));
+
 const sampleFeedPosts: FeedPost[] = [
   {
     id: 'feed-1',
