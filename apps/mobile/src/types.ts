@@ -8,6 +8,7 @@ export type RootStackParamList = {
   Detail: { groupBuy: GroupBuy };
   FeedDetail: { feedId: string };
   InfluencerGroupBuys: { influencerUsername: string; influencerDisplayName: string | null };
+  SearchScreen: undefined;
   Admin: undefined;
   Login: undefined;
 };
@@ -162,4 +163,3 @@ export type FeedDetailScreenProps = NativeStackScreenProps<RootStackParamList, '
 export type CalendarScreenProps = NativeStackScreenProps<RootStackParamList, 'CalendarScreen'>;
 export type InfluencerGroupBuysScreenProps = NativeStackScreenProps<RootStackParamList, 'InfluencerGroupBuys'>;
 export type AdminScreenProps = NativeStackScreenProps<RootStackParamList, 'Admin'>;
-

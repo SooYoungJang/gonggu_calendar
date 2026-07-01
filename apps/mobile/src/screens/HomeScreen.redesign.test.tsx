@@ -140,13 +140,10 @@ function renderHomeContent(props: Partial<React.ComponentProps<typeof HomeScreen
         influencers={influencers}
         isError={false}
         isFetching={false}
-        searchQuery=""
-        searchResults={[]}
-        onChangeSearchQuery={vi.fn()}
-        onClearSearchQuery={vi.fn()}
         onRefresh={vi.fn()}
         onOpenBookmarks={vi.fn()}
         onOpenNotifications={vi.fn()}
+        onOpenSearch={vi.fn()}
         onPressCalendar={vi.fn()}
         onPressCategory={vi.fn()}
         onPressDeal={vi.fn()}
