@@ -4,6 +4,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 import * as apiModule from '../../api';
 import { ApiError } from '../../api';
+import { ThemeProvider } from '../../context/ThemeContext';
 import { SubmitScreen } from '../SubmitScreen';
 
 // ─── Mocks (must be before imports — vitest hoists them) ────────────────────
@@ -61,7 +62,11 @@ function renderSubmit(props?: Record<string, any>) {
   let renderer: ReturnType<typeof TestRenderer.create>;
   act(function() {
     renderer = TestRenderer.create(
-      React.createElement(SubmitScreen, { navigation: navigation, route: route }),
+      React.createElement(
+        ThemeProvider,
+        null,
+        React.createElement(SubmitScreen, { navigation: navigation, route: route }),
+      ),
     );
   });
   return renderer!;
