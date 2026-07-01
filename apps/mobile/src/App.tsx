@@ -28,6 +28,7 @@ import { DetailScreen } from './screens/DetailScreen';
 import { MyPageScreen } from './screens/MyPageScreen';
 import { StoreScreen } from './screens/StoreScreen';
 import { SubmitScreen } from './screens/SubmitScreen';
+import { SearchScreen } from './screens/SearchScreen';
 import { borderRadius, spacing } from './design/tokens';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
@@ -213,6 +214,7 @@ function ThemedStackNavigator() {
       <Stack.Screen name="FeedDetail" component={FeedDetailScreen} />
       <Stack.Screen name="Login" component={AuthScreen} />
       <Stack.Screen name="InfluencerGroupBuys" component={InfluencerGroupBuysScreen} />
+      <Stack.Screen name="SearchScreen" component={SearchScreen} />
       <Stack.Screen name="Admin" component={AdminScreen} />
     </Stack.Navigator>
   );

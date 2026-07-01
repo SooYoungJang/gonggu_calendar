@@ -9,9 +9,10 @@ import type { ColorPalette } from '../../context/ThemeContext';
 type HomeHeaderProps = {
   onOpenBookmarks: () => void;
   onOpenNotifications: () => void;
+  onOpenSearch: () => void;
 };
 
-export function HomeHeader({ onOpenBookmarks, onOpenNotifications }: HomeHeaderProps) {
+export function HomeHeader({ onOpenBookmarks, onOpenNotifications, onOpenSearch }: HomeHeaderProps) {
   const { colors, shadows } = useTheme();
   const s = useMemo(() => makeStyles(colors, shadows), [colors, shadows]);
 
@@ -22,6 +23,14 @@ export function HomeHeader({ onOpenBookmarks, onOpenNotifications }: HomeHeaderP
         <SText variant="eyebrow" style={s.kicker}>GongGu Alert</SText>
       </View>
       <View style={s.headerActions}>
+        <Pressable
+          accessibilityLabel="검색"
+          accessibilityRole="button"
+          onPress={onOpenSearch}
+          style={s.searchButton}
+        >
+          <SText variant="cardTitle" style={s.searchIcon}>⌕</SText>
+        </Pressable>
         <Pressable
           accessibilityLabel="북마크 열기"
           accessibilityRole="button"
@@ -66,6 +75,18 @@ function makeStyles(colors: ColorPalette, shadows: Record<'sm' | 'md' | 'lg', an
       marginTop: spacing.xs,
     },
     headerActions: { alignItems: 'center', flexDirection: 'row', gap: spacing.xs, paddingTop: spacing.xs },
+    searchButton: {
+      alignItems: 'center',
+      backgroundColor: colors.primaryBg,
+      borderColor: colors.primary,
+      borderRadius: borderRadius.full,
+      borderWidth: 1,
+      justifyContent: 'center',
+      minHeight: 44,
+      minWidth: 44,
+      ...shadows.sm,
+    },
+    searchIcon: { color: colors.primary, fontSize: 20, fontWeight: '800' },
     bookmarkButton: {
       alignItems: 'center',
       backgroundColor: colors.bg,

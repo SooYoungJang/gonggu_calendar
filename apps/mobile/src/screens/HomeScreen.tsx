@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import {
   ActivityIndicator,
   RefreshControl,
@@ -10,14 +10,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 
 import { SText } from '../components/ui/SText';
-import { fallbackGroupBuys, fetchGroupBuys, fetchFeeds, fetchInfluencers, searchInfluencers } from '../api';
+import { fallbackGroupBuys, fetchGroupBuys, fetchFeeds, fetchInfluencers } from '../api';
 import { CategoryRow } from '../components/home/CategoryRow';
 import { ExpiringSoonSection } from '../components/home/ExpiringSoonSection';
 import { FeedSection } from '../components/home/FeedSection';
 import { HomeHeader } from '../components/home/HomeHeader';
 import { MonthlyBannerCarousel } from '../components/home/MonthlyBannerCarousel';
-import { SearchBar } from '../components/home/SearchBar';
-import { SearchResultsPanel } from '../components/home/SearchResultsPanel';
 import { SubmitPrompt } from '../components/home/SubmitPrompt';
 import { ThisWeekDeals } from '../components/home/ThisWeekDeals';
 import { WeeklyCalendarStrip } from '../components/home/WeeklyCalendarStrip';
@@ -35,13 +33,10 @@ type HomeScreenContentProps = {
   influencers: Influencer[];
   isError: boolean;
   isFetching: boolean;
-  searchQuery: string;
-  searchResults: Influencer[];
-  onChangeSearchQuery: (value: string) => void;
-  onClearSearchQuery: HomeAction;
   onRefresh: HomeAction;
   onOpenBookmarks: HomeAction;
   onOpenNotifications: HomeAction;
+  onOpenSearch: HomeAction;
   onPressCalendar: HomeAction;
   onPressCategory: (category: string) => void;
   onPressDeal: (groupBuy: GroupBuy) => void;
@@ -79,13 +74,10 @@ export function HomeScreenContent({
   influencers,
   isError,
   isFetching,
-  searchQuery,
-  searchResults,
-  onChangeSearchQuery,
-  onClearSearchQuery,
   onRefresh,
   onOpenBookmarks,
   onOpenNotifications,
+  onOpenSearch,
   onPressCalendar,
   onPressCategory,
   onPressDeal,
@@ -96,7 +88,6 @@ export function HomeScreenContent({
   feedsError,
   onRetryFeed,
 }: HomeScreenContentProps) {
-  const showSearchResults = searchQuery.trim().length > 0;
   const { colors, isDark, shadows } = useTheme();
   const s = useMemo(() => makeStyles(colors, shadows), [colors, shadows]);
 
@@ -110,15 +101,13 @@ export function HomeScreenContent({
           contentContainerStyle={s.listContent}
         >
           <View style={s.content}>
-            <HomeHeader onOpenBookmarks={onOpenBookmarks} onOpenNotifications={onOpenNotifications} />
+            <HomeHeader onOpenBookmarks={onOpenBookmarks} onOpenNotifications={onOpenNotifications} onOpenSearch={onOpenSearch} />
             <FeedSection feedPosts={feedPosts} onPressFeed={onPressFeed} isLoading={feedsLoading} isError={feedsError} onRetry={onRetryFeed} />
             {isError ? (
               <View style={s.notice}>
                 <SText variant="caption" style={s.noticeText}>네트워크 연결 상태를 확인해주세요. (샘플 데이터를 표시 중입니다)</SText>
               </View>
             ) : null}
-            <SearchBar value={searchQuery} onChangeText={onChangeSearchQuery} onClear={onClearSearchQuery} />
-            {showSearchResults ? <SearchResultsPanel results={searchResults} onPressInfluencer={onPressInfluencer} /> : null}
             {isFetching && groupBuys.length === 0 ? <ActivityIndicator color={colors.primary} /> : null}
             <MonthlyBannerCarousel groupBuys={groupBuys} feedPosts={feedPosts} onPressDeal={onPressDeal} />
             <CategoryRow onPressCategory={onPressCategory} />
@@ -134,8 +123,6 @@ export function HomeScreenContent({
 }
 
 export function HomeScreen({ navigation }: HomeScreenProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-
   const { data, isFetching, isError, refetch } = useQuery({
     queryKey: ['group-buys'],
     queryFn: fetchGroupBuys,
@@ -158,7 +145,6 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
   const groupBuys = data?.length ? data : fallbackGroupBuys;
   const influencers = influencersData?.length ? influencersData : getFallbackInfluencers(groupBuys);
   const feedPosts = feedsData?.items ?? [];
-  const searchResults = useMemo(() => searchInfluencers(influencers, searchQuery).slice(0, 5), [influencers, searchQuery]);
 
   return (
     <HomeScreenContent
@@ -167,13 +153,10 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
       influencers={influencers}
       isError={isError}
       isFetching={isFetching}
-      searchQuery={searchQuery}
-      searchResults={searchResults}
-      onChangeSearchQuery={setSearchQuery}
-      onClearSearchQuery={() => setSearchQuery('')}
       onRefresh={refetch}
       onOpenBookmarks={() => undefined}
       onOpenNotifications={() => undefined}
+      onOpenSearch={() => navigation.navigate('SearchScreen')}
       onPressCalendar={() => navigation.navigate('CalendarScreen', {})}
       onPressCategory={() => undefined}
       onPressDeal={(groupBuy) => navigation.navigate('Detail', { groupBuy })}
@@ -182,7 +165,6 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
       feedsError={feedsError}
       onRetryFeed={refetchFeeds}
       onPressInfluencer={(influencer) => {
-        setSearchQuery('');
         navigation.navigate('InfluencerGroupBuys', {
           influencerUsername: influencer.instagramUsername,
           influencerDisplayName: influencer.displayName,
