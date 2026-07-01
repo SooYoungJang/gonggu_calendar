@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, Share, StyleSheet, View } from 'react-native';
 import { SText } from './ui/SText';
 
 import { borderRadius, categoryColors, spacing } from '../design/tokens';
@@ -30,6 +30,17 @@ export function DealCard({ item, category, onPress }: DealCardProps) {
   const { colors, shadows } = useTheme();
   const s = useMemo(() => makeStyles(colors, shadows), [colors, shadows]);
   const token = categoryColors[category];
+
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: `${item.productName ?? '공동구매'} (@${item.rawPost.influencer.instagramUsername})\n${item.purchaseUrl ?? item.rawPost.postUrl}`,
+      });
+    } catch {
+      // user cancelled or share failed — silently ignore
+    }
+  };
+
   return (
     <Pressable
       accessibilityLabel={`${item.productName ?? '공구'} 상세 보기`}
@@ -37,8 +48,19 @@ export function DealCard({ item, category, onPress }: DealCardProps) {
       onPress={onPress}
       style={s.card}
     >
-      <View style={[s.image, { backgroundColor: token.bg, borderColor: token.border }]}>
-        <SText variant="cardTitle" style={[s.imageText, { color: token.text }]}>{item.brandName?.slice(0, 2) ?? '공구'}</SText>
+      <View style={s.cardHeader}>
+        <View style={[s.image, { backgroundColor: token.bg, borderColor: token.border }]}>
+          <SText variant="cardTitle" style={[s.imageText, { color: token.text }]}>{item.brandName?.slice(0, 2) ?? '공구'}</SText>
+        </View>
+        <Pressable
+          accessibilityLabel="공구 공유하기"
+          accessibilityRole="button"
+          hitSlop={8}
+          onPress={handleShare}
+          style={s.shareButton}
+        >
+          <SText variant="caption" style={s.shareIcon}>↗</SText>
+        </Pressable>
       </View>
       <SText variant="subtitle" numberOfLines={2} style={s.title}>{item.productName ?? '공동구매 상품'}</SText>
       <SText variant="caption" numberOfLines={1} style={s.brand}>{item.brandName ?? `@${item.rawPost.influencer.instagramUsername}`}</SText>
@@ -61,12 +83,31 @@ function makeStyles(colors: ColorPalette, shadows: Record<'sm' | 'md' | 'lg', an
       padding: spacing.md,
       ...shadows.sm,
     },
+    cardHeader: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      marginBottom: spacing.md,
+    },
+    shareButton: {
+      width: 32,
+      height: 32,
+      borderRadius: borderRadius.full,
+      backgroundColor: colors.surfaceHover,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    shareIcon: {
+      fontSize: 16,
+      fontWeight: '800',
+      color: colors.textSecondary,
+    },
     image: {
+      flex: 1,
       alignItems: 'center',
       borderRadius: borderRadius.lg,
       borderWidth: 1,
       justifyContent: 'center',
-      marginBottom: spacing.md,
       minHeight: 104,
     },
     imageText: { fontSize: 18, fontWeight: '800' },

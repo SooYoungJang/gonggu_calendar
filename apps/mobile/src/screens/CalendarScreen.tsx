@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   PanResponder,
   Pressable,
@@ -134,6 +135,7 @@ function CalendarHeader({
   onToday,
   showFollowedOnly,
   onToggleFilter,
+  onOpenAlert,
 }: {
   year: number;
   month: number;
@@ -143,6 +145,7 @@ function CalendarHeader({
   onToday: () => void;
   showFollowedOnly: boolean;
   onToggleFilter: () => void;
+  onOpenAlert: () => void;
 }) {
   const label = `${year}년 ${month + 1}월`;
   const s = useMemo(() => makeStyles(colors), [colors]);
@@ -206,6 +209,16 @@ function CalendarHeader({
         >
           {showFollowedOnly ? '✓ 팔로잉' : '팔로잉만 보기'}
         </SText>
+      </Pressable>
+
+      <Pressable
+        accessibilityLabel="알림 설정"
+        accessibilityRole="button"
+        hitSlop={8}
+        onPress={onOpenAlert}
+        style={s.alertButton}
+      >
+        <SText variant="body" style={{ fontSize: 18 }}>🔔</SText>
       </Pressable>
     </View>
   );
@@ -402,6 +415,7 @@ export function CalendarScreen({ navigation, route }: CalendarScreenProps) {
           onToday={goToToday}
           showFollowedOnly={showFollowedOnly}
           onToggleFilter={() => setShowFollowedOnly((v) => !v)}
+          onOpenAlert={() => Alert.alert('준비 중', '캘린더 알림 기능은 준비 중입니다.\n곧 업데이트될 예정입니다.')}
         />
 
         {/* Middle: Calendar grid with swipe */}
@@ -517,6 +531,12 @@ function makeStyles(colors: ColorPalette) {
       justifyContent: 'center',
       minHeight: 34,
       paddingHorizontal: spacing.lg,
+    },
+    alertButton: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 34,
+      minWidth: 34,
     },
     // Calendar grid
     calendarWrapper: {
