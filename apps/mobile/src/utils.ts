@@ -20,6 +20,18 @@ export function normalizeOptional(value: string) {
   return trimmed.length > 0 ? trimmed : undefined;
 }
 
+
+/**
+ * Returns whole days remaining until the deadline (negative if past).
+ */
+export function getDaysRemaining(dateString: string | null | undefined): number {
+  if (!dateString) return Infinity;
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return Infinity;
+  const diffMs = date.getTime() - Date.now();
+  return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+}
+
 export function isValidOptionalUrl(value: string) {
   const trimmed = value.trim();
   if (!trimmed) return true;
