@@ -10,7 +10,7 @@
  *
  * Single-page Login / Signup screen with:
  *  - Tab switching (Login ↔ Signup)
- *  - Social login buttons (Kakao / Apple / Google)
+ *  - Social login buttons (Android: Kakao / Naver, iOS: Kakao / Naver / Apple)
  *  - Floating label inputs with Zod validation
  *  - Password visibility toggle & "Forgot password" link
  *  - 3-step Progressive Disclosure for signup
@@ -34,7 +34,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTheme } from '../context/ThemeContext';
-import { useAuth } from '../context/AuthContext';
+import { EMAIL_CODE_TTL_SECONDS, useAuth } from '../context/AuthContext';
 import { GoBackHeader } from '../components/GoBackHeader';
 import type { ColorPalette } from '../context/ThemeContext';
 import type { NativeStackScreenProps, NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -50,13 +50,17 @@ import {
   type SignupStep2Form,
   type SignupStep3Form,
 } from '../schemas/auth';
-import { mapAuthErrorMessage, SOCIAL_PROVIDERS } from '../utils/authHelpers';
+import {
+  getSocialProvidersForPlatform,
+  mapAuthErrorMessage,
+  type SocialAuthProvider,
+} from '../utils/authHelpers';
 import { borderRadius } from '../design/tokens';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 type AuthTab = 'login' | 'signup';
-type SignupStep = 1 | 2 | 3;
+type SignupStep = 1 | 2 | 3 | 4;
 
 type FocusEvent = { type: 'focus'; inputId: string } | { type: 'blur'; inputId: string } | { type: 'reset' };
 
@@ -64,6 +68,12 @@ export function nextFocusedInputId(current: string | null, event: FocusEvent): s
   if (event.type === 'focus') return event.inputId;
   if (event.type === 'reset') return null;
   return current === event.inputId ? null : current;
+}
+
+function formatSeconds(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
 export type AuthScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
@@ -655,6 +665,7 @@ function LoginPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [socialSubmitting, setSocialSubmitting] = useState<string | null>(null);
+  const socialProviders = useMemo(() => getSocialProvidersForPlatform(), []);
 
   const handleLogin = useCallback(async () => {
     setSubmitError(null);
@@ -692,7 +703,7 @@ function LoginPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur 
   }, []);
 
   const handleSocialLogin = useCallback(
-    async (provider: 'kakao' | 'apple' | 'google') => {
+    async (provider: SocialAuthProvider) => {
       setSocialSubmitting(provider);
       setSubmitError(null);
       try {
@@ -726,7 +737,7 @@ function LoginPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur 
     <View accessibilityLabel="로그인">
       {/* Social Login — refined: no title */}
       <View style={styles.socialSection}>
-        {SOCIAL_PROVIDERS.map((sp) => (
+        {socialProviders.map((sp) => (
           <SocialButton
             key={sp.provider}
             label={sp.label}
@@ -815,23 +826,23 @@ function LoginPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur 
         ) : null}
 
         {!hideActions && (
-        <Pressable
-          accessible
-          accessibilityRole="button"
-          accessibilityLabel="로그인"
-          accessibilityState={{ disabled: submitting }}
-          onPress={handleLogin}
-          disabled={submitting}
-          style={({ pressed }) => [
-            styles.ctaBtn,
-            submitting && styles.ctaBtnDisabled,
-            pressed && !submitting && styles.ctaBtnPressed,
-          ]}
-        >
-          <Text style={styles.ctaBtnText}>
-            {submitting ? '로그인 중...' : '로그인'}
-          </Text>
-        </Pressable>
+          <Pressable
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel="로그인"
+            accessibilityState={{ disabled: submitting }}
+            onPress={handleLogin}
+            disabled={submitting}
+            style={({ pressed }) => [
+              styles.ctaBtn,
+              submitting && styles.ctaBtnDisabled,
+              pressed && !submitting && styles.ctaBtnPressed,
+            ]}
+          >
+            <Text style={styles.ctaBtnText}>
+              {submitting ? '로그인 중...' : '로그인'}
+            </Text>
+          </Pressable>
         )}
       </View>
     </View>
@@ -848,10 +859,16 @@ function SignupPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur
 }) {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
-  const { signUp } = useAuth();
+  const {
+    resendEmailSignUpCode,
+    signInWithOAuth,
+    signUpWithEmailCode,
+    verifyEmailCode,
+  } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [step, setStep] = useState<SignupStep>(1);
+  const socialProviders = useMemo(() => getSocialProvidersForPlatform(), []);
 
   // Step 1 state
   const [email, setEmail] = useState('');
@@ -877,6 +894,28 @@ function SignupPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur
   const [step3Errors, setStep3Errors] = useState<Partial<Record<keyof SignupStep3Form, string>>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [socialSubmitting, setSocialSubmitting] = useState<string | null>(null);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [codeExpiresAt, setCodeExpiresAt] = useState<number | null>(null);
+  const [secondsLeft, setSecondsLeft] = useState(EMAIL_CODE_TTL_SECONDS);
+
+  useEffect(() => {
+    if (step !== 4 || !codeExpiresAt) return undefined;
+
+    const tick = () => {
+      setSecondsLeft(Math.max(0, Math.ceil((codeExpiresAt - Date.now()) / 1000)));
+    };
+
+    tick();
+    const timer = setInterval(tick, 1000);
+    return () => clearInterval(timer);
+  }, [step, codeExpiresAt]);
+
+  const startEmailCodeTimer = useCallback(() => {
+    setCodeExpiresAt(Date.now() + EMAIL_CODE_TTL_SECONDS * 1000);
+    setSecondsLeft(EMAIL_CODE_TTL_SECONDS);
+  }, []);
 
   // ── Step navigation ─────────────────────────────────────────────────────
 
@@ -941,6 +980,24 @@ function SignupPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur
     });
   }, []);
 
+  const handleSocialSignup = useCallback(
+    async (provider: SocialAuthProvider) => {
+      setSocialSubmitting(provider);
+      setSubmitError(null);
+      try {
+        const error = await signInWithOAuth(provider);
+        if (error) {
+          setSubmitError(mapAuthErrorMessage(error));
+        }
+      } catch {
+        setSubmitError('소셜 회원가입에 실패했습니다. 다시 시도해주세요.');
+      } finally {
+        setSocialSubmitting(null);
+      }
+    },
+    [signInWithOAuth],
+  );
+
   // ── Submit ───────────────────────────────────────────────────────────────
 
   const handleCompleteSignup = useCallback(async () => {
@@ -965,18 +1022,71 @@ function SignupPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur
 
     setSubmitting(true);
     try {
-      const authError = await signUp(email, password);
+      const metadata = {
+        nickname,
+        ...(phone ? { phone } : {}),
+        marketing_opt_in: agreements.agreeMarketing === true,
+      };
+      const authError = await signUpWithEmailCode(email, password, metadata);
       if (authError) {
         setSubmitError(mapAuthErrorMessage(authError));
       } else {
-        navigation.goBack();
+        setVerificationCode('');
+        setVerificationError(null);
+        startEmailCodeTimer();
+        setStep(4);
       }
     } catch {
       setSubmitError('오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setSubmitting(false);
     }
-  }, [email, password, agreements, signUp, navigation]);
+  }, [email, password, nickname, phone, agreements, signUpWithEmailCode, startEmailCodeTimer]);
+
+  const handleVerifyEmailCode = useCallback(async () => {
+    setVerificationError(null);
+    const code = verificationCode.trim();
+    if (!/^\d{6}$/.test(code)) {
+      setVerificationError('6자리 인증번호를 입력해주세요.');
+      return;
+    }
+    if (secondsLeft <= 0) {
+      setVerificationError('인증번호가 만료되었습니다. 다시 발송해주세요.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const authError = await verifyEmailCode(email, code);
+      if (authError) {
+        setVerificationError(mapAuthErrorMessage(authError));
+      } else {
+        navigation.goBack();
+      }
+    } catch {
+      setVerificationError('인증번호 확인에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setSubmitting(false);
+    }
+  }, [email, navigation, secondsLeft, verificationCode, verifyEmailCode]);
+
+  const handleResendEmailCode = useCallback(async () => {
+    setVerificationError(null);
+    setSubmitting(true);
+    try {
+      const authError = await resendEmailSignUpCode(email);
+      if (authError) {
+        setVerificationError(mapAuthErrorMessage(authError));
+      } else {
+        setVerificationCode('');
+        startEmailCodeTimer();
+      }
+    } catch {
+      setVerificationError('인증번호 재발송에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setSubmitting(false);
+    }
+  }, [email, resendEmailSignUpCode, startEmailCodeTimer]);
 
   // ── Report action bar config ─────────────────────────────────────────
   useEffect(() => {
@@ -1001,22 +1111,72 @@ function SignupPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur
         },
         secondary: { text: '이전', onPress: () => goToPrevStep(2), disabled: submitting },
       });
+    } else if (step === 4) {
+      onActionBarChange?.({
+        variant: 'signup',
+        primary: {
+          text: submitting ? '확인 중...' : '인증 완료',
+          onPress: handleVerifyEmailCode,
+          disabled: submitting || verificationCode.trim().length < 6 || secondsLeft <= 0,
+        },
+        secondary: { text: '재발송', onPress: handleResendEmailCode, disabled: submitting },
+      });
     }
-  }, [step, submitting, goToNextStep, goToPrevStep, handleCompleteSignup, onActionBarChange]);
+  }, [
+    step,
+    submitting,
+    goToNextStep,
+    goToPrevStep,
+    handleCompleteSignup,
+    handleVerifyEmailCode,
+    handleResendEmailCode,
+    verificationCode,
+    secondsLeft,
+    onActionBarChange,
+  ]);
 
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
     <View accessibilityLabel="회원가입">
+      <View style={styles.socialSection}>
+        {socialProviders.map((sp) => (
+          <SocialButton
+            key={sp.provider}
+            label={sp.label}
+            icon={sp.icon}
+            backgroundColor={sp.backgroundColor}
+            textColor={sp.textColor}
+            borderColor={sp.borderColor}
+            iconStyle={sp.iconStyle as TextStyle}
+            accessibilityLabel={sp.accessibilityLabel}
+            onPress={() => handleSocialSignup(sp.provider)}
+            disabled={socialSubmitting !== null || submitting}
+          />
+        ))}
+      </View>
+
+      <View style={styles.divider} accessible accessibilityRole="none">
+        <View style={styles.dividerLine} />
+        <Text style={styles.dividerText}>또는 이메일 회원가입</Text>
+        <View style={styles.dividerLine} />
+      </View>
+
+      {submitError ? (
+        <Text style={[styles.errorText, { marginBottom: 12 }]}>
+          {submitError}
+        </Text>
+      ) : null}
+
       {/* Step Progress */}
       <View
         style={styles.stepProgress}
         accessible
         accessibilityRole="progressbar"
-        accessibilityValue={{ now: step, min: 1, max: 3 }}
+        accessibilityValue={{ now: step, min: 1, max: 4 }}
         accessibilityLabel="회원가입 진행 단계"
       >
-        {([1, 2, 3] as const).map((s) => (
+        {([1, 2, 3, 4] as const).map((s) => (
           <View
             key={s}
             style={[
@@ -1032,7 +1192,7 @@ function SignupPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur
       {step === 1 && (
         <View accessible accessibilityLabel="1단계: 기본 정보">
           <Text style={styles.stepTitle}>기본 정보</Text>
-          <Text style={styles.stepDesc}>공구위시 가입을 위한 기본 정보를 입력해주세요</Text>
+          <Text style={styles.stepDesc}>이메일 인증번호를 받을 기본 정보를 입력해주세요</Text>
 
           <AuthInput
             label="이메일"
@@ -1107,18 +1267,18 @@ function SignupPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur
           />
 
           {!hideActions && (
-          <View style={styles.stepNav}>
-            <Pressable
-              accessible
-              accessibilityRole="button"
-              accessibilityLabel="다음 단계"
-              onPress={goToNextStep}
-              disabled={submitting}
-              style={({ pressed }) => [styles.stepNavBtn, styles.stepNavBtnPrimary, pressed && styles.ctaBtnPressed]}
-            >
-              <Text style={styles.stepNavBtnPrimaryText}>다음</Text>
-            </Pressable>
-          </View>
+            <View style={styles.stepNav}>
+              <Pressable
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel="다음 단계"
+                onPress={goToNextStep}
+                disabled={submitting}
+                style={({ pressed }) => [styles.stepNavBtn, styles.stepNavBtnPrimary, pressed && styles.ctaBtnPressed]}
+              >
+                <Text style={styles.stepNavBtnPrimaryText}>다음</Text>
+              </Pressable>
+            </View>
           )}
         </View>
       )}
@@ -1159,27 +1319,27 @@ function SignupPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur
           />
 
           {!hideActions && (
-          <View style={styles.stepNav}>
-            <Pressable
-              accessible
-              accessibilityRole="button"
-              onPress={() => goToPrevStep(1)}
-              disabled={submitting}
-              style={({ pressed }) => [styles.stepNavBtn, styles.stepNavBtnSecondary, pressed && styles.btnPressed]}
-            >
-              <Text style={styles.stepNavBtnSecondaryText}>이전</Text>
-            </Pressable>
-            <Pressable
-              accessible
-              accessibilityRole="button"
-              accessibilityLabel="다음 단계"
-              onPress={goToNextStep}
-              disabled={submitting}
-              style={({ pressed }) => [styles.stepNavBtn, styles.stepNavBtnPrimary, { flex: 2 }, pressed && styles.ctaBtnPressed]}
-            >
-              <Text style={styles.stepNavBtnPrimaryText}>다음</Text>
-            </Pressable>
-          </View>
+            <View style={styles.stepNav}>
+              <Pressable
+                accessible
+                accessibilityRole="button"
+                onPress={() => goToPrevStep(1)}
+                disabled={submitting}
+                style={({ pressed }) => [styles.stepNavBtn, styles.stepNavBtnSecondary, pressed && styles.btnPressed]}
+              >
+                <Text style={styles.stepNavBtnSecondaryText}>이전</Text>
+              </Pressable>
+              <Pressable
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel="다음 단계"
+                onPress={goToNextStep}
+                disabled={submitting}
+                style={({ pressed }) => [styles.stepNavBtn, styles.stepNavBtnPrimary, { flex: 2 }, pressed && styles.ctaBtnPressed]}
+              >
+                <Text style={styles.stepNavBtnPrimaryText}>다음</Text>
+              </Pressable>
+            </View>
           )}
         </View>
       )}
@@ -1250,36 +1410,102 @@ function SignupPanel({ onActionBarChange, hideActions, onInputFocus, onInputBlur
           ) : null}
 
           {!hideActions && (
-          <View style={styles.stepNav}>
-            <Pressable
-              accessible
-              accessibilityRole="button"
-              onPress={() => goToPrevStep(2)}
-              disabled={submitting}
-              style={({ pressed }) => [styles.stepNavBtn, styles.stepNavBtnSecondary, pressed && styles.btnPressed]}
-            >
-              <Text style={styles.stepNavBtnSecondaryText}>이전</Text>
-            </Pressable>
-            <Pressable
-              accessible
-              accessibilityRole="button"
-              accessibilityLabel="가입 완료"
-              accessibilityState={{ disabled: submitting }}
-              onPress={handleCompleteSignup}
-              disabled={submitting}
-              style={({ pressed }) => [
-                styles.stepNavBtn,
-                styles.stepNavBtnPrimary,
-                { flex: 2 },
-                pressed && styles.ctaBtnPressed,
-                submitting && styles.ctaBtnDisabled,
-              ]}
-            >
-              <Text style={styles.stepNavBtnPrimaryText}>
-                {submitting ? '가입 처리 중...' : '가입 완료'}
-              </Text>
-            </Pressable>
-          </View>
+            <View style={styles.stepNav}>
+              <Pressable
+                accessible
+                accessibilityRole="button"
+                onPress={() => goToPrevStep(2)}
+                disabled={submitting}
+                style={({ pressed }) => [styles.stepNavBtn, styles.stepNavBtnSecondary, pressed && styles.btnPressed]}
+              >
+                <Text style={styles.stepNavBtnSecondaryText}>이전</Text>
+              </Pressable>
+              <Pressable
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel="가입 완료"
+                accessibilityState={{ disabled: submitting }}
+                onPress={handleCompleteSignup}
+                disabled={submitting}
+                style={({ pressed }) => [
+                  styles.stepNavBtn,
+                  styles.stepNavBtnPrimary,
+                  { flex: 2 },
+                  pressed && styles.ctaBtnPressed,
+                  submitting && styles.ctaBtnDisabled,
+                ]}
+              >
+                <Text style={styles.stepNavBtnPrimaryText}>
+                  {submitting ? '가입 처리 중...' : '가입 완료'}
+                </Text>
+              </Pressable>
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* Step 4: Email Verification */}
+      {step === 4 && (
+        <View accessible accessibilityLabel="4단계: 이메일 인증">
+          <Text style={styles.stepTitle}>이메일 인증</Text>
+          <Text style={styles.stepDesc}>{email}로 받은 인증번호를 입력해주세요</Text>
+
+          <AuthInput
+            label="인증번호"
+            testID="signup-input-email-code"
+            value={verificationCode}
+            onChangeText={(t) => {
+              setVerificationCode(t.replace(/\D/g, '').slice(0, 6));
+              setVerificationError(null);
+            }}
+            autoCapitalize="none"
+            autoComplete="one-time-code"
+            keyboardType="number-pad"
+            inputMode="numeric"
+            maxLength={6}
+            error={verificationError ?? undefined}
+            editable={!submitting && secondsLeft > 0}
+            focusId="signup-email-code"
+            onAuthInputFocus={onInputFocus}
+            onAuthInputBlur={onInputBlur}
+          />
+
+          <Text style={[styles.stepDesc, { marginBottom: 12 }]}>
+            남은 시간 {formatSeconds(secondsLeft)}
+          </Text>
+
+          {!hideActions && (
+            <View style={styles.stepNav}>
+              <Pressable
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel="인증번호 재발송"
+                onPress={handleResendEmailCode}
+                disabled={submitting}
+                style={({ pressed }) => [styles.stepNavBtn, styles.stepNavBtnSecondary, pressed && styles.btnPressed]}
+              >
+                <Text style={styles.stepNavBtnSecondaryText}>재발송</Text>
+              </Pressable>
+              <Pressable
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel="인증 완료"
+                accessibilityState={{ disabled: submitting || verificationCode.trim().length < 6 || secondsLeft <= 0 }}
+                onPress={handleVerifyEmailCode}
+                disabled={submitting || verificationCode.trim().length < 6 || secondsLeft <= 0}
+                style={({ pressed }) => [
+                  styles.stepNavBtn,
+                  styles.stepNavBtnPrimary,
+                  { flex: 2 },
+                  pressed && styles.ctaBtnPressed,
+                  (submitting || verificationCode.trim().length < 6 || secondsLeft <= 0) && styles.ctaBtnDisabled,
+                ]}
+              >
+                <Text style={styles.stepNavBtnPrimaryText}>
+                  {submitting ? '확인 중...' : '인증 완료'}
+                </Text>
+              </Pressable>
+            </View>
           )}
         </View>
       )}
